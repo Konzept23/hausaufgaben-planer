@@ -1,0 +1,4360 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#2c3e50">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <title>Hausaufgaben-Puffer-Planer</title>
+  <style>
+    /* ==========================================================================
+       REIZARMES DESIGN (Fokus auf Übersicht, klare Kontraste, null Animationen)
+       ========================================================================== */
+    :root {
+      --bg-main: #f3f5f7;
+      --bg-card: #ffffff;
+      --text-main: #1e293b;
+      --text-muted: #52606d;
+      --border-color: #d8e0e8;
+      --primary: #2c4c6b;
+      --primary-light: #e6eef6;
+
+      /* Reizarme Ampelfarben (gedämpft) */
+      --red-bg: #fdf2f2;
+      --red-border: #d9534f;
+      --red-text: #8a1f1c;
+
+      --yellow-bg: #fef9ec;
+      --yellow-border: #d59b2a;
+      --yellow-text: #6e4e08;
+
+      --green-bg: #f1f8f3;
+      --green-border: #4a935a;
+      --green-text: #1e5229;
+
+      --vocab-bg: #f4f3fa;
+      --vocab-border: #6c639c;
+
+      /* Freistunden- & Klausur-Farben */
+      --free-bg: #eef7fa;
+      --free-border: #2b7a9b;
+      --free-text: #164e63;
+
+      --exam-segment: #7c5295;
+
+      /* Helle, gut sichtbare Tage-Badges (Punkt 5) */
+      --badge-urgent-bg: #ffe3e3;
+      --badge-urgent-text: #9b1c1c;
+      --badge-urgent-border: #f8b4b4;
+
+      --badge-soon-bg: #fef0c7;
+      --badge-soon-text: #7a4f01;
+      --badge-soon-border: #fbd38d;
+
+      --badge-ok-bg: #def7ec;
+      --badge-ok-text: #13543f;
+      --badge-ok-border: #84e1bc;
+
+      --task-item-bg: #ffffff;
+      --day-row-bg: #fafbfc;
+    }
+
+    body.dark-theme {
+      --bg-main: #121820;
+      --bg-card: #1e293b;
+      --text-main: #f1f5f9;
+      --text-muted: #94a3b8;
+      --border-color: #334155;
+      --primary: #5282b5;
+      --primary-light: #1e334a;
+
+      --red-bg: #2d1a1a;
+      --red-border: #e05252;
+      --red-text: #ff9999;
+
+      --yellow-bg: #2d2618;
+      --yellow-border: #e5ab3b;
+      --yellow-text: #ffdc99;
+
+      --green-bg: #182c1e;
+      --green-border: #5cb86c;
+      --green-text: #99ffb3;
+
+      --vocab-bg: #232136;
+      --vocab-border: #8c82cb;
+
+      --free-bg: #162a36;
+      --free-border: #4aa3c7;
+      --free-text: #a5e3ff;
+
+      --exam-segment: #9d74b8;
+
+      /* Helle, kontraststarke Badges auch im Dark Mode */
+      --badge-urgent-bg: #5c1f1f;
+      --badge-urgent-text: #ffd6d6;
+      --badge-urgent-border: #d9534f;
+
+      --badge-soon-bg: #574115;
+      --badge-soon-text: #ffe8b3;
+      --badge-soon-border: #e5ab3b;
+
+      --badge-ok-bg: #16492d;
+      --badge-ok-text: #c6ffda;
+      --badge-ok-border: #5cb86c;
+
+      --task-item-bg: #1a2332;
+      --day-row-bg: #182230;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--bg-main);
+      color: var(--text-main);
+      line-height: 1.5;
+      padding-bottom: 80px;
+      max-width: 780px;
+      margin: 0 auto;
+    }
+
+    header {
+      background: var(--bg-card);
+      border-bottom: 2px solid var(--border-color);
+      padding: 10px 16px;
+      position: sticky;
+      top: 0;
+      z-index: 20;
+    }
+
+    .header-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .app-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--primary);
+    }
+
+    .date-sub {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    /* Echtzeit-Taktung Statuszeile (Punkt 1) */
+    .live-clock-pill {
+      display: inline-block;
+      margin-top: 4px;
+      background: var(--primary-light);
+      color: var(--primary);
+      border: 1px solid var(--primary);
+      border-radius: 6px;
+      padding: 2px 8px;
+      font-size: 0.78rem;
+      font-weight: 700;
+    }
+
+    .week-badge-btn, .dark-mode-btn {
+      background: var(--primary-light);
+      color: var(--primary);
+      border: 2px solid var(--primary);
+      border-radius: 8px;
+      padding: 8px 14px;
+      font-size: 0.92rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    /* Dynamischer Tages-Zeitbudget-Balken + Zweiter Freistunden-Balken (Punkt 3) */
+    .budget-bar-container {
+      margin-top: 8px;
+      background: var(--bg-main);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 6px 10px;
+    }
+
+    .free-bar-container {
+      margin-top: 6px;
+      background: var(--free-bg);
+      border: 1px solid var(--free-border);
+      border-radius: 8px;
+      padding: 6px 10px;
+      display: none;
+    }
+
+    .free-bar-container.visible {
+      display: block;
+    }
+
+    .budget-header {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.8rem;
+      font-weight: 600;
+      margin-bottom: 4px;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 4px;
+    }
+
+    .budget-track {
+      width: 100%;
+      height: 12px;
+      background: var(--border-color);
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+    }
+
+    .budget-segment-blue {
+      height: 100%;
+      background: var(--primary);
+      width: 0%;
+    }
+
+    .budget-segment-exam {
+      height: 100%;
+      background: var(--exam-segment);
+      width: 0%;
+    }
+
+    .budget-segment-green {
+      height: 100%;
+      background: var(--green-border);
+      width: 100%;
+    }
+
+    .budget-segment-red {
+      height: 100%;
+      background: var(--red-border);
+      width: 0%;
+    }
+
+    .budget-segment-free-used {
+      height: 100%;
+      background: var(--free-border);
+      width: 0%;
+    }
+
+    .budget-segment-free-avail {
+      height: 100%;
+      background: var(--green-border);
+      width: 100%;
+    }
+
+    /* Hauptnavigation (5 Tabs) */
+    nav.main-nav {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 6px;
+      padding: 10px 16px;
+      background: var(--bg-main);
+    }
+
+    @media (max-width: 560px) {
+      nav.main-nav {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
+    .nav-btn {
+      background: var(--bg-card);
+      border: 2px solid var(--border-color);
+      border-radius: 8px;
+      padding: 9px 4px;
+      font-size: 0.84rem;
+      font-weight: 600;
+      color: var(--text-main);
+      cursor: pointer;
+      text-align: center;
+    }
+
+    .nav-btn.active {
+      background: var(--primary);
+      color: #ffffff;
+      border-color: var(--primary);
+    }
+
+    main {
+      padding: 6px 16px 24px 16px;
+    }
+
+    .tab-section {
+      display: none;
+    }
+
+    .tab-section.active {
+      display: block;
+    }
+
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+
+    .advice-banner {
+      background: var(--primary-light);
+      border-left: 5px solid var(--primary);
+      padding: 11px 14px;
+      border-radius: 6px;
+      font-size: 0.92rem;
+      margin-bottom: 12px;
+      font-weight: 500;
+      color: var(--text-main);
+    }
+
+    .smart-free-banner {
+      background: var(--free-bg);
+      border-left: 5px solid var(--free-border);
+      padding: 12px 14px;
+      border-radius: 8px;
+      font-size: 0.88rem;
+      margin-bottom: 16px;
+      font-weight: 600;
+      color: var(--free-text);
+      display: none;
+    }
+
+    .smart-free-banner.visible {
+      display: block;
+    }
+
+    .exam-alert-banner {
+      background: var(--vocab-bg);
+      border-left: 5px solid var(--vocab-border);
+      padding: 10px 14px;
+      border-radius: 6px;
+      font-size: 0.88rem;
+      margin-bottom: 14px;
+      font-weight: 600;
+      color: var(--text-main);
+      display: none;
+    }
+
+    .exam-alert-banner.visible {
+      display: block;
+    }
+
+    /* Warnbanner bei Klausur-Kollision am gleichen Tag */
+    .collision-warning-box {
+      background: var(--yellow-bg);
+      border: 2px solid var(--yellow-border);
+      color: var(--yellow-text);
+      padding: 10px 12px;
+      border-radius: 8px;
+      font-size: 0.88rem;
+      font-weight: 700;
+      margin-bottom: 12px;
+      display: none;
+    }
+
+    .collision-warning-box.visible {
+      display: block;
+    }
+
+    .ampel-zone {
+      border-radius: 10px;
+      padding: 14px;
+      margin-bottom: 16px;
+      border: 2px solid transparent;
+    }
+
+    .ampel-red {
+      background: var(--red-bg);
+      border-color: var(--red-border);
+    }
+    .ampel-red .zone-title { color: var(--red-text); }
+
+    .ampel-yellow {
+      background: var(--yellow-bg);
+      border-color: var(--yellow-border);
+    }
+    .ampel-yellow .zone-title { color: var(--yellow-text); }
+
+    .ampel-green {
+      background: var(--green-bg);
+      border-color: var(--green-border);
+    }
+    .ampel-green .zone-title { color: var(--green-text); }
+
+    .ampel-vocab {
+      background: var(--vocab-bg);
+      border-color: var(--vocab-border);
+    }
+    .ampel-vocab .zone-title { color: var(--vocab-border); }
+
+    .zone-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .zone-title {
+      font-size: 1.05rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .zone-subtitle {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+    }
+
+    .dot {
+      display: inline-block;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+    }
+    .dot-red { background: var(--red-border); }
+    .dot-yellow { background: var(--yellow-border); }
+    .dot-green { background: var(--green-border); }
+
+    .task-item {
+      background: var(--task-item-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .task-item.in-free-period {
+      border-left: 5px solid var(--free-border);
+      background: var(--free-bg);
+    }
+
+    .task-info {
+      flex: 1;
+      min-width: 200px;
+    }
+
+    .task-header-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-bottom: 4px;
+    }
+
+    .task-subject {
+      display: inline-block;
+      background: var(--primary-light);
+      color: var(--primary);
+      font-weight: 700;
+      font-size: 0.8rem;
+      padding: 2px 8px;
+      border-radius: 4px;
+    }
+
+    /* Optische Tage-Badges als helle Pille direkt am Fälligkeitsdatum (Punkt 5) */
+    .days-badge {
+      display: inline-block;
+      padding: 2px 9px;
+      border-radius: 999px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      border: 1px solid transparent;
+      vertical-align: middle;
+      margin-left: 4px;
+    }
+
+    .days-badge-urgent {
+      background: var(--badge-urgent-bg);
+      color: var(--badge-urgent-text);
+      border-color: var(--badge-urgent-border);
+    }
+
+    .days-badge-soon {
+      background: var(--badge-soon-bg);
+      color: var(--badge-soon-text);
+      border-color: var(--badge-soon-border);
+    }
+
+    .days-badge-ok {
+      background: var(--badge-ok-bg);
+      color: var(--badge-ok-text);
+      border-color: var(--badge-ok-border);
+    }
+
+    .free-period-pill {
+      display: inline-block;
+      background: var(--free-border);
+      color: #ffffff;
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 999px;
+    }
+
+    /* Aufgabentext in Kachel: Max 2 Zeilen Vorschau */
+    .task-title {
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 4px;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      word-break: break-word;
+      line-height: 1.35;
+    }
+
+    .task-title.clickable-title {
+      cursor: pointer;
+    }
+
+    .task-meta {
+      font-size: 0.83rem;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 4px;
+      margin-top: 4px;
+    }
+
+    .btn-read-more {
+      background: none;
+      border: none;
+      color: var(--primary);
+      font-size: 0.85rem;
+      font-weight: 700;
+      padding: 2px 0;
+      margin-top: 2px;
+      cursor: pointer;
+      text-decoration: underline;
+      display: inline-block;
+    }
+
+    .task-actions {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      margin-top: 2px;
+      flex-wrap: wrap;
+    }
+
+    .btn-check {
+      background: #4a935a;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 8px 12px;
+      font-size: 0.88rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    /* "In Freistunde schieben"-Button (Punkt 3) */
+    .btn-free-shift {
+      background: var(--free-bg);
+      color: var(--free-text);
+      border: 2px solid var(--free-border);
+      border-radius: 8px;
+      padding: 7px 10px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .btn-free-shift.active-free {
+      background: var(--free-border);
+      color: #ffffff;
+    }
+
+    .btn-edit {
+      background: var(--primary-light);
+      color: var(--primary);
+      border: 1px solid var(--primary);
+      border-radius: 8px;
+      padding: 8px 10px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .btn-delete {
+      background: var(--border-color);
+      color: var(--text-main);
+      border: none;
+      border-radius: 8px;
+      padding: 8px 12px;
+      font-size: 0.9rem;
+      cursor: pointer;
+    }
+
+    .btn-clipboard {
+      background: var(--primary-light);
+      color: var(--primary);
+      border: 2px solid var(--primary);
+      border-radius: 8px;
+      padding: 12px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      text-align: center;
+      flex: 1;
+    }
+
+    .empty-hint {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      font-style: italic;
+      padding: 6px 0;
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    label.form-label {
+      display: block;
+      font-weight: 700;
+      font-size: 0.95rem;
+      margin-bottom: 6px;
+    }
+
+    input[type="text"],
+    input[type="date"],
+    input[type="time"],
+    input[type="number"],
+    select,
+    textarea {
+      width: 100%;
+      padding: 10px 12px;
+      font-size: 0.98rem;
+      font-family: inherit;
+      border: 2px solid var(--border-color);
+      border-radius: 8px;
+      background: var(--bg-card);
+      color: var(--text-main);
+      line-height: 1.45;
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 85px;
+    }
+
+    .choice-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+      gap: 8px;
+    }
+
+    .choice-btn {
+      background: var(--bg-card);
+      border: 2px solid var(--border-color);
+      border-radius: 8px;
+      padding: 10px 8px;
+      font-size: 0.92rem;
+      font-weight: 600;
+      cursor: pointer;
+      text-align: center;
+      color: var(--text-main);
+    }
+
+    .choice-btn.selected {
+      background: var(--primary-light);
+      border-color: var(--primary);
+      color: var(--primary);
+      font-weight: 700;
+    }
+
+    .btn-primary {
+      width: 100%;
+      background: var(--primary);
+      color: #ffffff;
+      border: none;
+      border-radius: 8px;
+      padding: 14px;
+      font-size: 1.05rem;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 8px;
+    }
+
+    .btn-secondary {
+      background: var(--bg-main);
+      color: var(--text-main);
+      border: 2px solid var(--border-color);
+      border-radius: 8px;
+      padding: 9px 12px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    /* Chronologischer Stundenplan & Tagesaktueller Ausfall (Punkt 1 & 2) */
+    .day-row {
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 12px;
+      background: var(--day-row-bg);
+    }
+
+    .day-title {
+      font-weight: 700;
+      margin-bottom: 10px;
+      color: var(--primary);
+      font-size: 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .period-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+      gap: 8px;
+    }
+
+    .period-slot {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      padding: 6px 8px;
+    }
+
+    .period-slot.is-cancelled {
+      background: var(--free-bg);
+      border-color: var(--free-border);
+    }
+
+    .period-label {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      min-width: 68px;
+    }
+
+    .period-select {
+      flex: 1;
+      padding: 6px 8px;
+      font-size: 0.88rem;
+      border-width: 1px;
+    }
+
+    .override-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 8px 10px;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      margin-bottom: 6px;
+      background: var(--day-row-bg);
+      flex-wrap: wrap;
+    }
+
+    .override-row.status-cancelled {
+      background: var(--free-bg);
+      border-color: var(--free-border);
+    }
+
+    .override-row.status-swapped {
+      background: var(--yellow-bg);
+      border-color: var(--yellow-border);
+    }
+
+    /* Klausur-Radar Karten (Punkt 4) */
+    .exam-card {
+      border: 2px solid var(--border-color);
+      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 10px;
+      background: var(--task-item-bg);
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .exam-card.exam-red {
+      background: var(--red-bg);
+      border-color: var(--red-border);
+    }
+
+    .exam-card.exam-yellow {
+      background: var(--yellow-bg);
+      border-color: var(--yellow-border);
+    }
+
+    .exam-card.exam-green {
+      background: var(--green-bg);
+      border-color: var(--green-border);
+    }
+
+    /* Jalousie- / Akkordeon-System für Einstellungen & Recht */
+    .accordion-controls {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .accordion-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      margin-bottom: 12px;
+      overflow: hidden;
+    }
+
+    .accordion-header {
+      width: 100%;
+      background: var(--bg-card);
+      border: none;
+      padding: 14px 16px;
+      font-size: 1.02rem;
+      font-weight: 700;
+      color: var(--primary);
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      text-align: left;
+      gap: 10px;
+    }
+
+    .accordion-header:hover {
+      background: var(--day-row-bg);
+    }
+
+    .accordion-icon {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      font-weight: 700;
+      min-width: 24px;
+      text-align: right;
+    }
+
+    .accordion-body {
+      display: none;
+      padding: 14px 16px 16px 16px;
+      border-top: 1px solid var(--border-color);
+    }
+
+    .accordion-card.open .accordion-body {
+      display: block;
+    }
+
+    /* Fächer-Chips für die Halbjahr-Auswahl */
+    .subject-filter-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(155px, 1fr));
+      gap: 8px;
+      margin-top: 10px;
+      margin-bottom: 14px;
+    }
+
+    .subject-toggle-btn {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+      padding: 8px 10px;
+      border-radius: 8px;
+      border: 2px solid var(--border-color);
+      background: var(--bg-main);
+      color: var(--text-muted);
+      font-size: 0.88rem;
+      font-weight: 600;
+      cursor: pointer;
+      text-align: left;
+    }
+
+    .subject-toggle-btn.active-subject {
+      background: var(--primary-light);
+      border-color: var(--primary);
+      color: var(--primary);
+      font-weight: 700;
+    }
+
+    .legal-box h3 {
+      margin-top: 14px;
+      margin-bottom: 6px;
+      color: var(--primary);
+      font-size: 1rem;
+    }
+
+    .legal-box p, .legal-box ul {
+      font-size: 0.9rem;
+      color: var(--text-main);
+      margin-bottom: 10px;
+      line-height: 1.6;
+    }
+
+    .legal-box ul {
+      padding-left: 20px;
+    }
+
+    footer {
+      text-align: center;
+      padding: 16px;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      border-top: 1px solid var(--border-color);
+      margin-top: 20px;
+    }
+
+    footer button.footer-link {
+      background: none;
+      border: none;
+      color: var(--primary);
+      text-decoration: underline;
+      font-size: 0.85rem;
+      cursor: pointer;
+      margin: 0 8px;
+      font-weight: 600;
+    }
+
+    .modal-backdrop {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.55);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+
+    .modal-backdrop.show {
+      display: flex;
+    }
+
+    .modal-card {
+      background: var(--bg-card);
+      border: 2px solid var(--border-color);
+      border-radius: 12px;
+      max-width: 520px;
+      width: 100%;
+      padding: 20px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+      max-height: 92vh;
+      overflow-y: auto;
+    }
+
+    .modal-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      margin-bottom: 10px;
+      color: var(--primary);
+    }
+
+    .modal-body {
+      font-size: 0.95rem;
+      margin-bottom: 20px;
+      color: var(--text-main);
+      line-height: 1.5;
+    }
+
+    .reading-content-box {
+      font-size: 1.05rem;
+      line-height: 1.6;
+      white-space: pre-wrap;
+      word-break: break-word;
+      background: var(--bg-main);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 14px;
+      max-height: 50vh;
+      overflow-y: auto;
+      margin-top: 8px;
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .modal-btn {
+      flex: 1;
+      padding: 12px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      border-radius: 8px;
+      cursor: pointer;
+      text-align: center;
+      border: 2px solid transparent;
+    }
+
+    .modal-btn-cancel {
+      background: var(--bg-main);
+      color: var(--text-main);
+      border-color: var(--border-color);
+    }
+
+    .modal-btn-danger {
+      background: var(--red-border);
+      color: #fff;
+    }
+
+    .modal-btn-primary {
+      background: var(--primary);
+      color: #fff;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ================= KOMPAKTER KOPFBEREICH, ECHTZEIT-TAKTUNG & ZWEI PLANUNGSBALKEN ================= -->
+  <header>
+    <div class="header-top">
+      <div>
+        <div class="app-title">Hausaufgaben-Puffer-Planer</div>
+        <div class="date-sub" id="currentDateDisplay">Lade Datum...</div>
+      </div>
+      <div class="live-clock-pill" id="livePeriodStatus">⏳ Lade Schulstunden-Taktung...</div>
+    </div>
+
+    <!-- 1. Balken: Reguläres Nachmittags-Zeitbudget (inkl. Klausur-Puffer) -->
+    <div class="budget-bar-container">
+      <div class="budget-header">
+        <span>Heutiges Nachmittags-Pensum (Hausaufgaben &amp; Klausur-Puffer):</span>
+        <span id="budgetStatusText">0 / 45 Min.</span>
+      </div>
+      <div class="budget-track" id="budgetTrack">
+        <div class="budget-segment-blue" id="budgetSegBlue" title="Verplante Hausaufgaben-Zeit"></div>
+        <div class="budget-segment-exam" id="budgetSegExam" title="Reservierter Lernpuffer für nahende Klausuren/Tests"></div>
+        <div class="budget-segment-green" id="budgetSegGreen" title="Verbleibende freie Zeit im Tagesbudget"></div>
+        <div class="budget-segment-red" id="budgetSegRed" title="Zeit über dem Budget (Überlastung)"></div>
+      </div>
+    </div>
+
+    <!-- 2. Balken: Freistunden- & Ausfall-Kapazität am nächsten Schultag -->
+    <div class="free-bar-container" id="freePeriodBarContainer">
+      <div class="budget-header">
+        <span id="freePeriodBarTitle">Freistunden-Puffer (Nächster Schultag):</span>
+        <span id="freePeriodStatusText">0 / 0 Min. genutzt</span>
+      </div>
+      <div class="budget-track">
+        <div class="budget-segment-free-used" id="freeSegUsed" title="In Freistunden geschobene Hausaufgaben"></div>
+        <div class="budget-segment-free-avail" id="freeSegAvail" title="Noch freie Kapazität in Freistunden/Mittagspause"></div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ================= HAUPTNAVIGATION (5 TABS) ================= -->
+  <nav class="main-nav">
+    <button type="button" class="nav-btn active" data-tab="tab-plan">Ampel-Plan</button>
+    <button type="button" class="nav-btn" data-tab="tab-add">+ Aufgabe</button>
+    <button type="button" class="nav-btn" data-tab="tab-exams">Klausur-Radar</button>
+    <button type="button" class="nav-btn" data-tab="tab-schedule">Stundenplan</button>
+    <button type="button" class="nav-btn" data-tab="tab-legal">Einstellungen</button>
+  </nav>
+
+  <main>
+    <!-- ==================================================================
+         ANSICHT 1: AMPEL-PLANER
+         ================================================================== -->
+    <section id="tab-plan" class="tab-section active">
+
+      <div class="advice-banner" id="smartAdviceBanner">
+        Willkommen! Trage deine Hausaufgaben ein – der Planer berechnet automatisch, was heute Pflicht ist und was du schieben kannst.
+      </div>
+
+      <!-- Klausur-Puffer-Hinweis im Tagesplan -->
+      <div class="exam-alert-banner" id="examPlanBanner"></div>
+
+      <!-- ROT: HEUTE PFLICHT -->
+      <div class="ampel-zone ampel-red">
+        <div class="zone-header">
+          <div class="zone-title"><span class="dot dot-red"></span> ROT: Muss erledigt werden</div>
+          <span id="count-red" style="font-weight:700;">0</span>
+        </div>
+        <div class="zone-subtitle">Morgen ist das Fach wieder dran oder der Puffer ist aufgebraucht.</div>
+        <div id="list-red"></div>
+      </div>
+
+      <!-- GELB: SINNVOLLER PUFFER -->
+      <div class="ampel-zone ampel-yellow">
+        <div class="zone-header">
+          <div class="zone-title"><span class="dot dot-yellow"></span> GELB: Heute sinnvoll (Puffer nutzen)</div>
+          <span id="count-yellow" style="font-weight:700;">0</span>
+        </div>
+        <div class="zone-subtitle">Heute ist noch Zeit im Tagesbudget. Wenn du das heute machst, entsteht morgen kein Stau!</div>
+        <div id="list-yellow"></div>
+      </div>
+
+      <!-- GRÜN: KANN GESCHOBEN WERDEN -->
+      <div class="ampel-zone ampel-green">
+        <div class="zone-header">
+          <div class="zone-title"><span class="dot dot-green"></span> GRÜN: Kannst du entspannt schieben</div>
+          <span id="count-green" style="font-weight:700;">0</span>
+        </div>
+        <div class="zone-subtitle">Noch genug Tage bis zur nächsten Fach-Stunde oder dein heutiges Pensum ist bereits voll.</div>
+        <div id="list-green"></div>
+      </div>
+
+      <!-- VOKABEL- & LERN-ROUTINE -->
+      <div class="ampel-zone ampel-vocab">
+        <div class="zone-header">
+          <div class="zone-title">Vokabel- &amp; Kurzlern-Routine (5–10 Min.)</div>
+        </div>
+        <div class="zone-subtitle">Kurzes tägliches Wiederholen verhindert Lernstau vor Tests:</div>
+        <div id="vocabList"></div>
+        <div style="display:flex; gap:8px; margin-top:10px; flex-wrap:wrap;">
+          <input type="text" id="vocabInput" placeholder="z. B. Englisch Unit 3 Vokabeln" style="flex:1; min-width:180px;">
+          <button type="button" class="btn-secondary" id="addVocabBtn">+ Lernziel merken</button>
+        </div>
+      </div>
+
+      <!-- Smarte Freistunden-Hinweise (unterhalb der Vokabeln, oberhalb der erledigten Aufgaben) -->
+      <div class="smart-free-banner" id="smartFreeAdviceBanner"></div>
+
+      <!-- ERLEDIGTE AUFGABEN -->
+      <div class="card">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+          <strong>Bereits erledigte Aufgaben</strong>
+          <button type="button" class="btn-secondary" id="clearDoneBtn" style="padding:4px 10px; font-size:0.8rem;">Erledigte aufräumen</button>
+        </div>
+        <div id="list-done"></div>
+      </div>
+
+    </section>
+
+    <!-- ==================================================================
+         ANSICHT 2: HAUSAUFGABE EINTRAGEN
+         ================================================================== -->
+    <section id="tab-add" class="tab-section">
+      <div class="card">
+        <h2 style="margin-bottom:14px; font-size:1.15rem; color:var(--primary);">Neue Hausaufgabe eintragen</h2>
+
+        <div class="form-group">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; flex-wrap:wrap; gap:4px;">
+            <label class="form-label" for="hwSubject" style="margin-bottom:0;">1. Welches Schulfach?</label>
+            <button type="button" id="toggleSubjectFilterBtn" class="btn-secondary" style="padding:4px 8px; font-size:0.8rem; border-radius:6px;">
+              Alle aktiven Halbjahres-Fächer
+            </button>
+          </div>
+          <select id="hwSubject"></select>
+          <div id="subjectFilterHint" style="font-size:0.8rem; color:var(--text-muted); margin-top:4px;"></div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="hwTitle">2. Was ist zu tun? (Buchseite, Aufgabe oder Notizen reinsprechen)</label>
+          <textarea id="hwTitle" rows="3" placeholder="z. B. Buch S. 42 Nr. 3 und 4 ins rote Heft schreiben. Diktieren oder Notizen werden hier automatisch umgebrochen."></textarea>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">3. Wie lange dauert es ungefähr?</label>
+          <div class="choice-grid" id="durationChoices">
+            <button type="button" class="choice-btn" data-min="10">10 Min.</button>
+            <button type="button" class="choice-btn selected" data-min="15">15 Min.</button>
+            <button type="button" class="choice-btn" data-min="30">30 Min.</button>
+            <button type="button" class="choice-btn" data-min="45">45 Min.</button>
+            <button type="button" class="choice-btn" data-min="custom">Individuell...</button>
+          </div>
+          <div id="customDurationContainer" style="display:none; margin-top:10px;">
+            <input type="number" id="hwCustomDuration" min="1" max="300" placeholder="Minuten eingeben (z. B. 90)" value="60">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">4. Bis wann muss es fertig sein?</label>
+          <div class="choice-grid" id="dueModeChoices">
+            <button type="button" class="choice-btn selected" data-mode="next">Nächste Fach-Stunde (Auto)</button>
+            <button type="button" class="choice-btn" data-mode="overnext">Übernächste Stunde</button>
+            <button type="button" class="choice-btn" data-mode="custom">Festes Datum wählen</button>
+          </div>
+          <div id="calculatedDuePreview" style="margin-top:8px; font-size:0.9rem; font-weight:600; color:var(--primary);"></div>
+          <div id="customDateContainer" style="display:none; margin-top:10px;">
+            <input type="date" id="hwCustomDate">
+          </div>
+        </div>
+
+        <button type="button" class="btn-primary" id="saveHwBtn">Aufgabe in den Planer aufnehmen</button>
+      </div>
+    </section>
+
+    <!-- ==================================================================
+         ANSICHT 3: KLAUSUR- & TEST-RADAR
+         ================================================================== -->
+    <section id="tab-exams" class="tab-section">
+      <div class="card">
+        <h2 style="margin-bottom:8px; font-size:1.15rem; color:var(--primary);">Klausur, Klassenarbeit oder Projekt eintragen</h2>
+        <p style="font-size:0.88rem; color:var(--text-muted); margin-bottom:14px;">
+          Das System ordnet Arbeiten automatisch nach Dringlichkeit (Rot &le; 3 Tage, Gelb 4–7 Tage, Grün &gt; 7 Tage / Projekt) und hält dir im Tagesbudget rechtzeitig Lernpuffer frei.
+        </p>
+
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:12px; margin-bottom:12px;">
+          <div>
+            <label class="form-label" for="examSubject">Schulfach:</label>
+            <select id="examSubject"></select>
+          </div>
+          <div>
+            <label class="form-label" for="examDate">Datum der Arbeit / Abgabe:</label>
+            <input type="date" id="examDate">
+          </div>
+          <div>
+            <label class="form-label" for="examBufferMinutes">Täglicher Lernpuffer (ab 7 Tage vorher):</label>
+            <select id="examBufferMinutes">
+              <option value="10">10 Min. / Tag</option>
+              <option value="15" selected>15 Min. / Tag</option>
+              <option value="20">20 Min. / Tag</option>
+              <option value="30">30 Min. / Tag</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Sofort-Warnung falls am gewählten Tag bereits eine Klausur liegt -->
+        <div class="collision-warning-box" id="examCollisionWarning"></div>
+
+        <div class="form-group">
+          <label class="form-label" for="examTopic">Was kommt dran? (Thema / Lernstoff / Projektziel):</label>
+          <textarea id="examTopic" rows="3" placeholder="z. B. Lineare Funktionen, S. 54–68, Vokabeln Unit 4 (Text kann später im Vollbild gelesen und kopiert werden)"></textarea>
+        </div>
+
+        <button type="button" class="btn-primary" id="saveExamBtn">In das Klausur-Radar aufnehmen</button>
+      </div>
+
+      <div class="card">
+        <h2 style="margin-bottom:10px; font-size:1.1rem; color:var(--primary);">Anstehende Arbeiten, Tests &amp; Projekte</h2>
+        <p style="font-size:0.84rem; color:var(--text-muted); margin-bottom:10px;">
+          Tipp: Tippe auf eine Klausur oder auf <strong>„📄 Lesen / Kopieren“</strong>, um den gesamten Lernstoff im Lesefenster zu öffnen oder in deinen Kalender zu kopieren.
+        </p>
+        <div id="examsListContainer"></div>
+      </div>
+    </section>
+
+    <!-- ==================================================================
+         ANSICHT 4: STUNDENPLAN, ZEITRASTER & KURZFRISTIGER AUSFALL
+         ================================================================== -->
+    <section id="tab-schedule" class="tab-section">
+
+      <!-- Kurzfristiger Unterrichtsausfall & Tausch (Heute / Morgen) -->
+      <div class="card">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:8px;">
+          <h2 style="font-size:1.1rem; color:var(--primary);">Kurzfristiger Ausfall &amp; Fächertausch (Tagesaktuell)</h2>
+          <div style="display:flex; gap:6px;">
+            <button type="button" class="btn-secondary" id="overrideTodayBtn">Heute anpassen</button>
+            <button type="button" class="btn-secondary" id="overrideTomorrowBtn">Nächsten Schultag anpassen</button>
+          </div>
+        </div>
+        <p style="font-size:0.86rem; color:var(--text-muted); margin-bottom:10px;">
+          Markiere hier kurzfristige Ausfälle oder Vertretungs-Tausche. Dein fester A/B-Basisplan bleibt unangetastet! Es werden nur deine für dieses Halbjahr aktivierten Fächer zur Auswahl angeboten.
+        </p>
+        <div id="overrideTargetLabel" style="font-weight:700; font-size:0.92rem; color:var(--primary); margin-bottom:8px;"></div>
+        <div id="dailyOverridesContainer"></div>
+        <div style="margin-top:10px;">
+          <button type="button" class="btn-secondary" id="resetDayOverridesBtn" style="font-size:0.82rem; padding:6px 10px;">
+            Tagesaktuelle Änderungen für diesen Tag zurücksetzen
+          </button>
+        </div>
+      </div>
+
+      <!-- Zeitraster, Echtzeit-Taktung & Mittagspause -->
+      <div class="card">
+        <h2 style="font-size:1.1rem; color:var(--primary); margin-bottom:8px;">Zeitraster, Schulbeginn &amp; Mittagspausen-Puffer</h2>
+        <p style="font-size:0.86rem; color:var(--text-muted); margin-bottom:12px;">
+          Synchronisiert die App mit deiner Schulglocke und legt fest, ob Freistunden &amp; Mittagspausen für Hausaufgaben genutzt werden dürfen.
+        </p>
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(150px, 1fr)); gap:10px; margin-bottom:12px;">
+          <div>
+            <label class="form-label" for="schoolStartTimeInput" style="font-size:0.85rem;">Schulbeginn (1. Std.):</label>
+            <input type="time" id="schoolStartTimeInput" value="07:50">
+          </div>
+          <div>
+            <label class="form-label" for="periodDurationInput" style="font-size:0.85rem;">Dauer je Stunde (Min.):</label>
+            <input type="number" id="periodDurationInput" min="30" max="90" step="5" value="45">
+          </div>
+          <div>
+            <label class="form-label" for="shortBreakInput" style="font-size:0.85rem;">Kleine Pause (Min.):</label>
+            <input type="number" id="shortBreakInput" min="0" max="30" step="5" value="5">
+          </div>
+          <div>
+            <label class="form-label" for="bigBreakInput" style="font-size:0.85rem;">Große Pause (nach 2./4. Std.):</label>
+            <input type="number" id="bigBreakInput" min="5" max="45" step="5" value="15">
+          </div>
+        </div>
+
+        <div style="padding:10px; background:var(--free-bg); border:1px solid var(--free-border); border-radius:8px; display:flex; align-items:center; gap:10px;">
+          <input type="checkbox" id="useLunchBreakCheckbox" style="width:20px; height:20px; cursor:pointer;">
+          <label for="useLunchBreakCheckbox" style="font-size:0.9rem; font-weight:600; color:var(--free-text); cursor:pointer;">
+            Mittagspause / Freie Blöcke zwischen Vormittag (6. Std.) und Nachmittag (7./8. Std.) als Hausaufgaben-Puffer aktivieren
+          </label>
+        </div>
+      </div>
+
+      <!-- Nachmittags-Zeitbudget -->
+      <div class="card">
+        <h2 style="font-size:1.1rem; color:var(--primary); margin-bottom:8px;">Tägliches Hausaufgaben-Zeitbudget (Nachmittag)</h2>
+        <p style="font-size:0.88rem; color:var(--text-muted); margin-bottom:12px;">
+          Wie viele Minuten Hausaufgaben pro Nachmittag sind gut machbar, ohne dass Überforderung entsteht?
+        </p>
+        <div class="choice-grid" id="budgetLimitChoices">
+          <button type="button" class="choice-btn" data-limit="30">30 Min. / Tag</button>
+          <button type="button" class="choice-btn selected" data-limit="45">45 Min. / Tag</button>
+          <button type="button" class="choice-btn" data-limit="60">60 Min. / Tag</button>
+          <button type="button" class="choice-btn" data-limit="75">75 Min. / Tag</button>
+        </div>
+      </div>
+
+      <!-- Chronologischer Basis-Stundenplan (1. bis 8. Stunde) -->
+      <div class="card">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:12px;">
+          <h2 style="font-size:1.1rem; color:var(--primary);">Basis-Stundenplan im Schulstunden-Raster (Woche A &amp; B)</h2>
+          <div style="display:flex; gap:6px;">
+            <button type="button" class="btn-secondary" id="editWeekABtn" style="border-color:var(--primary);">Woche A bearbeiten</button>
+            <button type="button" class="btn-secondary" id="editWeekBBtn">Woche B bearbeiten</button>
+          </div>
+        </div>
+        <p style="font-size:0.88rem; color:var(--text-muted); margin-bottom:12px;">
+          Ordne jedem Tag deine Fächer nach konkreten Schulstunden (1. bis 8. Stunde) zu. Lücken zwischen zwei Unterrichtsstunden erkennt der Planer automatisch als <strong>Freistunde</strong>!
+        </p>
+        <div style="margin-bottom:12px;">
+          <button type="button" class="btn-secondary" id="copyAtoBBtn" style="font-size:0.82rem; padding:6px 10px;">
+            Stundenplan von Woche A auf Woche B kopieren
+          </button>
+        </div>
+
+        <div id="scheduleDaysContainer"></div>
+      </div>
+
+    </section>
+
+    <!-- ==================================================================
+         ANSICHT 5: EINSTELLUNGEN, FÄCHERWAHL, BACKUP & RECHT (AKKORDEON-SYSTEM)
+         ================================================================== -->
+    <section id="tab-legal" class="tab-section">
+
+      <div class="accordion-controls">
+        <strong style="color:var(--primary); font-size:1rem;">Einstellungen, Daten &amp; Rechtliches</strong>
+        <div style="display:flex; gap:6px;">
+          <button type="button" class="btn-secondary" id="expandAllAccordionsBtn" style="padding:6px 10px; font-size:0.82rem;">▼ Alle aufklappen</button>
+          <button type="button" class="btn-secondary" id="collapseAllAccordionsBtn" style="padding:6px 10px; font-size:0.82rem;">▲ Alle schließen</button>
+        </div>
+      </div>
+
+      <!-- Akkordeon 1: Halbjahr-Fächerverwaltung & Eigene Fächer -->
+      <div class="accordion-card" id="acc-subjects">
+        <button type="button" class="accordion-header" data-acc="acc-subjects">
+          <span>📚 1. Aktive Fächer für dieses Halbjahr &amp; Eigene Fächer</span>
+          <span class="accordion-icon">▼</span>
+        </button>
+        <div class="accordion-body">
+          <p style="font-size:0.88rem; color:var(--text-muted); margin-bottom:10px;">
+            Wähle hier genau die Fächer aus, die du in diesem Halbjahr wirklich hast. <strong>Vorteil:</strong> In allen Auswahllisten (Hausaufgaben, Fächertausch, Klausuren, Stundenplan) werden nur noch diese aktiven Fächer angezeigt, damit du nicht durch 20 Fächer scrollen musst!
+          </p>
+
+          <div style="display:flex; gap:8px; margin-bottom:10px; flex-wrap:wrap;">
+            <button type="button" class="btn-secondary" id="selectAllSubjectsBtn" style="padding:5px 10px; font-size:0.8rem;">Alle aktivieren</button>
+            <button type="button" class="btn-secondary" id="selectScheduledSubjectsBtn" style="padding:5px 10px; font-size:0.8rem;">Nur Fächer aus meinem Stundenplan aktivieren</button>
+          </div>
+
+          <div class="subject-filter-grid" id="activeSubjectsGrid"></div>
+
+          <div style="margin-top:14px; padding-top:12px; border-top:1px solid var(--border-color);">
+            <label class="form-label" for="newSubjectInput">Eigenes Schulfach hinzufügen (wird sofort aktiviert):</label>
+            <div style="display:flex; gap:8px;">
+              <input type="text" id="newSubjectInput" placeholder="z. B. Technik, Hauswirtschaft, Darstellen & Gestalten...">
+              <button type="button" class="btn-secondary" id="addNewSubjectBtn" style="white-space:nowrap;">+ Fach hinzufügen</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Akkordeon 2: Darstellung & A/B-Wochenrhythmus -->
+      <div class="accordion-card" id="acc-appearance">
+        <button type="button" class="accordion-header" data-acc="acc-appearance">
+          <span>🌓 2. Darstellung (Dark Mode) &amp; A/B-Wochenrhythmus</span>
+          <span class="accordion-icon">▼</span>
+        </button>
+        <div class="accordion-body">
+          <p style="font-size:0.88rem; color:var(--text-muted); margin-bottom:12px;">
+            Hier kannst du das Farbschema zwischen Tag- und Nachtmodus umschalten sowie bei Bedarf den A/B-Wochenrhythmus einmalig korrigieren.
+          </p>
+          <div style="display:flex; gap:12px; flex-wrap:wrap; align-items:center;">
+            <button type="button" class="dark-mode-btn" id="darkModeToggleBtn">
+              🌙 Dark Mode umschalten
+            </button>
+            <button type="button" class="week-badge-btn" id="weekToggleBtn">
+              🔄 Aktuelle Woche (A/B) wechseln
+            </button>
+          </div>
+          <div id="settingsWeekStatusText" style="margin-top:10px; font-size:0.85rem; color:var(--text-muted); font-weight:600;"></div>
+        </div>
+      </div>
+
+      <!-- Akkordeon 3: Komplettes System-Backup (JSON) -->
+      <div class="accordion-card" id="acc-backup">
+        <button type="button" class="accordion-header" data-acc="acc-backup">
+          <span>💾 3. Komplettsicherung (System, Fächerwahl, Stundenplan &amp; Klausuren)</span>
+          <span class="accordion-icon">▼</span>
+        </button>
+        <div class="accordion-body">
+          <p style="font-size:0.88rem; color:var(--text-muted); margin-bottom:12px;">
+            Sichert den gesamten Zustand (inklusive deiner eigenen Fächer, der aktiven Halbjahr-Fächerauswahl, Stundenplan A/B, Zeitraster, Klausur-Radar, Vokabeln und Aufgaben) in einer JSON-Datei für den Geräte-Umzug.
+          </p>
+          <div style="display:flex; gap:8px; flex-wrap:wrap;">
+            <button type="button" class="btn-secondary" id="exportDataBtn">Gesamt-Backup sichern (.json)</button>
+            <label class="btn-secondary" style="cursor:pointer; display:inline-block;">
+              Gesamt-Backup wiederherstellen
+              <input type="file" id="importDataInput" accept=".json" style="display:none;">
+            </label>
+            <button type="button" class="btn-secondary" id="resetAllDataBtn" style="color:var(--red-text); border-color:var(--red-border);">
+              Alle lokalen Daten löschen
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Akkordeon 4: Hausaufgaben CSV-Export & Import -->
+      <div class="accordion-card" id="acc-csv">
+        <button type="button" class="accordion-header" data-acc="acc-csv">
+          <span>📊 4. Hausaufgaben CSV-Export &amp; Import (Excel / Statistik)</span>
+          <span class="accordion-icon">▼</span>
+        </button>
+        <div class="accordion-body">
+          <p style="font-size:0.88rem; color:var(--text-muted); margin-bottom:12px;">
+            Exportiere alle offenen und erledigten Aufgaben mit Zeitstempeln und Dauer für Auswertungen in Excel oder lade Aufgaben aus einer CSV-Datei hinzu.
+            <strong>Wichtig beim Import:</strong> Bereits eingegebene Hausaufgaben werden <strong>nicht überschrieben</strong>, sondern neue Aufgaben werden sicher angehängt.
+          </p>
+          <div style="display:flex; gap:8px; flex-wrap:wrap;">
+            <button type="button" class="btn-secondary" id="exportCsvBtn" style="border-color:var(--primary); font-weight:700;">
+              📊 Hausaufgaben als CSV exportieren (.csv)
+            </button>
+            <label class="btn-secondary" style="cursor:pointer; display:inline-block; border-color:var(--primary); font-weight:700;">
+              📥 Hausaufgaben aus CSV importieren (anfügen)
+              <input type="file" id="importCsvInput" accept=".csv" style="display:none;">
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Akkordeon 5: Impressum nach § 5 DDG -->
+      <div class="accordion-card legal-box" id="impressum-bereich">
+        <button type="button" class="accordion-header" data-acc="impressum-bereich">
+          <span>⚖️ 5. Impressum (Angaben gemäß § 5 DDG)</span>
+          <span class="accordion-icon">▼</span>
+        </button>
+        <div class="accordion-body">
+          <h3>Angaben gemäß § 5 Digitale-Dienste-Gesetz (DDG)</h3>
+          <p>
+            <strong>Herausgeber und Entwickler:</strong><br>
+            Heiko Limbeck<br>
+            Konzept23 / Schulbegleitung &amp; Assistenz<br>
+            Euskirchener Straße / Eifel-Region<br>
+            53945 Blankenheim (NRW), Deutschland
+          </p>
+          <p>
+            <strong>Kontakt:</strong><br>
+            E-Mail: info@konzept23.de<br>
+            Web: mind-pacifique.de
+          </p>
+          <h3>Zweck des Dienstes</h3>
+          <p>
+            Diese WebApp ist ein reizarmes, pädagogisches Werkzeug zur Hausaufgaben-Strukturierung, Zeitbudgetierung und Entlastung im Rahmen von Schulbegleitung, Inklusion und individuellem Fördertraining.
+          </p>
+          <h3>Haftungsausschluss</h3>
+          <p>
+            Die Inhalte und Zeitberechnungen wurden mit größter Sorgfalt erstellt. Für die Richtigkeit, Vollständigkeit und Aktualität der dynamisch errechneten Termine und Pufferzeiten wird keine Gewähr übernommen.
+          </p>
+        </div>
+      </div>
+
+      <!-- Akkordeon 6: Datenschutzerklärung (DSGVO) -->
+      <div class="accordion-card legal-box" id="datenschutz-bereich">
+        <button type="button" class="accordion-header" data-acc="datenschutz-bereich">
+          <span>🔒 6. Datenschutzerklärung (DSGVO – 100 % Lokal)</span>
+          <span class="accordion-icon">▼</span>
+        </button>
+        <div class="accordion-body">
+          <p>
+            Der Schutz persönlicher Daten hat oberste Priorität. Diese Anwendung ist nach dem Grundsatz <strong>„Privacy by Design“</strong> und <strong>„Privacy by Default“</strong> aufgebaut.
+          </p>
+          <h3>1. Verantwortliche Stelle</h3>
+          <p>
+            Verantwortlich für die Datenverarbeitung im Sinne der DSGVO ist der oben im Impressum genannte Entwickler.
+          </p>
+          <h3>2. 100 % Lokale Datenverarbeitung (Keine Server, keine Übertragung)</h3>
+          <p>
+            Diese Anwendung läuft vollständig <strong>offline und lokal</strong> im Browser Ihres Endgeräts:
+          </p>
+          <ul>
+            <li><strong>Keine Serverkommunikation:</strong> Kein Backend, keine Cloud, keine externen APIs.</li>
+            <li><strong>Keine Tracker oder Analyse-Tools:</strong> Keine Cookies, kein Google Analytics, kein Tracking.</li>
+            <li><strong>Keine externen Schriftarten oder CDNs:</strong> Sämtliche Schriften und Stile stammen aus dem Betriebssystem.</li>
+          </ul>
+          <h3>3. Speicherung im Web Storage (localStorage)</h3>
+          <p>
+            Einträge und Einstellungen werden ausschließlich lokal in der <code>localStorage</code>-Schnittstelle Ihres Browsers gesichert.
+          </p>
+          <h3>4. Löschung &amp; Datenexport (DSGVO)</h3>
+          <p>
+            Über die Schaltflächen in diesem Bereich können Sie Ihre Daten jederzeit exportieren (.json / .csv) oder vollständig löschen.
+          </p>
+        </div>
+      </div>
+
+    </section>
+  </main>
+
+  <footer>
+    <span>100 % Lokal &amp; Werbefrei</span> |
+    <button type="button" class="footer-link" id="jumpImpressumBtn">Impressum</button> |
+    <button type="button" class="footer-link" id="jumpDatenschutzBtn">Datenschutz</button>
+  </footer>
+
+  <!-- ==================================================================
+       MODAL 1: DOPPELTE SICHERHEITSABFRAGE (MIT BUTTON-SWAP)
+       ================================================================== -->
+  <div class="modal-backdrop" id="confirmModalBackdrop" role="dialog" aria-modal="true" aria-hidden="true">
+    <div class="modal-card">
+      <div class="modal-title" id="confirmModalTitle">Sicherheitsabfrage</div>
+      <div class="modal-body" id="confirmModalText">Möchtest du diese Aktion wirklich ausführen?</div>
+      <div class="modal-actions" id="confirmModalActions"></div>
+    </div>
+  </div>
+
+  <!-- ==================================================================
+       MODAL 2: AUFGABE BEARBEITEN (MEHRZEILIG)
+       ================================================================== -->
+  <div class="modal-backdrop" id="editModalBackdrop" role="dialog" aria-modal="true" aria-hidden="true">
+    <div class="modal-card">
+      <div class="modal-title">Hausaufgabe bearbeiten</div>
+      <div class="modal-body">
+        <input type="hidden" id="editTaskId">
+
+        <div class="form-group">
+          <label class="form-label" for="editHwSubject">Fach:</label>
+          <select id="editHwSubject"></select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="editHwTitle">Aufgabe / Notizen:</label>
+          <textarea id="editHwTitle" rows="3"></textarea>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Dauer in Minuten:</label>
+          <input type="number" id="editHwDuration" min="1" max="300" step="5">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Frist / Abgabe:</label>
+          <div class="choice-grid" id="editDueModeChoices" style="margin-bottom:8px;">
+            <button type="button" class="choice-btn" data-mode="next">Nächste Stunde</button>
+            <button type="button" class="choice-btn" data-mode="overnext">Übernächste</button>
+            <button type="button" class="choice-btn" data-mode="custom">Festes Datum</button>
+          </div>
+          <div id="editCustomDateContainer" style="display:none;">
+            <input type="date" id="editHwCustomDate">
+          </div>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="modal-btn modal-btn-cancel" id="cancelEditBtn">Abbrechen</button>
+        <button type="button" class="modal-btn modal-btn-primary" id="saveEditBtn">Speichern</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================================================================
+       MODAL 3: AUFGABENDETAILS & NOTIZEN VOLLBILD LESEN (NUR SCHLIESSEN)
+       ================================================================== -->
+  <div class="modal-backdrop" id="readModalBackdrop" role="dialog" aria-modal="true" aria-hidden="true">
+    <div class="modal-card">
+      <div class="modal-title" id="readModalSubject">Aufgabe</div>
+      <div class="modal-body">
+        <div id="readModalMeta" style="font-size:0.85rem; color:var(--text-muted); margin-bottom:8px;"></div>
+        <div class="reading-content-box" id="readModalText"></div>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="modal-btn modal-btn-primary" id="closeReadModalBtn">Schließen</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================================================================
+       MODAL 4: KLAUSUR-DETAILS VOLLBILD LESEN & IN ZWISCHENABLAGE KOPIEREN
+       ================================================================== -->
+  <div class="modal-backdrop" id="examReadModalBackdrop" role="dialog" aria-modal="true" aria-hidden="true">
+    <div class="modal-card">
+      <div class="modal-title" id="examReadModalSubject">Klausur-Details</div>
+      <div class="modal-body">
+        <div id="examReadModalMeta" style="font-size:0.88rem; color:var(--text-muted); margin-bottom:8px; font-weight:600;"></div>
+        <div class="reading-content-box" id="examReadModalText"></div>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="modal-btn modal-btn-cancel" id="closeExamReadModalBtn">Schließen</button>
+        <button type="button" class="btn-clipboard" id="copyExamTextBtn">📋 Alles in Zwischenablage kopieren</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================================================================
+       MODAL 5: KLAUSUR BEARBEITEN
+       ================================================================== -->
+  <div class="modal-backdrop" id="examEditModalBackdrop" role="dialog" aria-modal="true" aria-hidden="true">
+    <div class="modal-card">
+      <div class="modal-title">Klausur / Test bearbeiten</div>
+      <div class="modal-body">
+        <input type="hidden" id="editExamId">
+
+        <div class="form-group">
+          <label class="form-label" for="editExamSubject">Fach:</label>
+          <select id="editExamSubject"></select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="editExamDate">Datum der Arbeit / Abgabe:</label>
+          <input type="date" id="editExamDate">
+        </div>
+
+        <div class="collision-warning-box" id="editExamCollisionWarning"></div>
+
+        <div class="form-group">
+          <label class="form-label" for="editExamBuffer">Täglicher Lernpuffer (Minuten):</label>
+          <select id="editExamBuffer">
+            <option value="10">10 Min. / Tag</option>
+            <option value="15">15 Min. / Tag</option>
+            <option value="20">20 Min. / Tag</option>
+            <option value="30">30 Min. / Tag</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="editExamTopic">Was kommt dran? (Thema / Lernstoff):</label>
+          <textarea id="editExamTopic" rows="4"></textarea>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="modal-btn modal-btn-cancel" id="cancelExamEditBtn">Abbrechen</button>
+        <button type="button" class="modal-btn modal-btn-primary" id="saveExamEditBtn">Speichern</button>
+      </div>
+    </div>
+  </div>
+  <!-- ==================================================================
+       TEIL 2: JS INITIALISIERUNG, STATE-MANAGEMENT & SPEICHERSCHNITTSTELLE
+       ================================================================== -->
+  <script>
+    (function() {
+      "use strict";
+
+      const STORAGE_KEY = "schulbegleitung_hw_puffer_planer_v1";
+      const MAX_PERIODS = 8; // 1. bis 8. Schulstunde im Raster
+
+      const DEFAULT_SUBJECTS = [
+        "Mathe", "Deutsch", "Englisch", "Französisch", "Latein", "Spanisch",
+        "Biologie", "Chemie", "Physik", "Geschichte", "Erdkunde", "Politik",
+        "Sozialwissenschaften", "Philosophie", "Informatik", "Kunst", "Musik",
+        "Religion", "Ethik", "Sport"
+      ];
+
+      /* Standardmäßig aktive Fächer (aus dem Standard-Stundenplan), beliebig erweiterbar */
+      const DEFAULT_ACTIVE_SUBJECTS = [
+        "Mathe", "Deutsch", "Englisch", "Biologie", "Chemie", "Physik",
+        "Geschichte", "Erdkunde", "Politik", "Kunst", "Musik", "Sport"
+      ];
+
+      const WEEKDAYS = [
+        { idx: 1, name: "Montag" },
+        { idx: 2, name: "Dienstag" },
+        { idx: 3, name: "Mittwoch" },
+        { idx: 4, name: "Donnerstag" },
+        { idx: 5, name: "Freitag" }
+      ];
+
+      /* Standard-Stundenplan im 8-Stunden-Raster (Index 0 = 1. Stunde ... Index 7 = 8. Stunde) */
+      const DEFAULT_SCHEDULE = {
+        A: {
+          1: ["Mathe", "Deutsch", "Englisch", "Geschichte", "Biologie", "", "", ""],
+          2: ["Deutsch", "Mathe", "Englisch", "Sport", "Sport", "", "", ""],
+          3: ["Mathe", "Englisch", "Deutsch", "Kunst", "Musik", "", "", ""],
+          4: ["Deutsch", "Mathe", "Biologie", "Politik", "Englisch", "Geschichte", "", ""],
+          5: ["Englisch", "Deutsch", "Mathe", "Biologie", "Musik", "", "", ""]
+        },
+        B: {
+          1: ["Mathe", "Deutsch", "Englisch", "Erdkunde", "Physik", "", "", ""],
+          2: ["Deutsch", "Mathe", "Physik", "Sport", "Sport", "", "", ""],
+          3: ["Mathe", "Englisch", "Deutsch", "Chemie", "Musik", "", "", ""],
+          4: ["Deutsch", "Mathe", "Chemie", "Politik", "Englisch", "Erdkunde", "", ""],
+          5: ["Englisch", "Deutsch", "Mathe", "Physik", "Kunst", "", "", ""]
+        }
+      };
+
+      const DEFAULT_TIME_CONFIG = {
+        schoolStart: "07:50",
+        periodMinutes: 45,
+        shortBreakMinutes: 5,
+        bigBreakMinutes: 15,
+        useLunchAsBuffer: true
+      };
+
+      let state = {
+        dailyBudgetMinutes: 45,
+        weekOffset: 0,
+        editingWeek: "A",
+        darkMode: false,
+        subjects: [...DEFAULT_SUBJECTS],
+        activeSubjects: [...DEFAULT_ACTIVE_SUBJECTS],
+        schedule: JSON.parse(JSON.stringify(DEFAULT_SCHEDULE)),
+        timeConfig: { ...DEFAULT_TIME_CONFIG },
+        dailyOverrides: {}, // Format: { "YYYY-MM-DD": { "0": { status: "cancelled"|"swapped", subject: "" } } }
+        exams: [],          // Format: [{ id, subject, date, topic, bufferMinutes }]
+        tasks: [],
+        vocab: []
+      };
+
+      let selectedDuration = 15;
+      let selectedDueMode = "next";
+      let editSelectedDueMode = "next";
+      let showAllSubjectsInAdd = false;
+      let overrideTargetMode = "tomorrow"; // "today" oder "tomorrow"
+      let currentReadExamId = null;
+      let liveClockTimer = null;
+
+      /* Liefert die aktuell für das Halbjahr aktivierten Fächer (Fallback: alle Fächer) */
+      function getActiveSubjectsList() {
+        const activeSet = new Set(Array.isArray(state.activeSubjects) ? state.activeSubjects : []);
+        const filtered = state.subjects.filter(s => s !== "Allgemein / Vertretung" && activeSet.has(s));
+        return filtered.length > 0 ? filtered : state.subjects.filter(s => s !== "Allgemein / Vertretung");
+      }
+
+      /* Wandelt alte Tages-Listen verlustfrei in das neue 8-Stunden-Raster um */
+      function normalizeDayPeriods(rawDayArray, fallbackArray) {
+        const result = new Array(MAX_PERIODS).fill("");
+        const source = Array.isArray(rawDayArray) ? rawDayArray : (Array.isArray(fallbackArray) ? fallbackArray : []);
+        for (let i = 0; i < MAX_PERIODS; i++) {
+          const val = source[i];
+          if (typeof val === "string" && val.trim() !== "") {
+            result[i] = val.trim();
+          }
+        }
+        return result;
+      }
+
+      /* Tiefe Validierung & Migration für localStorage und JSON-Backups */
+      function sanitizeAndMergeState(parsed) {
+        if (!parsed || typeof parsed !== "object") return;
+
+        const safeSchedule = {
+          A: { 1: [], 2: [], 3: [], 4: [], 5: [] },
+          B: { 1: [], 2: [], 3: [], 4: [], 5: [] }
+        };
+
+        ["A", "B"].forEach(weekKey => {
+          const srcWeek = (parsed.schedule && parsed.schedule[weekKey]) || state.schedule[weekKey] || {};
+          for (let d = 1; d <= 5; d++) {
+            safeSchedule[weekKey][d] = normalizeDayPeriods(srcWeek[d], DEFAULT_SCHEDULE[weekKey][d]);
+          }
+        });
+
+        const rawTime = parsed.timeConfig || {};
+        const safeTimeConfig = {
+          schoolStart: typeof rawTime.schoolStart === "string" && /^\d{2}:\d{2}$/.test(rawTime.schoolStart)
+            ? rawTime.schoolStart
+            : DEFAULT_TIME_CONFIG.schoolStart,
+          periodMinutes: Number(rawTime.periodMinutes) >= 20 && Number(rawTime.periodMinutes) <= 120
+            ? Number(rawTime.periodMinutes)
+            : DEFAULT_TIME_CONFIG.periodMinutes,
+          shortBreakMinutes: Number(rawTime.shortBreakMinutes) >= 0 && Number(rawTime.shortBreakMinutes) <= 45
+            ? Number(rawTime.shortBreakMinutes)
+            : DEFAULT_TIME_CONFIG.shortBreakMinutes,
+          bigBreakMinutes: Number(rawTime.bigBreakMinutes) >= 0 && Number(rawTime.bigBreakMinutes) <= 60
+            ? Number(rawTime.bigBreakMinutes)
+            : DEFAULT_TIME_CONFIG.bigBreakMinutes,
+          useLunchAsBuffer: rawTime.useLunchAsBuffer !== undefined
+            ? Boolean(rawTime.useLunchAsBuffer)
+            : DEFAULT_TIME_CONFIG.useLunchAsBuffer
+        };
+
+        const safeOverrides = {};
+        if (parsed.dailyOverrides && typeof parsed.dailyOverrides === "object") {
+          Object.keys(parsed.dailyOverrides).forEach(dateKey => {
+            if (/^\d{4}-\d{2}-\d{2}$/.test(dateKey) && typeof parsed.dailyOverrides[dateKey] === "object") {
+              safeOverrides[dateKey] = parsed.dailyOverrides[dateKey];
+            }
+          });
+        }
+
+        const safeExams = Array.isArray(parsed.exams)
+          ? parsed.exams.filter(ex => ex && ex.subject && ex.date).map(ex => ({
+              id: String(ex.id || "ex_" + Date.now() + "_" + Math.floor(Math.random() * 1000)),
+              subject: String(ex.subject),
+              date: String(ex.date),
+              topic: String(ex.topic || ""),
+              bufferMinutes: Number(ex.bufferMinutes) > 0 ? Number(ex.bufferMinutes) : 15
+            }))
+          : [];
+
+        const safeTasks = Array.isArray(parsed.tasks)
+          ? parsed.tasks.map(t => ({
+              ...t,
+              plannedInFreePeriod: Boolean(t.plannedInFreePeriod)
+            }))
+          : [];
+
+        const mergedSubjects = Array.isArray(parsed.subjects) && parsed.subjects.length > 0
+          ? [...new Set(parsed.subjects.filter(s => typeof s === "string" && s.trim() !== ""))]
+          : [...DEFAULT_SUBJECTS];
+
+        // Automatische Übernahme aktiver Fächer (oder Ableitung aus bestehendem Stundenplan/Aufgaben/Klausuren)
+        let safeActiveSubjects = [];
+        if (Array.isArray(parsed.activeSubjects) && parsed.activeSubjects.length > 0) {
+          safeActiveSubjects = [...new Set(parsed.activeSubjects.filter(s => typeof s === "string" && s.trim() !== ""))];
+          // Sicherstellen, dass alle aktiven Fächer auch in der Hauptliste stehen
+          safeActiveSubjects.forEach(s => {
+            if (s !== "Allgemein / Vertretung" && !mergedSubjects.includes(s)) {
+              mergedSubjects.push(s);
+            }
+          });
+        } else {
+          const usedInApp = new Set();
+          ["A", "B"].forEach(w => {
+            for (let d = 1; d <= 5; d++) {
+              (safeSchedule[w][d] || []).forEach(s => { if (s) usedInApp.add(s); });
+            }
+          });
+          safeTasks.forEach(t => { if (t.subject && t.subject !== "Allgemein / Vertretung") usedInApp.add(t.subject); });
+          safeExams.forEach(ex => { if (ex.subject && ex.subject !== "Allgemein / Vertretung") usedInApp.add(ex.subject); });
+
+          safeActiveSubjects = usedInApp.size > 0 ? [...usedInApp] : [...DEFAULT_ACTIVE_SUBJECTS];
+        }
+
+        state = Object.assign({}, state, parsed, {
+          dailyBudgetMinutes: Number(parsed.dailyBudgetMinutes) > 0 ? Number(parsed.dailyBudgetMinutes) : 45,
+          weekOffset: Number.isInteger(parsed.weekOffset) ? ((parsed.weekOffset % 2) + 2) % 2 : 0,
+          editingWeek: parsed.editingWeek === "B" ? "B" : "A",
+          darkMode: Boolean(parsed.darkMode),
+          subjects: mergedSubjects,
+          activeSubjects: safeActiveSubjects,
+          schedule: safeSchedule,
+          timeConfig: safeTimeConfig,
+          dailyOverrides: safeOverrides,
+          exams: safeExams,
+          tasks: safeTasks,
+          vocab: Array.isArray(parsed.vocab) ? parsed.vocab : []
+        });
+      }
+
+      function loadState() {
+        try {
+          const raw = localStorage.getItem(STORAGE_KEY);
+          if (raw) {
+            const parsed = JSON.parse(raw);
+            sanitizeAndMergeState(parsed);
+
+            let needsSave = false;
+
+            // Alte Tages-Overrides (älter als 14 Tage) automatisch aufräumen
+            const cutoffDate = new Date();
+            cutoffDate.setDate(cutoffDate.getDate() - 14);
+            const cutoffIso = cutoffDate.toISOString().slice(0, 10);
+            Object.keys(state.dailyOverrides).forEach(dateIso => {
+              if (dateIso < cutoffIso) {
+                delete state.dailyOverrides[dateIso];
+                needsSave = true;
+              }
+            });
+
+            // Fehlende Fälligkeitsdaten vor der Duplikatsprüfung ergänzen
+            state.tasks.forEach(t => {
+              if (!t.done && !t.dueDate) {
+                const count = t.dueMode === "overnext" ? 2 : 1;
+                t.dueDate = findSubjectOccurrenceDate(t.subject, count, t.createdAt);
+                needsSave = true;
+              }
+            });
+
+            // Automatische Bereinigung etwaiger Duplikate
+            const originalLen = state.tasks.length;
+            const seen = new Set();
+            state.tasks = state.tasks.filter(t => {
+              const key = `${(t.subject || "").toLowerCase()}|${(t.title || "").toLowerCase().trim()}|${t.dueDate || ""}|${t.done ? "1" : "0"}`;
+              if (seen.has(key)) return false;
+              seen.add(key);
+              return true;
+            });
+
+            if (state.tasks.length !== originalLen || needsSave) {
+              saveState();
+            }
+          }
+        } catch (e) {
+          console.error("Fehler beim Laden:", e);
+        }
+        applyDarkMode();
+      }
+
+      function saveState() {
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+        } catch (e) {
+          alert("Speicherfehler: Bitte prüfe, ob lokaler Speicher erlaubt ist.");
+        }
+      }
+
+      function applyDarkMode() {
+        const btn = document.getElementById("darkModeToggleBtn");
+        if (state.darkMode) {
+          document.body.classList.add("dark-theme");
+          if (btn) btn.textContent = "☀️ Helles Design aktivieren";
+        } else {
+          document.body.classList.remove("dark-theme");
+          if (btn) btn.textContent = "🌙 Dark Mode aktivieren";
+        }
+      }
+
+      /* WebView- & Mobile-sicherer Datei-Download (verhindert Abbruch durch zu frühes revokeObjectURL) */
+      function triggerFileDownload(blob, filename) {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.style.display = "none";
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(() => {
+          if (a.parentNode) {
+            document.body.removeChild(a);
+          }
+          URL.revokeObjectURL(url);
+        }, 1000);
+      }
+
+      /* ==========================================================================
+         CSV-EXPORT & CSV-IMPORT (EXCEL-KOMPATIBEL & ZEILENUMBRUCH-SICHER)
+         ========================================================================== */
+      function exportTasksToCSV() {
+        if (!state.tasks || state.tasks.length === 0) {
+          alert("Keine Hausaufgaben zum Exportieren vorhanden.");
+          return;
+        }
+
+        const headers = [
+          "ID",
+          "Fach",
+          "Aufgabe",
+          "Geplante_Dauer_Minuten",
+          "Erstellt_Am",
+          "Faellig_Am",
+          "Frist_Modus",
+          "In_Freistunde_Geplant",
+          "Status",
+          "Erledigt_Am"
+        ];
+
+        function escapeCsvCell(val) {
+          if (val === null || val === undefined) return "";
+          const str = String(val).replace(/"/g, '""');
+          if (str.includes(";") || str.includes('"') || str.includes("\n") || str.includes("\r")) {
+            return `"${str}"`;
+          }
+          return str;
+        }
+
+        const rows = state.tasks.map(t => [
+          escapeCsvCell(t.id),
+          escapeCsvCell(t.subject),
+          escapeCsvCell(t.title),
+          escapeCsvCell(t.duration),
+          escapeCsvCell(t.createdAt || ""),
+          escapeCsvCell(t.dueDate || ""),
+          escapeCsvCell(t.dueMode || "next"),
+          escapeCsvCell(t.plannedInFreePeriod ? "Ja" : "Nein"),
+          escapeCsvCell(t.done ? "Erledigt" : "Offen"),
+          escapeCsvCell(t.completedAt || "")
+        ].join(";"));
+
+        const csvContent = "\uFEFF" + [headers.join(";"), ...rows].join("\r\n");
+        const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+        triggerFileDownload(blob, `hausaufgaben-statistik-${toISODate(new Date())}.csv`);
+      }
+
+      function parseCSV(text) {
+        if (!text) return [];
+        if (text.charCodeAt(0) === 0xFEFF) {
+          text = text.slice(1);
+        }
+
+        const lines = [];
+        let currentField = "";
+        let currentRow = [];
+        let inQuotes = false;
+        let delimiter = ";";
+
+        const firstLineEnd = text.search(/\r?\n/);
+        const headerSample = firstLineEnd !== -1 ? text.substring(0, firstLineEnd) : text;
+        if (headerSample.indexOf(";") > -1) delimiter = ";";
+        else if (headerSample.indexOf("\t") > -1) delimiter = "\t";
+        else if (headerSample.indexOf(",") > -1) delimiter = ",";
+
+        for (let i = 0; i < text.length; i++) {
+          const char = text[i];
+          const nextChar = text[i + 1];
+
+          if (char === '"') {
+            if (inQuotes && nextChar === '"') {
+              currentField += '"';
+              i++;
+            } else {
+              inQuotes = !inQuotes;
+            }
+          } else if (char === delimiter && !inQuotes) {
+            currentRow.push(currentField.trim());
+            currentField = "";
+          } else if ((char === "\r" || char === "\n") && !inQuotes) {
+            if (char === "\r" && nextChar === "\n") {
+              i++;
+            }
+            currentRow.push(currentField.trim());
+            if (currentRow.length > 1 || (currentRow.length === 1 && currentRow[0] !== "")) {
+              lines.push(currentRow);
+            }
+            currentRow = [];
+            currentField = "";
+          } else {
+            currentField += char;
+          }
+        }
+
+        if (currentField || currentRow.length > 0) {
+          currentRow.push(currentField.trim());
+          if (currentRow.length > 1 || (currentRow.length === 1 && currentRow[0] !== "")) {
+            lines.push(currentRow);
+          }
+        }
+
+        return lines;
+      }
+
+      function importTasksFromCSV(csvText) {
+        const rows = parseCSV(csvText);
+        if (rows.length < 2) {
+          alert("Die CSV-Datei enthält keine lesbaren Datenzeilen.");
+          return;
+        }
+
+        const header = rows[0].map(h => h.toLowerCase().replace(/[\s_"]/g, ""));
+        const idIdx = header.findIndex(h => h.includes("id"));
+        const subjIdx = header.findIndex(h => h.includes("fach"));
+        const titleIdx = header.findIndex(h => h.includes("aufgabe") || h.includes("titel") || h.includes("text"));
+        const durIdx = header.findIndex(h => h.includes("dauer") || h.includes("zeit") || h.includes("min"));
+        const createdIdx = header.findIndex(h => h.includes("erstellt"));
+        const dueIdx = header.findIndex(h => h.includes("faellig") || h.includes("abgabe") || h.includes("datum"));
+        const modeIdx = header.findIndex(h => h.includes("modus") || h.includes("frist"));
+        const freeIdx = header.findIndex(h => h.includes("freistunde"));
+        const statusIdx = header.findIndex(h => h.includes("status") || (h.includes("erledigt") && !h.includes("erledigtam")));
+        const completedIdx = header.findIndex(h => h.includes("erledigtam") || h.includes("fertig"));
+
+        let addedCount = 0;
+        let skippedCount = 0;
+        const existingIds = new Set(state.tasks.map(t => String(t.id)));
+
+        for (let i = 1; i < rows.length; i++) {
+          const row = rows[i];
+          if (row.length === 0 || (row.length === 1 && !row[0])) continue;
+
+          let id = idIdx !== -1 && row[idIdx] ? row[idIdx].trim() : "";
+          const subject = (subjIdx !== -1 && row[subjIdx]) ? row[subjIdx].trim() : "Allgemein";
+          const title = (titleIdx !== -1 && row[titleIdx]) ? row[titleIdx].trim() : "Hausaufgabe";
+          const duration = (durIdx !== -1 && !isNaN(Number(row[durIdx])) && Number(row[durIdx]) > 0) ? Number(row[durIdx]) : 15;
+          const createdAt = (createdIdx !== -1 && row[createdIdx]) ? row[createdIdx].trim() : toISODate(new Date());
+          const rawDueDate = (dueIdx !== -1 && row[dueIdx]) ? row[dueIdx].trim() : "";
+          const dueMode = rawDueDate ? "custom" : ((modeIdx !== -1 && row[modeIdx]) ? row[modeIdx].trim() : "next");
+          const occurrenceCount = dueMode === "overnext" ? 2 : 1;
+          const dueDate = rawDueDate || findSubjectOccurrenceDate(subject, occurrenceCount, createdAt);
+
+          let plannedInFreePeriod = false;
+          if (freeIdx !== -1 && row[freeIdx]) {
+            const fVal = row[freeIdx].toLowerCase().trim();
+            plannedInFreePeriod = (fVal === "ja" || fVal === "true" || fVal === "1");
+          }
+
+          let isDone = false;
+          const completedVal = (completedIdx !== -1 && row[completedIdx]) ? row[completedIdx].trim() : "";
+          if (statusIdx !== -1 && row[statusIdx]) {
+            const s = row[statusIdx].toLowerCase().trim();
+            if (s === "erledigt" || s === "ja" || s === "true" || s === "1" || s === "done") {
+              isDone = true;
+            }
+          }
+          if (completedVal && completedVal.length >= 8) {
+            isDone = true;
+          }
+          const completedAt = completedVal || (isDone ? createdAt : "");
+
+          const isDuplicate = (id && existingIds.has(id)) || state.tasks.some(t => {
+            return t.subject.toLowerCase() === subject.toLowerCase() &&
+                   t.title.toLowerCase().trim() === title.toLowerCase().trim() &&
+                   t.dueDate === dueDate;
+          });
+
+          if (isDuplicate) {
+            skippedCount++;
+            continue;
+          }
+
+          if (!id) {
+            id = "hw_" + Date.now() + "_" + i + "_" + Math.floor(Math.random() * 10000);
+          }
+
+          if (subject && subject !== "Allgemein / Vertretung") {
+            if (!state.subjects.includes(subject)) {
+              state.subjects.push(subject);
+            }
+            if (!state.activeSubjects.includes(subject)) {
+              state.activeSubjects.push(subject);
+            }
+          }
+
+          state.tasks.push({
+            id,
+            subject,
+            title,
+            duration,
+            dueDate,
+            dueMode,
+            plannedInFreePeriod,
+            done: isDone,
+            createdAt,
+            completedAt
+          });
+
+          existingIds.add(id);
+          addedCount++;
+        }
+
+        saveState();
+        renderActiveSubjectsManager();
+        renderSubjectDropdowns();
+        renderScheduleTab();
+        renderExamsTab();
+        renderPlanTab();
+
+        alert(`CSV-Import erfolgreich abgeschlossen!\n\n• Hinzugefügte neue Aufgaben: ${addedCount}\n• Übersprungene (bereits vorhandene) Aufgaben: ${skippedCount}\n\nDeine aktuellen Aufgaben wurden nicht verändert.`);
+      }
+      /* ==========================================================================
+         TEIL 3: ECHTZEIT-TAKTUNG, FREISTUNDEN-ENGINE, KLAUSUR-RADAR & EVENTS
+         ========================================================================== */
+      function getStartOfDay(dateObj) {
+        const d = new Date(dateObj);
+        d.setHours(0, 0, 0, 0);
+        return d;
+      }
+
+      function toISODate(dateObj) {
+        const d = getStartOfDay(dateObj);
+        const year = d.getFullYear();
+        const month = String(d.getMonth() + 1).padStart(2, "0");
+        const day = String(d.getDate()).padStart(2, "0");
+        return `${year}-${month}-${day}`;
+      }
+
+      function parseISODate(isoStr) {
+        if (!isoStr || typeof isoStr !== "string") return getStartOfDay(new Date());
+        const parts = isoStr.split("-");
+        if (parts.length !== 3) return getStartOfDay(new Date());
+        return new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]), 0, 0, 0, 0);
+      }
+
+      function formatGermanDate(isoStr) {
+        if (!isoStr) return "";
+        const d = parseISODate(isoStr);
+        const dayNames = ["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"];
+        const dayName = dayNames[d.getDay()];
+        const dd = String(d.getDate()).padStart(2, "0");
+        const mm = String(d.getMonth() + 1).padStart(2, "0");
+        return `${dayName}, ${dd}.${mm}.`;
+      }
+
+      /* Fortlaufende Wochenberechnung ab Epochen-Montag (verhindert KW-53/KW-1 Sprungfehler) */
+      function getWeekTypeForDate(dateObj) {
+        const d = new Date(Date.UTC(dateObj.getFullYear(), dateObj.getMonth(), dateObj.getDate()));
+        const dayNum = d.getUTCDay() || 7;
+        d.setUTCDate(d.getUTCDate() + 1 - dayNum);
+        const epochMonday = Date.UTC(2024, 0, 1);
+        const continuousWeekIndex = Math.round((d.getTime() - epochMonday) / 604800000);
+        const isEven = Math.abs(continuousWeekIndex + (state.weekOffset || 0)) % 2 === 0;
+        return isEven ? "A" : "B";
+      }
+
+      /* Ermittelt das Datum des nächsten regulären Schultags (Mo–Fr) ab heute */
+      function getNextSchoolDayDate(fromDateObj = new Date()) {
+        const d = getStartOfDay(fromDateObj);
+        do {
+          d.setDate(d.getDate() + 1);
+        } while (d.getDay() === 0 || d.getDay() === 6);
+        return d;
+      }
+
+      function minutesToHHMM(totalMin) {
+        const mins = ((totalMin % 1440) + 1440) % 1440;
+        const hh = String(Math.floor(mins / 60)).padStart(2, "0");
+        const mm = String(mins % 60).padStart(2, "0");
+        return `${hh}:${mm}`;
+      }
+
+      /* Berechnet das genaue Zeitraster der 1. bis 8. Schulstunde (Punkt 1) */
+      function getPeriodTimings() {
+        const cfg = state.timeConfig || DEFAULT_TIME_CONFIG;
+        const parts = (cfg.schoolStart || "07:50").split(":");
+        let currentMin = (Number(parts[0]) || 7) * 60 + (Number(parts[1]) || 50);
+        const pDur = Number(cfg.periodMinutes) || 45;
+        const sBreak = Number(cfg.shortBreakMinutes) >= 0 ? Number(cfg.shortBreakMinutes) : 5;
+        const bBreak = Number(cfg.bigBreakMinutes) >= 0 ? Number(cfg.bigBreakMinutes) : 15;
+
+        const timings = [];
+        for (let p = 1; p <= MAX_PERIODS; p++) {
+          const startMin = currentMin;
+          const endMin = startMin + pDur;
+          timings.push({
+            period: p,
+            startMin,
+            endMin,
+            startStr: minutesToHHMM(startMin),
+            endStr: minutesToHHMM(endMin)
+          });
+
+          if (p === 2 || p === 4 || p === 6) {
+            currentMin = endMin + bBreak;
+          } else {
+            currentMin = endMin + sBreak;
+          }
+        }
+        return timings;
+      }
+
+      /* Kombiniert den A/B-Basisplan eines Datums mit tagesaktuellen Ausfällen/Tauschen (Punkt 1 & 2) */
+      function getEffectiveDaySchedule(dateObj) {
+        const d = getStartOfDay(dateObj);
+        const dayOfWeek = d.getDay();
+        const timings = getPeriodTimings();
+
+        if (dayOfWeek < 1 || dayOfWeek > 5) {
+          return timings.map(t => ({
+            ...t,
+            baseSubject: "",
+            effectiveSubject: "",
+            status: "free"
+          }));
+        }
+
+        const wType = getWeekTypeForDate(d);
+        const baseArr = normalizeDayPeriods(
+          state.schedule[wType] && state.schedule[wType][dayOfWeek],
+          []
+        );
+        const dateIso = toISODate(d);
+        const dayOverrides = (state.dailyOverrides && state.dailyOverrides[dateIso]) || {};
+
+        return timings.map((t, idx) => {
+          const baseSubj = baseArr[idx] || "";
+          const ov = dayOverrides[idx];
+
+          if (ov && ov.status === "cancelled") {
+            return {
+              ...t,
+              baseSubject: baseSubj,
+              effectiveSubject: "",
+              status: "cancelled"
+            };
+          }
+          if (ov && ov.status === "swapped" && ov.subject) {
+            return {
+              ...t,
+              baseSubject: baseSubj,
+              effectiveSubject: ov.subject,
+              status: "swapped"
+            };
+          }
+          return {
+            ...t,
+            baseSubject: baseSubj,
+            effectiveSubject: baseSubj,
+            status: baseSubj ? "normal" : "free"
+          };
+        });
+      }
+
+      /* Echtzeit-Status für die Kopfzeile (Punkt 1) */
+      function getCurrentLivePeriodStatus() {
+        const now = new Date();
+        const day = now.getDay();
+        if (day === 0 || day === 6) {
+          return "🏡 Wochenende – Kein Unterricht (Planung für Montag aktiv)";
+        }
+
+        const nowMin = now.getHours() * 60 + now.getMinutes();
+        const slots = getEffectiveDaySchedule(now);
+        const activeSlots = slots.filter(s => s.effectiveSubject !== "" || s.status === "cancelled");
+
+        if (activeSlots.length === 0) {
+          return "📅 Heute keine Schulstunden im Raster hinterlegt";
+        }
+
+        const firstStart = activeSlots[0].startMin;
+        const lastEnd = activeSlots[activeSlots.length - 1].endMin;
+
+        if (nowMin < firstStart) {
+          const diff = firstStart - nowMin;
+          const firstSubj = activeSlots[0].effectiveSubject || "Ausfall/Freistunde";
+          return `⏰ Vor Schulbeginn – 1. Std. (${firstSubj}) startet um ${activeSlots[0].startStr} Uhr (in ${diff} Min.)`;
+        }
+
+        if (nowMin >= lastEnd) {
+          return "🏡 Unterrichtsende – Nachmittags- & Hausaufgaben-Modus";
+        }
+
+        for (let i = 0; i < slots.length; i++) {
+          const s = slots[i];
+          if (nowMin >= s.startMin && nowMin < s.endMin) {
+            const rem = s.endMin - nowMin;
+            if (s.status === "cancelled") {
+              return `🟢 Aktuell: ${s.period}. Std. FÄLLT AUS (Freistunden-Puffer noch ${rem} Min. bis ${s.endStr} Uhr)`;
+            }
+            if (!s.effectiveSubject) {
+              return `🟢 Aktuell: ${s.period}. Std. Freistunde (noch ${rem} Min. bis ${s.endStr} Uhr)`;
+            }
+            return `🔔 Aktuell: ${s.period}. Std. ${s.effectiveSubject} (noch ${rem} Min. bis ${s.endStr} Uhr)`;
+          }
+
+          if (i < slots.length - 1 && nowMin >= s.endMin && nowMin < slots[i + 1].startMin) {
+            const nextS = slots[i + 1];
+            const remBreak = nextS.startMin - nowMin;
+            const nextLabel = nextS.effectiveSubject || (nextS.status === "cancelled" ? "Ausfall" : "Freistunde");
+            return `☕ Pause (${remBreak} Min.) – Danach ${nextS.period}. Std.: ${nextLabel} (${nextS.startStr} Uhr)`;
+          }
+        }
+
+        return "🏡 Nachmittags-Modus aktiv";
+      }
+
+      /* Findet das nächste/übernächste Datum, an dem das Fach tatsächlich unterrichtet wird */
+      function findSubjectOccurrenceDate(subject, occurrenceCount, baseDateIso = null) {
+        const today = getStartOfDay(new Date());
+        const startDay = (baseDateIso && /^\d{4}-\d{2}-\d{2}$/.test(baseDateIso))
+          ? parseISODate(baseDateIso)
+          : today;
+        const refDate = startDay < today ? startDay : today;
+        const targetCount = occurrenceCount === 2 ? 2 : 1;
+
+        if (subject === "Allgemein / Vertretung") {
+          const fallbackDate = new Date(refDate);
+          let added = 0;
+          while (added < targetCount) {
+            fallbackDate.setDate(fallbackDate.getDate() + 1);
+            const d = fallbackDate.getDay();
+            if (d >= 1 && d <= 5) added++;
+          }
+          return toISODate(fallbackDate);
+        }
+
+        let found = 0;
+        for (let offset = 1; offset <= 28; offset++) {
+          const checkDate = new Date(refDate);
+          checkDate.setDate(refDate.getDate() + offset);
+          const dayOfWeek = checkDate.getDay();
+
+          if (dayOfWeek >= 1 && dayOfWeek <= 5) {
+            const daySlots = getEffectiveDaySchedule(checkDate);
+            const hasSubject = daySlots.some(slot => slot.effectiveSubject === subject);
+            if (hasSubject) {
+              found++;
+              if (found === targetCount) {
+                return toISODate(checkDate);
+              }
+            }
+          }
+        }
+
+        const fallbackDate = new Date(refDate);
+        let added = 0;
+        while (added < targetCount) {
+          fallbackDate.setDate(fallbackDate.getDate() + 1);
+          const d = fallbackDate.getDay();
+          if (d >= 1 && d <= 5) added++;
+        }
+        return toISODate(fallbackDate);
+      }
+
+      /* Ermittelt, in welcher Schulstunde (1–8) ein Fach an einem bestimmten Datum zuerst stattfindet */
+      function getFirstSubjectPeriodOnDate(subject, dateIso) {
+        if (!subject || !dateIso) return null;
+        const slots = getEffectiveDaySchedule(parseISODate(dateIso));
+        const match = slots.find(s => s.effectiveSubject === subject);
+        return match ? match.period : null;
+      }
+
+      /* Analysiert alle Freistunden, Ausfälle und Mittagspausen am nächsten Schultag (Punkt 2 & 3) */
+      function analyzeNextSchoolDayFreePeriods() {
+        const nextSchoolDate = getNextSchoolDayDate(new Date());
+        const dateIso = toISODate(nextSchoolDate);
+        const dayNames = ["Sonntag", "Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag"];
+        const dayLabel = `${dayNames[nextSchoolDate.getDay()]} (${formatGermanDate(dateIso)})`;
+
+        const slots = getEffectiveDaySchedule(nextSchoolDate);
+        const pDur = Number(state.timeConfig.periodMinutes) || 45;
+
+        let lastTaughtPeriod = 0;
+        slots.forEach(s => {
+          if (s.effectiveSubject !== "") {
+            lastTaughtPeriod = Math.max(lastTaughtPeriod, s.period);
+          }
+        });
+
+        const hasAfternoonClasses = slots.some(s => s.period >= 7 && s.effectiveSubject !== "");
+        const freeSlots = [];
+
+        slots.forEach(s => {
+          if (s.status === "cancelled") {
+            freeSlots.push({
+              period: s.period,
+              minutes: pDur,
+              label: `${s.period}. Std. (Ausfall ${s.baseSubject || ""})`.trim(),
+              type: "cancelled"
+            });
+            return;
+          }
+
+          if (s.effectiveSubject === "" && s.period < lastTaughtPeriod) {
+            const isLunchSlot = (s.period === 6 && hasAfternoonClasses);
+            if (isLunchSlot && !state.timeConfig.useLunchAsBuffer) {
+              return;
+            }
+            freeSlots.push({
+              period: s.period,
+              minutes: pDur,
+              label: isLunchSlot ? `${s.period}. Std. (Mittagspause)` : `${s.period}. Std. (Freistunde)`,
+              type: isLunchSlot ? "lunch" : "gap"
+            });
+          }
+        });
+
+        const p6Occupied = slots.some(s => s.period === 6 && s.effectiveSubject !== "");
+        const p7Occupied = slots.some(s => s.period === 7 && s.effectiveSubject !== "");
+        if (state.timeConfig.useLunchAsBuffer && p6Occupied && p7Occupied) {
+          const lunchBreakMin = Math.max(Number(state.timeConfig.bigBreakMinutes) || 15, 30);
+          freeSlots.push({
+            period: 6.5,
+            minutes: lunchBreakMin,
+            label: `Mittagspause (zw. 6. & 7. Std.)`,
+            type: "lunch-break"
+          });
+        }
+
+        const totalFreeMinutes = freeSlots.reduce((sum, f) => sum + f.minutes, 0);
+
+        if (totalFreeMinutes === 0) {
+          state.tasks.forEach(t => {
+            if (t.plannedInFreePeriod) t.plannedInFreePeriod = false;
+          });
+        }
+
+        const usedFreeMinutes = state.tasks
+          .filter(t => !t.done && t.plannedInFreePeriod)
+          .reduce((sum, t) => sum + Number(t.duration || 0), 0);
+
+        return {
+          dateIso,
+          dayLabel,
+          freeSlots,
+          totalFreeMinutes,
+          usedFreeMinutes,
+          remainingFreeMinutes: Math.max(0, totalFreeMinutes - usedFreeMinutes)
+        };
+      }
+
+      /* Prüft stundengenau, ob eine Aufgabe in eine Freistunde VOR der Abgabestunde passt (Punkt 3) */
+      function evaluateTaskFreePeriodFit(task, freeInfo) {
+        if (!freeInfo || freeInfo.totalFreeMinutes === 0) {
+          return {
+            canShowButton: false,
+            fitsCapacity: false,
+            targetPeriod: null,
+            smartHint: ""
+          };
+        }
+
+        const dur = Number(task.duration) || 15;
+        const isDueOnNextSchoolDay = (task.dueDate === freeInfo.dateIso);
+        const targetPeriod = isDueOnNextSchoolDay
+          ? getFirstSubjectPeriodOnDate(task.subject, freeInfo.dateIso)
+          : null;
+
+        const usableSlotsForTask = targetPeriod
+          ? freeInfo.freeSlots.filter(s => s.period < targetPeriod)
+          : freeInfo.freeSlots;
+
+        if (usableSlotsForTask.length === 0) {
+          return {
+            canShowButton: false,
+            fitsCapacity: false,
+            targetPeriod,
+            smartHint: ""
+          };
+        }
+
+        const usableMinutesBeforeDue = usableSlotsForTask.reduce((s, slot) => s + slot.minutes, 0);
+        const availPool = task.plannedInFreePeriod
+          ? freeInfo.remainingFreeMinutes + dur
+          : freeInfo.remainingFreeMinutes;
+
+        const fitsCapacity = (dur <= usableMinutesBeforeDue) && (dur <= availPool);
+        const slotNames = usableSlotsForTask.map(s => s.label).join(", ");
+
+        let smartHint = "";
+        if (isDueOnNextSchoolDay && targetPeriod && fitsCapacity) {
+          smartHint = `💡 Smart-Tipp (${task.subject}): Du musst ${task.subject} am ${freeInfo.dayLabel} erst in der ${targetPeriod}. Stunde abgeben, hast aber vorher frei (${slotNames}). Die Aufgabe (${dur} Min.) passt dort genau rein!`;
+        } else if (fitsCapacity) {
+          smartHint = `💡 Freistunden-Option (${task.subject}): Passt in deine freie Zeit am ${freeInfo.dayLabel} (${slotNames}).`;
+        }
+
+        return {
+          canShowButton: true,
+          fitsCapacity,
+          targetPeriod,
+          usableSlotsForTask,
+          smartHint
+        };
+      }
+
+      /* Synchronisiert automatisch berechnete Fälligkeitsdaten bei A/B-Wechsel oder Stundenplan-Änderung */
+      function recalculateAutoTaskDates() {
+        state.tasks.forEach(task => {
+          if (!task.done && task.dueMode && task.dueMode !== "custom") {
+            const count = task.dueMode === "overnext" ? 2 : 1;
+            task.dueDate = findSubjectOccurrenceDate(task.subject, count, task.createdAt);
+          }
+        });
+      }
+
+      function getDaysUntilDue(dueIso) {
+        const today = getStartOfDay(new Date());
+        const due = parseISODate(dueIso);
+        const diffMs = due.getTime() - today.getTime();
+        return Math.round(diffMs / 86400000);
+      }
+
+      /* Prüft, ob an einem Kalendertag bereits eine andere Klausur eingetragen ist (Kollisions-Schutz) */
+      function getExamsOnDate(dateIso, excludeExamId = null) {
+        if (!dateIso || !Array.isArray(state.exams)) return [];
+        return state.exams.filter(ex => ex.date === dateIso && ex.id !== excludeExamId);
+      }
+
+      function updateExamCollisionWarning(dateIso, warningBoxId, excludeExamId = null) {
+        const box = document.getElementById(warningBoxId);
+        if (!box) return;
+        const collisions = getExamsOnDate(dateIso, excludeExamId);
+        if (collisions.length > 0) {
+          const subjectsList = collisions.map(c => c.subject).join(", ");
+          box.textContent = `⚠️ Vorsicht: Für diesen Tag (${formatGermanDate(dateIso)}) ist bereits eine Klausur/Arbeit in [${subjectsList}] geplant! Du kannst trotzdem speichern, falls das gewollt ist.`;
+          box.classList.add("visible");
+        } else {
+          box.textContent = "";
+          box.classList.remove("visible");
+        }
+      }
+
+      /* Klausur- & Test-Radar Auswertung + automatische Puffer-Reservierung (Punkt 4) */
+      function classifyExams() {
+        const sorted = [...(state.exams || [])].sort((a, b) => a.date.localeCompare(b.date));
+        const upcoming = [];
+        let reservedExamBufferToday = 0;
+
+        // Zähle Klausuren pro Tag für optische Kollisions-Markierung
+        const dateCounts = {};
+        sorted.forEach(ex => {
+          dateCounts[ex.date] = (dateCounts[ex.date] || 0) + 1;
+        });
+
+        sorted.forEach(ex => {
+          const daysLeft = getDaysUntilDue(ex.date);
+          if (daysLeft < 0) return; // Vergangene Klausuren ausblenden
+
+          let urgency = "green";
+          let urgencyLabel = "Langfristig / Projekt (> 7 Tage)";
+          if (daysLeft <= 3) {
+            urgency = "red";
+            urgencyLabel = daysLeft === 0 ? "HEUTE!" : `Akut: Noch ${daysLeft} Tag(e)!`;
+            reservedExamBufferToday += Number(ex.bufferMinutes) || 15;
+          } else if (daysLeft <= 7) {
+            urgency = "yellow";
+            urgencyLabel = `Vorbereitung: Noch ${daysLeft} Tage`;
+            reservedExamBufferToday += Number(ex.bufferMinutes) || 15;
+          }
+
+          upcoming.push({
+            ...ex,
+            daysLeft,
+            urgency,
+            urgencyLabel,
+            hasSameDayCollision: (dateCounts[ex.date] || 0) > 1
+          });
+        });
+
+        return {
+          upcoming,
+          reservedExamBufferToday
+        };
+      }
+
+      /* Klassifiziert alle Hausaufgaben in Rot, Gelb, Grün unter Berücksichtigung von Klausur- & Freistunden-Puffer */
+      function classifyTasks() {
+        const today = getStartOfDay(new Date());
+        const todayDayOfWeek = today.getDay();
+
+        let stateMutated = false;
+        state.tasks.forEach(task => {
+          if (!task.done && !task.dueDate) {
+            const count = task.dueMode === "overnext" ? 2 : 1;
+            task.dueDate = findSubjectOccurrenceDate(task.subject, count, task.createdAt);
+            stateMutated = true;
+          }
+        });
+        if (stateMutated) {
+          saveState();
+        }
+
+        const freeInfo = analyzeNextSchoolDayFreePeriods();
+        const examInfo = classifyExams();
+
+        const openTasks = state.tasks.filter(t => !t.done);
+        const doneTasks = state.tasks.filter(t => t.done);
+
+        openTasks.sort((a, b) => {
+          if (a.dueDate !== b.dueDate) return a.dueDate.localeCompare(b.dueDate);
+          return Number(a.duration) - Number(b.duration);
+        });
+
+        const red = [];
+        const candidatesForBuffer = [];
+        const smartHints = [];
+
+        openTasks.forEach(task => {
+          const daysLeft = getDaysUntilDue(task.dueDate);
+          const duePeriod = getFirstSubjectPeriodOnDate(task.subject, task.dueDate);
+          const freeFit = evaluateTaskFreePeriodFit(task, freeInfo);
+
+          if (freeFit.smartHint && !task.plannedInFreePeriod) {
+            smartHints.push(freeFit.smartHint);
+          }
+
+          const isWeekendToMonday =
+            (todayDayOfWeek === 5 && daysLeft <= 3) ||
+            (todayDayOfWeek === 6 && daysLeft <= 2) ||
+            (todayDayOfWeek === 0 && daysLeft <= 1);
+
+          const periodSuffix = duePeriod ? ` (${duePeriod}. Std.)` : "";
+
+          if (daysLeft <= 1 || isWeekendToMonday) {
+            red.push({
+              ...task,
+              daysLeft,
+              duePeriod,
+              freeFit,
+              reason: task.plannedInFreePeriod
+                ? `In Freistunde eingeplant${periodSuffix}`
+                : (daysLeft < 0 ? "Überfällig!" : `Nächster Schultag / Pflicht${periodSuffix}`)
+            });
+          } else {
+            candidatesForBuffer.push({
+              ...task,
+              daysLeft,
+              duePeriod,
+              freeFit,
+              periodSuffix
+            });
+          }
+        });
+
+        const redAfternoonMinutes = red
+          .filter(t => !t.plannedInFreePeriod)
+          .reduce((sum, t) => sum + Number(t.duration), 0);
+
+        let plannedMinutesToday = redAfternoonMinutes + examInfo.reservedExamBufferToday;
+        const yellow = [];
+        const green = [];
+
+        candidatesForBuffer.forEach(task => {
+          const dur = Number(task.duration);
+          if (task.plannedInFreePeriod) {
+            yellow.push({
+              ...task,
+              reason: `Für Freistunde am ${freeInfo.dayLabel} vorgemerkt`
+            });
+          } else if (plannedMinutesToday + dur <= state.dailyBudgetMinutes) {
+            yellow.push({
+              ...task,
+              reason: `Passt heute ins Budget${task.periodSuffix}`
+            });
+            plannedMinutesToday += dur;
+          } else {
+            green.push({
+              ...task,
+              reason: `Heute schieben${task.periodSuffix}`
+            });
+          }
+        });
+
+        const homeworkAfternoonMinutes = plannedMinutesToday - examInfo.reservedExamBufferToday;
+
+        return {
+          red,
+          yellow,
+          green,
+          done: doneTasks,
+          plannedMinutesToday,
+          homeworkAfternoonMinutes,
+          redMinutes: redAfternoonMinutes,
+          freeInfo,
+          examInfo,
+          smartHints
+        };
+      }
+
+      function getCalculatedDueDate() {
+        const subjectEl = document.getElementById("hwSubject");
+        const subject = subjectEl ? subjectEl.value : "Allgemein / Vertretung";
+        if (selectedDueMode === "next") return findSubjectOccurrenceDate(subject, 1);
+        if (selectedDueMode === "overnext") return findSubjectOccurrenceDate(subject, 2);
+        return document.getElementById("hwCustomDate").value || findSubjectOccurrenceDate(subject, 1);
+      }
+
+      function updateDuePreview() {
+        const previewEl = document.getElementById("calculatedDuePreview");
+        if (!previewEl) return;
+        const subjectEl = document.getElementById("hwSubject");
+        const subject = subjectEl ? subjectEl.value : "";
+        const dueIso = getCalculatedDueDate();
+        const days = getDaysUntilDue(dueIso);
+        const period = getFirstSubjectPeriodOnDate(subject, dueIso);
+        const periodInfo = period ? `, ${period}. Schulstunde` : "";
+        const dayText = days === 1 ? "morgen" : (days === 0 ? "heute" : (days < 0 ? `seit ${Math.abs(days)} Tagen fällig` : `noch ${days} Tage`));
+        previewEl.textContent = `Berechnete Abgabe: ${formatGermanDate(dueIso)}${periodInfo} (${dayText})`;
+      }
+
+      function toggleTaskDone(id, doneStatus) {
+        const task = state.tasks.find(t => t.id === id);
+        if (task) {
+          task.done = doneStatus;
+          if (doneStatus) task.plannedInFreePeriod = false;
+          task.completedAt = doneStatus ? toISODate(new Date()) : "";
+          saveState();
+          renderPlanTab();
+        }
+      }
+
+      function toggleTaskFreeShift(id) {
+        const task = state.tasks.find(t => t.id === id);
+        if (!task) return;
+
+        if (!task.plannedInFreePeriod) {
+          const freeInfo = analyzeNextSchoolDayFreePeriods();
+          const fit = evaluateTaskFreePeriodFit(task, freeInfo);
+          if (!fit.fitsCapacity) {
+            alert(`Diese Aufgabe (${task.duration} Min.) überschreitet die freie Kapazität vor der Abgabestunde (${freeInfo.remainingFreeMinutes} Min. frei).`);
+            return;
+          }
+          task.plannedInFreePeriod = true;
+        } else {
+          task.plannedInFreePeriod = false;
+        }
+        saveState();
+        renderPlanTab();
+      }
+
+      function deleteTask(id) {
+        state.tasks = state.tasks.filter(t => t.id !== id);
+        saveState();
+        renderPlanTab();
+      }
+
+      function switchTab(targetTabId) {
+        document.querySelectorAll(".tab-section").forEach(sec => sec.classList.toggle("active", sec.id === targetTabId));
+        document.querySelectorAll(".nav-btn").forEach(btn => btn.classList.toggle("active", btn.getAttribute("data-tab") === targetTabId));
+        if (targetTabId === "tab-add") {
+          renderSubjectDropdowns();
+        } else if (targetTabId === "tab-exams") {
+          renderSubjectDropdowns();
+          renderExamsTab();
+        } else if (targetTabId === "tab-schedule") {
+          renderScheduleTab();
+        } else if (targetTabId === "tab-legal") {
+          renderActiveSubjectsManager();
+          renderHeader();
+        }
+        window.scrollTo({ top: 0, behavior: "instant" });
+      }
+
+      function escapeHTML(str) {
+        return String(str || "")
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;");
+      }
+
+      /* Steuert das Jalousie-/Akkordeon-System im Einstellungen-Tab */
+      function toggleAccordion(accId, forceOpen = null) {
+        const card = document.getElementById(accId);
+        if (!card) return;
+        const willOpen = forceOpen !== null ? forceOpen : !card.classList.contains("open");
+        card.classList.toggle("open", willOpen);
+        const icon = card.querySelector(".accordion-icon");
+        if (icon) {
+          icon.textContent = willOpen ? "▲" : "▼";
+        }
+      }
+
+      function setAllAccordions(openState) {
+        document.querySelectorAll("#tab-legal .accordion-card").forEach(card => {
+          card.classList.toggle("open", openState);
+          const icon = card.querySelector(".accordion-icon");
+          if (icon) icon.textContent = openState ? "▲" : "▼";
+        });
+      }
+
+      /* Zuverlässige Zwischenablage-Funktion (inkl. Fallback für lokale Dateien / Android WebView) */
+      function copyTextToClipboard(text, onSuccess) {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(text).then(onSuccess).catch(() => {
+            fallbackCopyText(text, onSuccess);
+          });
+        } else {
+          fallbackCopyText(text, onSuccess);
+        }
+      }
+
+      function fallbackCopyText(text, onSuccess) {
+        try {
+          const ta = document.createElement("textarea");
+          ta.value = text;
+          ta.style.position = "fixed";
+          ta.style.left = "-9999px";
+          document.body.appendChild(ta);
+          ta.focus();
+          ta.select();
+          document.execCommand("copy");
+          document.body.removeChild(ta);
+          if (onSuccess) onSuccess();
+        } catch (err) {
+          alert("Kopieren nicht möglich. Bitte markiere den Text manuell.");
+        }
+      }
+
+      /* ==========================================================================
+         ZENTRALE EVENT INITIALISIERUNG
+         ========================================================================== */
+      function initEvents() {
+        // Cross-Tab Synchronisation
+        window.addEventListener("storage", (e) => {
+          if (e.key === STORAGE_KEY && e.newValue) {
+            loadState();
+            renderHeader();
+            renderActiveSubjectsManager();
+            renderSubjectDropdowns();
+            renderScheduleTab();
+            renderExamsTab();
+            renderPlanTab();
+          }
+        });
+
+        // Echtzeit-Uhr-Intervall (alle 30 Sekunden aktualisieren)
+        if (liveClockTimer) clearInterval(liveClockTimer);
+        liveClockTimer = setInterval(() => {
+          renderHeader();
+        }, 30000);
+
+        // Hauptnavigation
+        document.querySelectorAll(".nav-btn").forEach(btn => {
+          btn.addEventListener("click", () => switchTab(btn.getAttribute("data-tab")));
+        });
+
+        // Akkordeon-Steuerung in den Einstellungen ("Jalousie"-Prinzip)
+        document.getElementById("expandAllAccordionsBtn").addEventListener("click", () => setAllAccordions(true));
+        document.getElementById("collapseAllAccordionsBtn").addEventListener("click", () => setAllAccordions(false));
+
+        document.getElementById("tab-legal").addEventListener("click", (e) => {
+          const headerBtn = e.target.closest(".accordion-header[data-acc]");
+          if (headerBtn) {
+            toggleAccordion(headerBtn.getAttribute("data-acc"));
+            return;
+          }
+
+          // Fächer für das Halbjahr an-/abwählen
+          const subjToggle = e.target.closest(".subject-toggle-btn[data-subject]");
+          if (subjToggle) {
+            const subj = subjToggle.getAttribute("data-subject");
+            const idx = state.activeSubjects.indexOf(subj);
+            if (idx > -1) {
+              if (state.activeSubjects.length <= 1) {
+                alert("Mindestens ein Schulfach muss für das Halbjahr aktiviert bleiben.");
+                return;
+              }
+              state.activeSubjects.splice(idx, 1);
+            } else {
+              state.activeSubjects.push(subj);
+            }
+            saveState();
+            renderActiveSubjectsManager();
+            renderSubjectDropdowns();
+            renderScheduleTab();
+            renderExamsTab();
+          }
+        });
+
+        document.getElementById("selectAllSubjectsBtn").addEventListener("click", () => {
+          state.activeSubjects = state.subjects.filter(s => s !== "Allgemein / Vertretung");
+          saveState();
+          renderActiveSubjectsManager();
+          renderSubjectDropdowns();
+          renderScheduleTab();
+          renderExamsTab();
+        });
+
+        document.getElementById("selectScheduledSubjectsBtn").addEventListener("click", () => {
+          const inSchedule = new Set();
+          ["A", "B"].forEach(w => {
+            for (let d = 1; d <= 5; d++) {
+              (state.schedule[w][d] || []).forEach(s => {
+                if (s && s !== "Allgemein / Vertretung") inSchedule.add(s);
+              });
+            }
+          });
+          if (inSchedule.size === 0) {
+            alert("Im Stundenplan sind aktuell noch keine Fächer hinterlegt.");
+            return;
+          }
+          state.activeSubjects = [...inSchedule];
+          saveState();
+          renderActiveSubjectsManager();
+          renderSubjectDropdowns();
+          renderScheduleTab();
+          renderExamsTab();
+        });
+
+        // Dark Mode (in Einstellungen)
+        document.getElementById("darkModeToggleBtn").addEventListener("click", () => {
+          state.darkMode = !state.darkMode;
+          saveState();
+          applyDarkMode();
+        });
+
+        // A/B-Woche umschalten (in Einstellungen)
+        document.getElementById("weekToggleBtn").addEventListener("click", () => {
+          promptDoubleConfirmation(
+            "Möchtest du den A/B-Wochenrhythmus manuell umschalten?",
+            "Sicherheitsstufe 2: Dadurch verschieben sich alle automatisch berechneten Fach-Termine. Fortfahren?",
+            () => {
+              state.weekOffset = ((state.weekOffset || 0) + 1) % 2;
+              recalculateAutoTaskDates();
+              saveState();
+              renderHeader();
+              renderSubjectDropdowns();
+              renderScheduleTab();
+              updateDuePreview();
+              renderPlanTab();
+            },
+            "Umschalten"
+          );
+        });
+
+        // Event Delegation für den gesamten Ampel-Plan-Tab (inkl. Freistunden-Schieber)
+        document.getElementById("tab-plan").addEventListener("click", (e) => {
+          const btn = e.target.closest("button[data-action]");
+          if (!btn) return;
+
+          const action = btn.dataset.action;
+          const id = btn.dataset.id;
+
+          if (action === "read-task") {
+            openReadModal(id);
+          } else if (action === "check-task") {
+            toggleTaskDone(id, true);
+          } else if (action === "uncheck-task") {
+            toggleTaskDone(id, false);
+          } else if (action === "toggle-free-shift") {
+            toggleTaskFreeShift(id);
+          } else if (action === "edit-task") {
+            openEditModal(id);
+          } else if (action === "delete-task") {
+            const task = state.tasks.find(t => t.id === id);
+            if (!task) return;
+            promptDoubleConfirmation(
+              `Aufgabe (${task.subject}) wirklich löschen?`,
+              `Sicherheitsstufe 2: Bist du absolut sicher? Die Aufgabe wird unwiderruflich entfernt!`,
+              () => deleteTask(task.id),
+              "Löschen"
+            );
+          } else if (action === "toggle-vocab") {
+            const vocabItem = state.vocab.find(v => v.id === id);
+            if (!vocabItem) return;
+            const todayIso = toISODate(new Date());
+            vocabItem.lastPracticed = vocabItem.lastPracticed === todayIso ? "" : todayIso;
+            saveState();
+            renderVocabList();
+          } else if (action === "delete-vocab") {
+            const vocabItem = state.vocab.find(v => v.id === id);
+            if (!vocabItem) return;
+            promptDoubleConfirmation(
+              `Lernziel "${vocabItem.text}" wirklich löschen?`,
+              `Sicherheitsstufe 2: Möchtest du "${vocabItem.text}" wirklich endgültig aus den Lernzielen entfernen?`,
+              () => {
+                state.vocab = state.vocab.filter(item => item.id !== vocabItem.id);
+                saveState();
+                renderVocabList();
+              },
+              "Löschen"
+            );
+          }
+        });
+
+        // Klausur-Radar: Live-Kollisionsprüfung bei Datumsauswahl
+        document.getElementById("examDate").addEventListener("change", (e) => {
+          updateExamCollisionWarning(e.target.value, "examCollisionWarning", null);
+        });
+
+        document.getElementById("editExamDate").addEventListener("change", (e) => {
+          const currentEditId = document.getElementById("editExamId").value;
+          updateExamCollisionWarning(e.target.value, "editExamCollisionWarning", currentEditId);
+        });
+
+        // Klausur speichern (mit Doppelbelegungs-Warnung falls am selben Tag schon eine Klausur liegt)
+        document.getElementById("saveExamBtn").addEventListener("click", () => {
+          const subject = document.getElementById("examSubject").value || "Allgemein";
+          const dateVal = document.getElementById("examDate").value;
+          const bufferMinutes = Number(document.getElementById("examBufferMinutes").value) || 15;
+          const topicInput = document.getElementById("examTopic");
+          const topic = topicInput.value.trim() || "Klassenarbeit / Test";
+
+          if (!dateVal) {
+            alert("Bitte wähle ein Datum für die Klausur oder das Projekt.");
+            return;
+          }
+
+          const executeSaveExam = () => {
+            state.exams.push({
+              id: "ex_" + Date.now() + "_" + Math.floor(Math.random() * 1000),
+              subject,
+              date: dateVal,
+              topic,
+              bufferMinutes
+            });
+            topicInput.value = "";
+            updateExamCollisionWarning("", "examCollisionWarning", null);
+            saveState();
+            renderExamsTab();
+            renderPlanTab();
+          };
+
+          const existingSameDay = getExamsOnDate(dateVal, null);
+          if (existingSameDay.length > 0) {
+            const otherNames = existingSameDay.map(x => x.subject).join(", ");
+            promptDoubleConfirmation(
+              `Vorsicht: Am ${formatGermanDate(dateVal)} ist bereits eine Klausur in [${otherNames}] eingetragen! Möchtest du trotzdem eine weitere Klausur an diesem Tag speichern?`,
+              `Sicherheitsstufe 2: Bestätige, dass am ${formatGermanDate(dateVal)} wirklich beide Arbeiten (${otherNames} & ${subject}) stattfinden.`,
+              executeSaveExam,
+              "Trotzdem speichern"
+            );
+          } else {
+            executeSaveExam();
+          }
+        });
+
+        // Klausur-Liste: Lesen/Kopieren, Bearbeiten & Löschen
+        document.getElementById("examsListContainer").addEventListener("click", (e) => {
+          const btn = e.target.closest("[data-action]");
+          if (!btn) return;
+          const action = btn.dataset.action;
+          const examId = btn.dataset.id;
+
+          if (action === "read-exam") {
+            openExamReadModal(examId);
+          } else if (action === "edit-exam") {
+            openExamEditModal(examId);
+          } else if (action === "delete-exam") {
+            const exam = state.exams.find(x => x.id === examId);
+            if (!exam) return;
+
+            promptDoubleConfirmation(
+              `Klausur/Termin (${exam.subject} am ${formatGermanDate(exam.date)}) wirklich löschen?`,
+              `Sicherheitsstufe 2: Der Termin und sein Lernpuffer werden endgültig aus dem Radar entfernt.`,
+              () => {
+                state.exams = state.exams.filter(x => x.id !== examId);
+                saveState();
+                renderExamsTab();
+                renderPlanTab();
+              },
+              "Löschen"
+            );
+          }
+        });
+
+        document.getElementById("closeExamReadModalBtn").addEventListener("click", closeExamReadModal);
+        document.getElementById("cancelExamEditBtn").addEventListener("click", closeExamEditModal);
+        document.getElementById("saveExamEditBtn").addEventListener("click", saveEditedExam);
+
+        // Klausur-Details mit einem Klick in den Zwischenspeicher kopieren
+        document.getElementById("copyExamTextBtn").addEventListener("click", () => {
+          const exam = (state.exams || []).find(x => x.id === currentReadExamId);
+          const copyText = exam
+            ? `Klausur / Test: ${exam.subject}\nDatum: ${formatGermanDate(exam.date)} (${exam.date})\nGeplanter Lernpuffer: ${exam.bufferMinutes} Min./Tag\nThema / Stoff:\n${exam.topic || "-"}`
+            : document.getElementById("examReadModalText").textContent;
+
+          copyTextToClipboard(copyText, () => {
+            const copyBtn = document.getElementById("copyExamTextBtn");
+            const originalLabel = copyBtn.textContent;
+            copyBtn.textContent = "✓ In Zwischenablage kopiert!";
+            setTimeout(() => {
+              copyBtn.textContent = originalLabel;
+            }, 2200);
+          });
+        });
+
+        // Tagesaktuelle Ausfälle & Fächertausch (Punkt 2)
+        document.getElementById("overrideTodayBtn").addEventListener("click", () => {
+          overrideTargetMode = "today";
+          renderDailyOverridesEditor();
+        });
+
+        document.getElementById("overrideTomorrowBtn").addEventListener("click", () => {
+          overrideTargetMode = "tomorrow";
+          renderDailyOverridesEditor();
+        });
+
+        document.getElementById("dailyOverridesContainer").addEventListener("change", (e) => {
+          const sel = e.target.closest("select[data-override-period]");
+          if (!sel) return;
+          const dateIso = sel.dataset.dateIso;
+          const pIdx = Number(sel.dataset.overridePeriod);
+          const val = sel.value;
+
+          if (!state.dailyOverrides[dateIso]) {
+            state.dailyOverrides[dateIso] = {};
+          }
+
+          if (val === "__NORMAL__") {
+            delete state.dailyOverrides[dateIso][pIdx];
+          } else if (val === "__CANCELLED__") {
+            state.dailyOverrides[dateIso][pIdx] = { status: "cancelled", subject: "" };
+          } else {
+            state.dailyOverrides[dateIso][pIdx] = { status: "swapped", subject: val };
+          }
+
+          recalculateAutoTaskDates();
+          saveState();
+          renderHeader();
+          renderDailyOverridesEditor();
+          renderSubjectDropdowns();
+          updateDuePreview();
+          renderPlanTab();
+        });
+
+        document.getElementById("resetDayOverridesBtn").addEventListener("click", () => {
+          const targetDate = overrideTargetMode === "today" ? getStartOfDay(new Date()) : getNextSchoolDayDate(new Date());
+          const dateIso = toISODate(targetDate);
+          if (state.dailyOverrides && state.dailyOverrides[dateIso]) {
+            delete state.dailyOverrides[dateIso];
+            recalculateAutoTaskDates();
+            saveState();
+            renderHeader();
+            renderDailyOverridesEditor();
+            renderSubjectDropdowns();
+            updateDuePreview();
+            renderPlanTab();
+          }
+        });
+
+        // Zeitraster & Mittagspausen-Einstellungen (Punkt 1 & 3)
+        const timeInputs = ["schoolStartTimeInput", "periodDurationInput", "shortBreakInput", "bigBreakInput", "useLunchBreakCheckbox"];
+        timeInputs.forEach(inputId => {
+          const el = document.getElementById(inputId);
+          if (!el) return;
+          el.addEventListener("change", () => {
+            state.timeConfig = {
+              schoolStart: document.getElementById("schoolStartTimeInput").value || "07:50",
+              periodMinutes: Number(document.getElementById("periodDurationInput").value) || 45,
+              shortBreakMinutes: Number(document.getElementById("shortBreakInput").value) >= 0 ? Number(document.getElementById("shortBreakInput").value) : 5,
+              bigBreakMinutes: Number(document.getElementById("bigBreakInput").value) >= 0 ? Number(document.getElementById("bigBreakInput").value) : 15,
+              useLunchAsBuffer: Boolean(document.getElementById("useLunchBreakCheckbox").checked)
+            };
+            saveState();
+            renderHeader();
+            renderScheduleTab();
+            renderPlanTab();
+          });
+        });
+
+        // Event Delegation für das 8-Stunden-Raster im Basis-Stundenplan (Punkt 1)
+        document.getElementById("scheduleDaysContainer").addEventListener("change", (e) => {
+          const select = e.target.closest(".period-select[data-day-idx][data-period-idx]");
+          if (!select) return;
+
+          const dayIdx = Number(select.dataset.dayIdx);
+          const periodIdx = Number(select.dataset.periodIdx);
+          const subj = select.value;
+
+          const activeWeekData = state.schedule[state.editingWeek];
+          if (!Array.isArray(activeWeekData[dayIdx])) {
+            activeWeekData[dayIdx] = new Array(MAX_PERIODS).fill("");
+          }
+          activeWeekData[dayIdx][periodIdx] = subj;
+
+          recalculateAutoTaskDates();
+          saveState();
+          renderHeader();
+          renderScheduleTab();
+          renderSubjectDropdowns();
+          updateDuePreview();
+          renderPlanTab();
+        });
+
+        // Filter umschalten: Nur heutige Fächer vs. Alle aktiven Halbjahres-Fächer
+        const toggleSubjectBtn = document.getElementById("toggleSubjectFilterBtn");
+        if (toggleSubjectBtn) {
+          toggleSubjectBtn.addEventListener("click", () => {
+            showAllSubjectsInAdd = !showAllSubjectsInAdd;
+            renderSubjectDropdowns();
+          });
+        }
+
+        document.getElementById("hwSubject").addEventListener("change", updateDuePreview);
+
+        document.querySelectorAll("#durationChoices .choice-btn").forEach(btn => {
+          btn.addEventListener("click", () => {
+            document.querySelectorAll("#durationChoices .choice-btn").forEach(b => b.classList.remove("selected"));
+            btn.classList.add("selected");
+            const minAttr = btn.getAttribute("data-min");
+            const customBox = document.getElementById("customDurationContainer");
+
+            if (minAttr === "custom") {
+              customBox.style.display = "block";
+              selectedDuration = Number(document.getElementById("hwCustomDuration").value) || 60;
+            } else {
+              customBox.style.display = "none";
+              selectedDuration = Number(minAttr);
+            }
+          });
+        });
+
+        document.getElementById("hwCustomDuration").addEventListener("input", (e) => {
+          const val = Number(e.target.value);
+          if (val > 0) selectedDuration = val;
+        });
+
+        document.querySelectorAll("#dueModeChoices .choice-btn").forEach(btn => {
+          btn.addEventListener("click", () => {
+            document.querySelectorAll("#dueModeChoices .choice-btn").forEach(b => b.classList.remove("selected"));
+            btn.classList.add("selected");
+            selectedDueMode = btn.getAttribute("data-mode");
+            const customDateContainer = document.getElementById("customDateContainer");
+            const customDateInput = document.getElementById("hwCustomDate");
+            if (selectedDueMode === "custom") {
+              customDateContainer.style.display = "block";
+              if (!customDateInput.value) {
+                customDateInput.value = findSubjectOccurrenceDate(document.getElementById("hwSubject").value, 1);
+              }
+            } else {
+              customDateContainer.style.display = "none";
+            }
+            updateDuePreview();
+          });
+        });
+
+        document.getElementById("hwCustomDate").addEventListener("change", updateDuePreview);
+
+        document.getElementById("saveHwBtn").addEventListener("click", () => {
+          const subject = document.getElementById("hwSubject").value;
+          const titleInput = document.getElementById("hwTitle");
+          const title = titleInput.value.trim() || "Hausaufgabe";
+          const dueDate = getCalculatedDueDate();
+
+          state.tasks.push({
+            id: "hw_" + Date.now() + "_" + Math.floor(Math.random() * 1000),
+            subject,
+            title,
+            duration: selectedDuration,
+            dueDate,
+            dueMode: selectedDueMode,
+            plannedInFreePeriod: false,
+            done: false,
+            createdAt: toISODate(new Date()),
+            completedAt: ""
+          });
+          saveState();
+          titleInput.value = "";
+          renderPlanTab();
+          switchTab("tab-plan");
+        });
+
+        document.getElementById("cancelEditBtn").addEventListener("click", closeEditModal);
+        document.getElementById("saveEditBtn").addEventListener("click", saveEditedTask);
+        document.getElementById("closeReadModalBtn").addEventListener("click", closeReadModal);
+
+        document.querySelectorAll("#editDueModeChoices .choice-btn").forEach(btn => {
+          btn.addEventListener("click", () => {
+            document.querySelectorAll("#editDueModeChoices .choice-btn").forEach(b => b.classList.remove("selected"));
+            btn.classList.add("selected");
+            editSelectedDueMode = btn.getAttribute("data-mode");
+            document.getElementById("editCustomDateContainer").style.display = editSelectedDueMode === "custom" ? "block" : "none";
+          });
+        });
+
+        document.getElementById("addVocabBtn").addEventListener("click", () => {
+          const inp = document.getElementById("vocabInput");
+          const text = inp.value.trim();
+          if (!text) return;
+          state.vocab.push({ id: "voc_" + Date.now(), text, lastPracticed: "" });
+          inp.value = "";
+          saveState();
+          renderVocabList();
+        });
+
+        document.getElementById("clearDoneBtn").addEventListener("click", () => {
+          const doneCount = state.tasks.filter(t => t.done).length;
+          if (doneCount === 0) {
+            alert("Es sind keine erledigten Aufgaben zum Aufräumen vorhanden.");
+            return;
+          }
+          promptDoubleConfirmation(
+            `Möchtest du wirklich alle ${doneCount} erledigten Aufgaben aufräumen?`,
+            `Sicherheitsstufe 2: Alle ${doneCount} erledigten Aufgaben werden endgültig gelöscht. Fortfahren?`,
+            () => {
+              state.tasks = state.tasks.filter(t => !t.done);
+              saveState();
+              renderPlanTab();
+            },
+            "Aufräumen"
+          );
+        });
+
+        document.querySelectorAll("#budgetLimitChoices .choice-btn").forEach(btn => {
+          btn.addEventListener("click", () => {
+            state.dailyBudgetMinutes = Number(btn.getAttribute("data-limit"));
+            saveState();
+            renderScheduleTab();
+            renderPlanTab();
+          });
+        });
+
+        document.getElementById("editWeekABtn").addEventListener("click", () => {
+          state.editingWeek = "A";
+          renderScheduleTab();
+        });
+        document.getElementById("editWeekBBtn").addEventListener("click", () => {
+          state.editingWeek = "B";
+          renderScheduleTab();
+        });
+
+        document.getElementById("copyAtoBBtn").addEventListener("click", () => {
+          promptDoubleConfirmation(
+            "Möchtest du den Stundenplan von Woche A auf Woche B kopieren?",
+            "Sicherheitsstufe 2: Bestehende Fächer in Woche B werden dabei komplett überschrieben!",
+            () => {
+              state.schedule.B = JSON.parse(JSON.stringify(state.schedule.A));
+              recalculateAutoTaskDates();
+              saveState();
+              renderScheduleTab();
+              renderSubjectDropdowns();
+              updateDuePreview();
+              renderPlanTab();
+            },
+            "Kopieren"
+          );
+        });
+
+        // Eigenes Schulfach hinzufügen (wird direkt in subjects UND activeSubjects aufgenommen)
+        document.getElementById("addNewSubjectBtn").addEventListener("click", () => {
+          const inp = document.getElementById("newSubjectInput");
+          const val = inp.value.trim();
+          if (!val) return;
+          if (val !== "Allgemein / Vertretung") {
+            if (!state.subjects.includes(val)) {
+              state.subjects.push(val);
+            }
+            if (!state.activeSubjects.includes(val)) {
+              state.activeSubjects.push(val);
+            }
+            saveState();
+            renderActiveSubjectsManager();
+            renderSubjectDropdowns();
+            renderScheduleTab();
+            renderExamsTab();
+          }
+          inp.value = "";
+        });
+
+        // JSON Export & Import
+        document.getElementById("exportDataBtn").addEventListener("click", () => {
+          const blob = new Blob([JSON.stringify(state, null, 2)], { type: "application/json" });
+          triggerFileDownload(blob, `hausaufgaben-backup-${toISODate(new Date())}.json`);
+        });
+
+        document.getElementById("importDataInput").addEventListener("change", (e) => {
+          const file = e.target.files && e.target.files[0];
+          if (!file) return;
+          const reader = new FileReader();
+          reader.onload = function(evt) {
+            try {
+              const imported = JSON.parse(evt.target.result);
+              if (imported && Array.isArray(imported.tasks)) {
+                sanitizeAndMergeState(imported);
+                recalculateAutoTaskDates();
+                saveState();
+                applyDarkMode();
+                renderHeader();
+                renderActiveSubjectsManager();
+                renderSubjectDropdowns();
+                renderScheduleTab();
+                renderExamsTab();
+                renderPlanTab();
+                alert("Backup erfolgreich geladen!");
+              } else {
+                alert("Ungültige Backup-Datei.");
+              }
+            } catch (err) {
+              alert("Fehler beim Lesen der Datei.");
+            }
+            e.target.value = "";
+          };
+          reader.readAsText(file);
+        });
+
+        // CSV Export & Import
+        document.getElementById("exportCsvBtn").addEventListener("click", exportTasksToCSV);
+
+        document.getElementById("importCsvInput").addEventListener("change", (e) => {
+          const file = e.target.files && e.target.files[0];
+          if (!file) return;
+          const reader = new FileReader();
+          reader.onload = function(evt) {
+            try {
+              importTasksFromCSV(evt.target.result);
+            } catch (err) {
+              alert("Fehler beim Verarbeiten der CSV-Datei. Bitte prüfe das Format.");
+            }
+            e.target.value = "";
+          };
+          reader.readAsText(file);
+        });
+
+        // Gesamt-Reset
+        document.getElementById("resetAllDataBtn").addEventListener("click", () => {
+          promptDoubleConfirmation(
+            "ACHTUNG: Möchtest du wirklich ALLE lokalen Daten löschen?",
+            "Sicherheitsstufe 2: Stundenplan, Aufgaben, Klausuren, Fächerwahl und Einstellungen werden unwiderruflich zurückgesetzt!",
+            () => {
+              localStorage.removeItem(STORAGE_KEY);
+              location.reload();
+            },
+            "Alles Löschen"
+          );
+        });
+
+        // Footer-Sprungmarken öffnen automatisch das jeweilige Akkordeon
+        document.getElementById("jumpImpressumBtn").addEventListener("click", () => {
+          switchTab("tab-legal");
+          toggleAccordion("impressum-bereich", true);
+          document.getElementById("impressum-bereich").scrollIntoView({ behavior: "smooth" });
+        });
+        document.getElementById("jumpDatenschutzBtn").addEventListener("click", () => {
+          switchTab("tab-legal");
+          toggleAccordion("datenschutz-bereich", true);
+          document.getElementById("datenschutz-bereich").scrollIntoView({ behavior: "smooth" });
+        });
+      }
+      /* ==========================================================================
+         TEIL 4: RENDERING-ROUTINEN, BADGES, KLAUSUR-RADAR & MODALS
+         ========================================================================== */
+      function renderHeader() {
+        const now = new Date();
+        const fullDays = ["Sonntag", "Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag"];
+        const dd = String(now.getDate()).padStart(2, "0");
+        const mm = String(now.getMonth() + 1).padStart(2, "0");
+        const yyyy = now.getFullYear();
+
+        const currentWeekType = getWeekTypeForDate(now);
+        document.getElementById("currentDateDisplay").textContent =
+          `${fullDays[now.getDay()]}, ${dd}.${mm}.${yyyy} – Aktuell: Woche ${currentWeekType}`;
+
+        const clockEl = document.getElementById("livePeriodStatus");
+        if (clockEl) {
+          clockEl.textContent = getCurrentLivePeriodStatus();
+        }
+
+        const settingsWeekText = document.getElementById("settingsWeekStatusText");
+        if (settingsWeekText) {
+          settingsWeekText.textContent = `Aktueller Rhythmus: Woche ${currentWeekType} (Kann bei Bedarf über den Button oben umgeschaltet werden).`;
+        }
+      }
+
+      function updateBudgetBar(result, budgetLimit) {
+        const statusText = document.getElementById("budgetStatusText");
+        const segBlue = document.getElementById("budgetSegBlue");
+        const segExam = document.getElementById("budgetSegExam");
+        const segGreen = document.getElementById("budgetSegGreen");
+        const segRed = document.getElementById("budgetSegRed");
+
+        const afternoonUsed = result.homeworkAfternoonMinutes;
+        const examBuffer = result.examInfo.reservedExamBufferToday;
+        const totalUsed = result.plannedMinutesToday;
+
+        const examPercent = budgetLimit > 0 ? (examBuffer / budgetLimit) * 100 : 0;
+        const bluePercent = budgetLimit > 0 ? (afternoonUsed / budgetLimit) * 100 : 0;
+        segExam.style.width = `${examPercent}%`;
+        segBlue.style.width = `${bluePercent}%`;
+
+        if (totalUsed <= budgetLimit) {
+          const greenPercent = Math.max(0, 100 - examPercent - bluePercent);
+          segGreen.style.width = `${greenPercent}%`;
+          segRed.style.width = "0%";
+
+          const remaining = budgetLimit - totalUsed;
+          statusText.style.color = "var(--text-main)";
+          statusText.textContent = `${totalUsed} / ${budgetLimit} Min. geplant (${remaining} Min. Puffer frei)`;
+        } else {
+          const overloadMinutes = totalUsed - budgetLimit;
+          const totalPercent = totalUsed > 0 ? totalUsed : 1;
+          const blueScale = (afternoonUsed / totalPercent) * 100;
+          const examScale = (examBuffer / totalPercent) * 100;
+          const redScale = (overloadMinutes / totalPercent) * 100;
+
+          segBlue.style.width = `${blueScale}%`;
+          segExam.style.width = `${examScale}%`;
+          segGreen.style.width = "0%";
+          segRed.style.width = `${redScale}%`;
+
+          statusText.style.color = "var(--red-text)";
+          statusText.textContent = `${totalUsed} / ${budgetLimit} Min. (+${overloadMinutes} Min. Überlast!)`;
+        }
+      }
+
+      function updateFreePeriodBar(freeInfo) {
+        const container = document.getElementById("freePeriodBarContainer");
+        const titleEl = document.getElementById("freePeriodBarTitle");
+        const statusText = document.getElementById("freePeriodStatusText");
+        const segUsed = document.getElementById("freeSegUsed");
+        const segAvail = document.getElementById("freeSegAvail");
+
+        if (!container || !freeInfo || freeInfo.totalFreeMinutes === 0) {
+          if (container) container.classList.remove("visible");
+          return;
+        }
+
+        container.classList.add("visible");
+        titleEl.textContent = `Freistunden-Puffer (${freeInfo.dayLabel}):`;
+
+        const total = freeInfo.totalFreeMinutes;
+        const used = freeInfo.usedFreeMinutes;
+        const avail = freeInfo.remainingFreeMinutes;
+
+        const usedPct = (used / total) * 100;
+        const availPct = (avail / total) * 100;
+
+        segUsed.style.width = `${usedPct}%`;
+        segAvail.style.width = `${availPct}%`;
+        statusText.textContent = `${used} / ${total} Min. genutzt (${avail} Min. frei)`;
+      }
+
+      function updateAdviceBanner(result, budgetLimit) {
+        const banner = document.getElementById("smartAdviceBanner");
+        const freeBanner = document.getElementById("smartFreeAdviceBanner");
+        const examBanner = document.getElementById("examPlanBanner");
+        if (!banner) return;
+
+        const totalOpen = result.red.length + result.yellow.length + result.green.length;
+        if (totalOpen === 0) {
+          banner.textContent = "Alles erledigt! Aktuell stehen keine offenen Hausaufgaben an.";
+          if (freeBanner) freeBanner.classList.remove("visible");
+          if (examBanner) examBanner.classList.remove("visible");
+          return;
+        }
+
+        if (freeBanner) {
+          if (result.smartHints.length > 0) {
+            freeBanner.innerHTML = result.smartHints.join("<br>");
+            freeBanner.classList.add("visible");
+          } else {
+            freeBanner.classList.remove("visible");
+          }
+        }
+
+        if (examBanner) {
+          if (result.examInfo.reservedExamBufferToday > 0) {
+            examBanner.textContent = `⚡ Klausur-Radar: Heute sind ${result.examInfo.reservedExamBufferToday} Min. Lernpuffer für anstehende Arbeiten reserviert.`;
+            examBanner.classList.add("visible");
+          } else {
+            examBanner.classList.remove("visible");
+          }
+        }
+
+        if (result.redMinutes > budgetLimit) {
+          const over = result.redMinutes - budgetLimit;
+          banner.textContent = `Achtung: Deine dringenden Pflichtaufgaben (ROT) überschreiten dein Tagesbudget um ${over} Min. Konzentriere dich heute nur auf ROT und lass GELB/GRÜN liegen.`;
+        } else if (result.red.length > 0 && result.yellow.length > 0) {
+          banner.textContent = `Erledige zuerst ${result.red.length} Pflichtaufgabe(n) in ROT (${result.redMinutes} Min.). Danach passt noch GELB entspannt in dein heutiges Zeitbudget!`;
+        } else if (result.red.length > 0) {
+          banner.textContent = `Heute stehen ${result.red.length} Pflichtaufgabe(n) in ROT an (${result.redMinutes} Min.). Danach hast du frei!`;
+        } else if (result.yellow.length > 0) {
+          banner.textContent = `Heute ist nichts dringend (ROT ist leer). Nutze deinen freien Puffer für GELB, damit in den nächsten Tagen kein Stau entsteht.`;
+        } else {
+          banner.textContent = `Dein heutiges Pensum ist ausgeschöpft oder alle Aufgaben haben noch reichlich Zeit (GRÜN).`;
+        }
+      }
+
+      function renderPlanTab() {
+        const result = classifyTasks();
+        const limit = state.dailyBudgetMinutes;
+        const used = result.plannedMinutesToday;
+
+        updateBudgetBar(result, limit);
+        updateFreePeriodBar(result.freeInfo);
+        updateAdviceBanner(result, limit);
+
+        document.getElementById("count-red").textContent = `${result.red.length} (${result.redMinutes} Min.)`;
+        const yellowMinutes = result.yellow.reduce((s, t) => s + Number(t.duration), 0);
+        document.getElementById("count-yellow").textContent = `${result.yellow.length} (${yellowMinutes} Min.)`;
+        const greenMinutes = result.green.reduce((s, t) => s + Number(t.duration), 0);
+        document.getElementById("count-green").textContent = `${result.green.length} (${greenMinutes} Min.)`;
+
+        renderTaskList("list-red", result.red, "Keine dringenden Pflichtaufgaben.");
+        renderTaskList("list-yellow", result.yellow, "Keine Puffer-Aufgaben.");
+        renderTaskList("list-green", result.green, "Keine geschobenen Aufgaben.");
+        renderDoneList("list-done", result.done);
+        renderVocabList();
+      }
+
+      function renderTaskList(containerId, tasks, emptyMessage) {
+        const container = document.getElementById(containerId);
+        container.innerHTML = "";
+
+        if (tasks.length === 0) {
+          const empty = document.createElement("div");
+          empty.className = "empty-hint";
+          empty.textContent = emptyMessage;
+          container.appendChild(empty);
+          return;
+        }
+
+        const fragment = document.createDocumentFragment();
+
+        tasks.forEach(task => {
+          const item = document.createElement("div");
+          item.className = "task-item" + (task.plannedInFreePeriod ? " in-free-period" : "");
+
+          const isLongText = (task.title || "").length > 60 || (task.title || "").includes("\n");
+          const safeId = escapeHTML(task.id);
+
+          const daysLeft = getDaysUntilDue(task.dueDate);
+          let badgeClass = "days-badge-ok";
+          let badgeText = `noch ${daysLeft} Tage`;
+          if (daysLeft === 0) {
+            badgeClass = "days-badge-urgent";
+            badgeText = "heute fällig";
+          } else if (daysLeft === 1) {
+            badgeClass = "days-badge-urgent";
+            badgeText = "morgen fällig";
+          } else if (daysLeft <= 3) {
+            badgeClass = "days-badge-soon";
+            badgeText = `noch ${daysLeft} Tage`;
+          }
+
+          const freeFit = task.freeFit || evaluateTaskFreePeriodFit(task, analyzeNextSchoolDayFreePeriods());
+          const showFreeButton = freeFit.canShowButton;
+          const isShifted = Boolean(task.plannedInFreePeriod);
+
+          item.innerHTML = `
+            <div class="task-info">
+              <div class="task-header-row">
+                <span class="task-subject">${escapeHTML(task.subject)}</span>
+                <span class="days-badge ${badgeClass}">${badgeText}</span>
+                ${isShifted ? `<span class="free-period-pill">⚡ In Freistunde</span>` : ""}
+              </div>
+              <div class="task-title ${isLongText ? "clickable-title" : ""}" data-action="read-task" data-id="${safeId}" title="${escapeHTML(task.title)}">${escapeHTML(task.title)}</div>
+              ${isLongText ? `<button type="button" class="btn-read-more" data-action="read-task" data-id="${safeId}">Aufgabe / Notizen ganz lesen ↗</button>` : ""}
+              <div class="task-meta">Dauer: ca. ${Number(task.duration)} Min. | Abgabe: ${formatGermanDate(task.dueDate)} (${escapeHTML(task.reason)})</div>
+            </div>
+            <div class="task-actions">
+              ${showFreeButton ? `<button type="button" class="btn-free-shift ${isShifted ? "active-free" : ""}" data-action="toggle-free-shift" data-id="${safeId}" title="${isShifted ? "Aus Freistunde zurückholen" : "In Freistunde schieben"}">${isShifted ? "In Plan zurück" : "In Freistunde ⚡"}</button>` : ""}
+              <button type="button" class="btn-check" data-action="check-task" data-id="${safeId}">Fertig</button>
+              <button type="button" class="btn-edit" data-action="edit-task" data-id="${safeId}" title="Aufgabe bearbeiten">✏️ Ändern</button>
+              <button type="button" class="btn-delete" data-action="delete-task" data-id="${safeId}" title="Aufgabe löschen">×</button>
+            </div>
+          `;
+
+          fragment.appendChild(item);
+        });
+
+        container.appendChild(fragment);
+      }
+
+      function renderDoneList(containerId, tasks) {
+        const container = document.getElementById(containerId);
+        container.innerHTML = "";
+
+        if (tasks.length === 0) {
+          const empty = document.createElement("div");
+          empty.className = "empty-hint";
+          empty.textContent = "Noch keine erledigten Aufgaben gespeichert.";
+          container.appendChild(empty);
+          return;
+        }
+
+        const fragment = document.createDocumentFragment();
+
+        tasks.forEach(task => {
+          const item = document.createElement("div");
+          item.className = "task-item";
+          item.style.opacity = "0.75";
+
+          const isLongText = (task.title || "").length > 60 || (task.title || "").includes("\n");
+          const doneDateStr = task.completedAt ? ` | Erledigt: ${formatGermanDate(task.completedAt)}` : "";
+          const safeId = escapeHTML(task.id);
+
+          item.innerHTML = `
+            <div class="task-info">
+              <strong>${escapeHTML(task.subject)}:</strong>
+              <span style="text-decoration:line-through;">${escapeHTML(task.title)}</span>
+              (${Number(task.duration)} Min.${doneDateStr})
+              ${isLongText ? `<br><button type="button" class="btn-read-more" data-action="read-task" data-id="${safeId}">Text ansehen ↗</button>` : ""}
+            </div>
+            <button type="button" class="btn-secondary" style="padding:6px 10px; font-size:0.8rem;" data-action="uncheck-task" data-id="${safeId}">Wieder öffnen</button>
+          `;
+
+          fragment.appendChild(item);
+        });
+
+        container.appendChild(fragment);
+      }
+
+      function renderVocabList() {
+        const container = document.getElementById("vocabList");
+        container.innerHTML = "";
+
+        if (!state.vocab || state.vocab.length === 0) {
+          const hint = document.createElement("div");
+          hint.className = "empty-hint";
+          hint.textContent = "Keine aktuellen Vokabeln oder Kurz-Lernziele eingetragen.";
+          container.appendChild(hint);
+          return;
+        }
+
+        const todayIso = toISODate(new Date());
+        const fragment = document.createDocumentFragment();
+
+        state.vocab.forEach(v => {
+          const practicedToday = v.lastPracticed === todayIso;
+          const safeId = escapeHTML(v.id);
+          const row = document.createElement("div");
+          row.className = "task-item";
+
+          row.innerHTML = `
+            <div class="task-info">
+              <strong>${escapeHTML(v.text)}</strong>
+              <div class="task-meta">${practicedToday ? "Heute bereits geübt!" : "Heute noch 5 Min. anschauen"}</div>
+            </div>
+            <div class="task-actions">
+              <button type="button" class="${practicedToday ? "btn-secondary" : "btn-check"}" data-action="toggle-vocab" data-id="${safeId}">
+                ${practicedToday ? "Geübt ✓" : "Heute geübt"}
+              </button>
+              <button type="button" class="btn-delete" data-action="delete-vocab" data-id="${safeId}">×</button>
+            </div>
+          `;
+
+          fragment.appendChild(row);
+        });
+
+        container.appendChild(fragment);
+      }
+
+      /* Fächer-Manager für das aktuelle Halbjahr (in den Einstellungen) */
+      function renderActiveSubjectsManager() {
+        const container = document.getElementById("activeSubjectsGrid");
+        if (!container) return;
+        container.innerHTML = "";
+
+        const activeSet = new Set(Array.isArray(state.activeSubjects) ? state.activeSubjects : []);
+        const fragment = document.createDocumentFragment();
+
+        state.subjects.forEach(subj => {
+          if (subj === "Allgemein / Vertretung") return;
+          const isActive = activeSet.has(subj);
+
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = "subject-toggle-btn" + (isActive ? " active-subject" : "");
+          btn.setAttribute("data-subject", subj);
+          btn.innerHTML = `
+            <span>${escapeHTML(subj)}</span>
+            <span style="font-weight:700;">${isActive ? "✓ Aktiv" : "Inaktiv"}</span>
+          `;
+          fragment.appendChild(btn);
+        });
+
+        container.appendChild(fragment);
+      }
+
+      /* Klausur-Radar Tab Renderer (mit Bearbeiten & Vollbild-Lesen) */
+      function renderExamsTab() {
+        const select = document.getElementById("examSubject");
+        const editSelect = document.getElementById("editExamSubject");
+        const activeList = getActiveSubjectsList();
+
+        [select, editSelect].forEach(sel => {
+          if (!sel) return;
+          const curVal = sel.value;
+          sel.innerHTML = "";
+          activeList.forEach(subj => {
+            const opt = document.createElement("option");
+            opt.value = subj;
+            opt.textContent = subj;
+            sel.appendChild(opt);
+          });
+          if (curVal && Array.from(sel.options).some(o => o.value === curVal)) {
+            sel.value = curVal;
+          }
+        });
+
+        const container = document.getElementById("examsListContainer");
+        if (!container) return;
+        container.innerHTML = "";
+
+        const examInfo = classifyExams();
+        if (examInfo.upcoming.length === 0) {
+          const hint = document.createElement("div");
+          hint.className = "empty-hint";
+          hint.textContent = "Keine anstehenden Klausuren oder Projekte eingetragen.";
+          container.appendChild(hint);
+          return;
+        }
+
+        const fragment = document.createDocumentFragment();
+        examInfo.upcoming.forEach(ex => {
+          const card = document.createElement("div");
+          card.className = `exam-card exam-${ex.urgency}`;
+          const safeId = escapeHTML(ex.id);
+          const isLongTopic = (ex.topic || "").length > 50 || (ex.topic || "").includes("\n");
+
+          card.innerHTML = `
+            <div class="task-info">
+              <div class="task-header-row">
+                <span class="task-subject">${escapeHTML(ex.subject)}</span>
+                <span class="days-badge days-badge-${ex.urgency === "red" ? "urgent" : (ex.urgency === "yellow" ? "soon" : "ok")}">${escapeHTML(ex.urgencyLabel)}</span>
+                ${ex.hasSameDayCollision ? `<span style="background:var(--yellow-border); color:#fff; font-size:0.72rem; font-weight:700; padding:2px 6px; border-radius:4px;">⚠️ Doppeltag</span>` : ""}
+              </div>
+              <div class="task-title ${isLongTopic ? "clickable-title" : ""}" data-action="read-exam" data-id="${safeId}" style="margin-top:4px;" title="${escapeHTML(ex.topic)}">${escapeHTML(ex.topic)}</div>
+              ${isLongTopic ? `<button type="button" class="btn-read-more" data-action="read-exam" data-id="${safeId}">📄 Vollständigen Stoff lesen & kopieren ↗</button>` : ""}
+              <div class="task-meta">Datum: ${formatGermanDate(ex.date)} | Lernpuffer: ${ex.bufferMinutes} Min./Tag</div>
+            </div>
+            <div class="task-actions">
+              <button type="button" class="btn-read-more" data-action="read-exam" data-id="${safeId}" style="padding:6px 10px; font-weight:700; background:var(--bg-main); border:1px solid var(--border-color); border-radius:6px; text-decoration:none;">📄 Lesen / Kopieren</button>
+              <button type="button" class="btn-edit" data-action="edit-exam" data-id="${safeId}" title="Klausur bearbeiten">✏️ Ändern</button>
+              <button type="button" class="btn-delete" data-action="delete-exam" data-id="${safeId}" title="Termin löschen">×</button>
+            </div>
+          `;
+          fragment.appendChild(card);
+        });
+
+        container.appendChild(fragment);
+      }
+
+      /* Tagesaktuelle Ausfälle & Tausch Editor */
+      function renderDailyOverridesEditor() {
+        const targetDate = overrideTargetMode === "today" ? getStartOfDay(new Date()) : getNextSchoolDayDate(new Date());
+        const dateIso = toISODate(targetDate);
+        const dayNames = ["Sonntag", "Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag"];
+        const labelText = `Anpassung für: ${dayNames[targetDate.getDay()]} (${formatGermanDate(dateIso)})`;
+
+        const lbl = document.getElementById("overrideTargetLabel");
+        if (lbl) lbl.textContent = labelText;
+
+        const btnToday = document.getElementById("overrideTodayBtn");
+        const btnTomorrow = document.getElementById("overrideTomorrowBtn");
+        if (btnToday && btnTomorrow) {
+          btnToday.style.background = overrideTargetMode === "today" ? "var(--primary)" : "var(--bg-main)";
+          btnToday.style.color = overrideTargetMode === "today" ? "#fff" : "var(--text-main)";
+          btnTomorrow.style.background = overrideTargetMode === "tomorrow" ? "var(--primary)" : "var(--bg-main)";
+          btnTomorrow.style.color = overrideTargetMode === "tomorrow" ? "#fff" : "var(--text-main)";
+        }
+
+        const container = document.getElementById("dailyOverridesContainer");
+        if (!container) return;
+        container.innerHTML = "";
+
+        const timings = getPeriodTimings();
+        const effectiveSlots = getEffectiveDaySchedule(targetDate);
+        const dayOverrides = (state.dailyOverrides && state.dailyOverrides[dateIso]) || {};
+        const activeList = getActiveSubjectsList();
+        const fragment = document.createDocumentFragment();
+
+        timings.forEach((t, idx) => {
+          const eff = effectiveSlots[idx];
+          const ov = dayOverrides[idx];
+          const row = document.createElement("div");
+          let rowClass = "override-row";
+          if (eff.status === "cancelled") rowClass += " status-cancelled";
+          else if (eff.status === "swapped") rowClass += " status-swapped";
+          row.className = rowClass;
+
+          let statusText = `Regulär: ${eff.baseSubject || "Frei"}`;
+          if (ov && ov.status === "cancelled") statusText = "⚡ AUSGEFALLEN (Wird Freistunde)";
+          else if (ov && ov.status === "swapped") statusText = `🔄 Getauscht zu ${ov.subject}`;
+
+          const selectId = `ov_sel_${dateIso}_${idx}`;
+          row.innerHTML = `
+            <div style="font-weight:700; font-size:0.9rem; min-width:90px;">${t.period}. Std. (${t.startStr})</div>
+            <div style="font-size:0.85rem; color:var(--text-muted); flex:1; min-width:140px;">${statusText}</div>
+            <div style="display:flex; gap:6px; align-items:center;">
+              <select id="${selectId}" data-override-period="${idx}" data-date-iso="${dateIso}" style="padding:4px 8px; font-size:0.85rem; width:160px;">
+                <option value="__NORMAL__" ${!ov ? "selected" : ""}>Plan belassen</option>
+                <option value="__CANCELLED__" ${ov && ov.status === "cancelled" ? "selected" : ""}>⚡ Ausfall (Freistunde)</option>
+                ${activeList.map(s => `<option value="${s}" ${ov && ov.status === "swapped" && ov.subject === s ? "selected" : ""}>Tausch: ${s}</option>`).join("")}
+              </select>
+            </div>
+          `;
+          fragment.appendChild(row);
+        });
+
+        container.appendChild(fragment);
+      }
+
+      /* Tägliche Fächer-Auswahl (reduziert auf aktive Halbjahres-Fächer) */
+      function renderSubjectDropdowns() {
+        const selectAdd = document.getElementById("hwSubject");
+        const selectEdit = document.getElementById("editHwSubject");
+        const filterHint = document.getElementById("subjectFilterHint");
+        const toggleBtn = document.getElementById("toggleSubjectFilterBtn");
+
+        const curAdd = selectAdd ? selectAdd.value : "";
+        const curEdit = selectEdit ? selectEdit.value : "";
+        const activeList = getActiveSubjectsList();
+
+        if (selectAdd) {
+          selectAdd.innerHTML = "";
+
+          const now = new Date();
+          const day = now.getDay();
+          const dayNames = ["Sonntag", "Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag"];
+
+          let targetDate = new Date(now);
+          let isWeekend = false;
+
+          if (day === 0 || day === 6) {
+            isWeekend = true;
+            targetDate = getNextSchoolDayDate(now);
+          }
+
+          const effectiveSlots = getEffectiveDaySchedule(targetDate);
+          const scheduledToday = [...new Set(effectiveSlots.map(s => s.effectiveSubject).filter(Boolean))].filter(s => activeList.includes(s));
+
+          const topOpt = document.createElement("option");
+          topOpt.value = "Allgemein / Vertretung";
+          topOpt.textContent = "Allgemein / Vertretung";
+          selectAdd.appendChild(topOpt);
+
+          let subjectsToDisplay = [];
+          if (showAllSubjectsInAdd || scheduledToday.length === 0) {
+            subjectsToDisplay = activeList;
+            if (filterHint) {
+              if (scheduledToday.length === 0 && !showAllSubjectsInAdd) {
+                filterHint.textContent = `Keine aktiven Halbjahres-Fächer am ${dayNames[targetDate.getDay()]} – alle aktiven Fächer sichtbar.`;
+              } else {
+                filterHint.textContent = "Alle aktiven Halbjahres-Fächer werden angezeigt.";
+              }
+            }
+            if (toggleBtn) toggleBtn.textContent = "Nur heutige Fächer";
+          } else {
+            subjectsToDisplay = scheduledToday;
+            if (filterHint) {
+              const dayLabel = isWeekend ? `kommenden Schultag (${dayNames[targetDate.getDay()]})` : `heute (${dayNames[day]})`;
+              filterHint.textContent = `Aktive Fächer laut Stundenplan für ${dayLabel} + Allgemein / Vertretung.`;
+            }
+            if (toggleBtn) toggleBtn.textContent = "Alle aktiven Fächer";
+          }
+
+          subjectsToDisplay.forEach(subj => {
+            const opt = document.createElement("option");
+            opt.value = subj;
+            opt.textContent = subj;
+            selectAdd.appendChild(opt);
+          });
+
+          if (curAdd && Array.from(selectAdd.options).some(o => o.value === curAdd)) {
+            selectAdd.value = curAdd;
+          } else if (selectAdd.options.length > 1 && !curAdd) {
+            selectAdd.selectedIndex = 1;
+          }
+
+          updateDuePreview();
+        }
+
+        if (selectEdit) {
+          selectEdit.innerHTML = "";
+
+          const topOptEdit = document.createElement("option");
+          topOptEdit.value = "Allgemein / Vertretung";
+          topOptEdit.textContent = "Allgemein / Vertretung";
+          selectEdit.appendChild(topOptEdit);
+
+          activeList.forEach(subj => {
+            const opt = document.createElement("option");
+            opt.value = subj;
+            opt.textContent = subj;
+            selectEdit.appendChild(opt);
+          });
+
+          if (curEdit && Array.from(selectEdit.options).some(o => o.value === curEdit)) {
+            selectEdit.value = curEdit;
+          }
+        }
+      }
+
+      /* Basis-Stundenplan-Renderer im 8-Stunden-Raster */
+      function renderScheduleTab() {
+        document.querySelectorAll("#budgetLimitChoices .choice-btn").forEach(btn => {
+          btn.classList.toggle("selected", Number(btn.getAttribute("data-limit")) === state.dailyBudgetMinutes);
+        });
+
+        const cfg = state.timeConfig || DEFAULT_TIME_CONFIG;
+        const startInput = document.getElementById("schoolStartTimeInput");
+        const periodInput = document.getElementById("periodDurationInput");
+        const shortInput = document.getElementById("shortBreakInput");
+        const bigInput = document.getElementById("bigBreakInput");
+        const lunchCheck = document.getElementById("useLunchBreakCheckbox");
+
+        if (startInput) startInput.value = cfg.schoolStart;
+        if (periodInput) periodInput.value = cfg.periodMinutes;
+        if (shortInput) shortInput.value = cfg.shortBreakMinutes;
+        if (bigInput) bigInput.value = cfg.bigBreakMinutes;
+        if (lunchCheck) lunchCheck.checked = cfg.useLunchAsBuffer;
+
+        const btnA = document.getElementById("editWeekABtn");
+        const btnB = document.getElementById("editWeekBBtn");
+        btnA.style.background = state.editingWeek === "A" ? "var(--primary)" : "var(--bg-main)";
+        btnA.style.color = state.editingWeek === "A" ? "#fff" : "var(--text-main)";
+        btnB.style.background = state.editingWeek === "B" ? "var(--primary)" : "var(--bg-main)";
+        btnB.style.color = state.editingWeek === "B" ? "#fff" : "var(--text-main)";
+
+        renderDailyOverridesEditor();
+
+        const container = document.getElementById("scheduleDaysContainer");
+        container.innerHTML = "";
+        const activeWeekData = state.schedule[state.editingWeek];
+        const timings = getPeriodTimings();
+        const activeList = getActiveSubjectsList();
+        const fragment = document.createDocumentFragment();
+
+        WEEKDAYS.forEach(day => {
+          const row = document.createElement("div");
+          row.className = "day-row";
+          row.innerHTML = `<div class="day-title"><span>${day.name} (Woche ${state.editingWeek})</span></div>`;
+
+          const grid = document.createElement("div");
+          grid.className = "period-grid";
+          const daySubjects = normalizeDayPeriods(activeWeekData[day.idx], []);
+
+          for (let p = 0; p < MAX_PERIODS; p++) {
+            const tInfo = timings[p];
+            const slot = document.createElement("div");
+            slot.className = "period-slot";
+
+            const label = document.createElement("span");
+            label.className = "period-label";
+            label.textContent = `${tInfo.period}. (${tInfo.startStr})`;
+
+            const select = document.createElement("select");
+            select.className = "period-select";
+            select.dataset.dayIdx = day.idx;
+            select.dataset.periodIdx = p;
+
+            const emptyOpt = document.createElement("option");
+            emptyOpt.value = "";
+            emptyOpt.textContent = "— (Frei / Lücke)";
+            select.appendChild(emptyOpt);
+
+            activeList.forEach(subj => {
+              const opt = document.createElement("option");
+              opt.value = subj;
+              opt.textContent = subj;
+              if (daySubjects[p] === subj) opt.selected = true;
+              select.appendChild(opt);
+            });
+
+            // Falls ein im Stundenplan eingetragenes Fach aktuell inaktiv ist, trotzdem anzeigen
+            const currentSubj = daySubjects[p];
+            if (currentSubj && !activeList.includes(currentSubj)) {
+              const opt = document.createElement("option");
+              opt.value = currentSubj;
+              opt.textContent = currentSubj + " (inaktiv)";
+              opt.selected = true;
+              select.appendChild(opt);
+            }
+
+            slot.appendChild(label);
+            slot.appendChild(select);
+            grid.appendChild(slot);
+          }
+
+          row.appendChild(grid);
+          fragment.appendChild(row);
+        });
+
+        container.appendChild(fragment);
+      }
+
+      /* ==========================================================================
+         DIALOGE: VOLLANSICHT, KLAUSUR-LESEN & BEARBEITEN
+         ========================================================================== */
+      function openReadModal(taskId) {
+        const task = state.tasks.find(t => t.id === taskId);
+        if (!task) return;
+
+        const subjectEl = document.getElementById("readModalSubject");
+        const metaEl = document.getElementById("readModalMeta");
+        const textEl = document.getElementById("readModalText");
+        const backdrop = document.getElementById("readModalBackdrop");
+
+        subjectEl.textContent = `Fach: ${task.subject}`;
+        metaEl.textContent = `Dauer: ca. ${task.duration} Min. | Abgabe: ${formatGermanDate(task.dueDate)} ${task.done ? "✓ (Erledigt)" : ""}`;
+        textEl.textContent = task.title || "(Kein Aufgabentext eingetragen)";
+
+        backdrop.classList.add("show");
+        backdrop.setAttribute("aria-hidden", "false");
+      }
+
+      function closeReadModal() {
+        const backdrop = document.getElementById("readModalBackdrop");
+        backdrop.classList.remove("show");
+        backdrop.setAttribute("aria-hidden", "true");
+      }
+
+      function openExamReadModal(examId) {
+        const exam = (state.exams || []).find(x => x.id === examId);
+        if (!exam) return;
+
+        currentReadExamId = exam.id;
+        document.getElementById("examReadModalSubject").textContent = `Klausur / Arbeit: ${exam.subject}`;
+        document.getElementById("examReadModalMeta").textContent = `Datum: ${formatGermanDate(exam.date)} | Lernpuffer: ${exam.bufferMinutes} Min./Tag`;
+        document.getElementById("examReadModalText").textContent = exam.topic || "(Kein Lernstoff eingetragen)";
+
+        const backdrop = document.getElementById("examReadModalBackdrop");
+        backdrop.classList.add("show");
+        backdrop.setAttribute("aria-hidden", "false");
+      }
+
+      function closeExamReadModal() {
+        currentReadExamId = null;
+        const backdrop = document.getElementById("examReadModalBackdrop");
+        backdrop.classList.remove("show");
+        backdrop.setAttribute("aria-hidden", "true");
+      }
+
+      function openExamEditModal(examId) {
+        const exam = (state.exams || []).find(x => x.id === examId);
+        if (!exam) return;
+
+        renderExamsTab();
+
+        document.getElementById("editExamId").value = exam.id;
+        document.getElementById("editExamSubject").value = exam.subject;
+        document.getElementById("editExamDate").value = exam.date;
+        document.getElementById("editExamBuffer").value = String(exam.bufferMinutes || 15);
+        document.getElementById("editExamTopic").value = exam.topic || "";
+
+        updateExamCollisionWarning(exam.date, "editExamCollisionWarning", exam.id);
+
+        const backdrop = document.getElementById("examEditModalBackdrop");
+        backdrop.classList.add("show");
+        backdrop.setAttribute("aria-hidden", "false");
+      }
+
+      function closeExamEditModal() {
+        const backdrop = document.getElementById("examEditModalBackdrop");
+        backdrop.classList.remove("show");
+        backdrop.setAttribute("aria-hidden", "true");
+      }
+
+      function saveEditedExam() {
+        const examId = document.getElementById("editExamId").value;
+        const exam = (state.exams || []).find(x => x.id === examId);
+        if (!exam) return;
+
+        exam.subject = document.getElementById("editExamSubject").value;
+        exam.date = document.getElementById("editExamDate").value;
+        exam.bufferMinutes = Number(document.getElementById("editExamBuffer").value) || 15;
+        exam.topic = document.getElementById("editExamTopic").value.trim() || "Klassenarbeit / Test";
+
+        updateExamCollisionWarning("", "editExamCollisionWarning", null);
+        saveState();
+        closeExamEditModal();
+        renderExamsTab();
+        renderPlanTab();
+      }
+
+      function promptDoubleConfirmation(step1Text, step2Text, onConfirmCallback, actionLabel = "Bestätigen") {
+        const backdrop = document.getElementById("confirmModalBackdrop");
+        const titleEl = document.getElementById("confirmModalTitle");
+        const textEl = document.getElementById("confirmModalText");
+        const actionsEl = document.getElementById("confirmModalActions");
+
+        function close() {
+          backdrop.classList.remove("show");
+          backdrop.setAttribute("aria-hidden", "true");
+        }
+
+        function renderStep1() {
+          titleEl.textContent = "1. Sicherheitsabfrage: Bitte bestätigen";
+          textEl.textContent = step1Text;
+          actionsEl.innerHTML = "";
+
+          const cancelBtn = document.createElement("button");
+          cancelBtn.type = "button";
+          cancelBtn.className = "modal-btn modal-btn-cancel";
+          cancelBtn.textContent = "Abbrechen";
+          cancelBtn.addEventListener("click", close);
+
+          const nextBtn = document.createElement("button");
+          nextBtn.type = "button";
+          nextBtn.className = "modal-btn modal-btn-danger";
+          nextBtn.textContent = `Weiter (${actionLabel})`;
+          nextBtn.addEventListener("click", renderStep2);
+
+          actionsEl.appendChild(cancelBtn);
+          actionsEl.appendChild(nextBtn);
+          backdrop.classList.add("show");
+          backdrop.setAttribute("aria-hidden", "false");
+        }
+
+        function renderStep2() {
+          titleEl.textContent = "2. Letzte Bestätigung (Schutz vor Fehlklicks)";
+          textEl.textContent = step2Text;
+          actionsEl.innerHTML = "";
+
+          const confirmBtn = document.createElement("button");
+          confirmBtn.type = "button";
+          confirmBtn.className = "modal-btn modal-btn-danger";
+          confirmBtn.textContent = `Ja, endgültig ${actionLabel}!`;
+          confirmBtn.addEventListener("click", () => {
+            close();
+            onConfirmCallback();
+          });
+
+          const cancelBtn = document.createElement("button");
+          cancelBtn.type = "button";
+          cancelBtn.className = "modal-btn modal-btn-cancel";
+          cancelBtn.textContent = "Nein, Abbrechen";
+          cancelBtn.addEventListener("click", close);
+
+          actionsEl.appendChild(confirmBtn);
+          actionsEl.appendChild(cancelBtn);
+        }
+
+        renderStep1();
+      }
+
+      function openEditModal(taskId) {
+        const task = state.tasks.find(t => t.id === taskId);
+        if (!task) return;
+
+        renderSubjectDropdowns();
+
+        document.getElementById("editTaskId").value = task.id;
+        document.getElementById("editHwSubject").value = task.subject;
+        document.getElementById("editHwTitle").value = task.title;
+        document.getElementById("editHwDuration").value = task.duration;
+
+        editSelectedDueMode = task.dueMode || "next";
+        document.querySelectorAll("#editDueModeChoices .choice-btn").forEach(btn => {
+          btn.classList.toggle("selected", btn.getAttribute("data-mode") === editSelectedDueMode);
+        });
+
+        const customDateBox = document.getElementById("editCustomDateContainer");
+        const customDateInput = document.getElementById("editHwCustomDate");
+        customDateInput.value = task.dueDate || toISODate(new Date());
+        customDateBox.style.display = editSelectedDueMode === "custom" ? "block" : "none";
+
+        const backdrop = document.getElementById("editModalBackdrop");
+        backdrop.classList.add("show");
+        backdrop.setAttribute("aria-hidden", "false");
+      }
+
+      function closeEditModal() {
+        const backdrop = document.getElementById("editModalBackdrop");
+        backdrop.classList.remove("show");
+        backdrop.setAttribute("aria-hidden", "true");
+      }
+
+      function saveEditedTask() {
+        const taskId = document.getElementById("editTaskId").value;
+        const task = state.tasks.find(t => t.id === taskId);
+        if (!task) return;
+
+        const subj = document.getElementById("editHwSubject").value;
+        const title = document.getElementById("editHwTitle").value.trim() || "Hausaufgabe";
+        const dur = Number(document.getElementById("editHwDuration").value) || 15;
+
+        task.subject = subj;
+        task.title = title;
+        task.duration = dur;
+        task.dueMode = editSelectedDueMode;
+
+        if (editSelectedDueMode === "next") {
+          task.dueDate = findSubjectOccurrenceDate(subj, 1, task.createdAt);
+        } else if (editSelectedDueMode === "overnext") {
+          task.dueDate = findSubjectOccurrenceDate(subj, 2, task.createdAt);
+        } else {
+          task.dueDate = document.getElementById("editHwCustomDate").value || findSubjectOccurrenceDate(subj, 1, task.createdAt);
+        }
+
+        saveState();
+        closeEditModal();
+        renderPlanTab();
+      }
+
+      /* ==========================================================================
+         START DER ANWENDUNG
+         ========================================================================== */
+      loadState();
+      renderHeader();
+      renderActiveSubjectsManager();
+      renderSubjectDropdowns();
+      renderScheduleTab();
+      renderExamsTab();
+      renderPlanTab();
+      initEvents();
+
+    })();
+  </script>
+</body>
+</html>
