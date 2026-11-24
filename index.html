@@ -7,6 +7,8 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <title>Hausaufgaben-Puffer-Planer</title>
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+  <link rel="apple-touch-icon" sizes="192x192" href="icon-192.png">
   <style>
     /* ==========================================================================
        REIZARMES DESIGN (Fokus auf Übersicht, klare Kontraste, null Animationen)
@@ -43,7 +45,7 @@
 
       --exam-segment: #7c5295;
 
-      /* Helle, gut sichtbare Tage-Badges (Punkt 5) */
+      /* Helle, gut sichtbare Tage-Badges */
       --badge-urgent-bg: #ffe3e3;
       --badge-urgent-text: #9b1c1c;
       --badge-urgent-border: #f8b4b4;
@@ -55,6 +57,10 @@
       --badge-ok-bg: #def7ec;
       --badge-ok-text: #13543f;
       --badge-ok-border: #84e1bc;
+
+      --review-bg: #fff1db;
+      --review-text: #8a3b00;
+      --review-border: #e07a16;
 
       --task-item-bg: #ffffff;
       --day-row-bg: #fafbfc;
@@ -102,6 +108,10 @@
       --badge-ok-bg: #16492d;
       --badge-ok-text: #c6ffda;
       --badge-ok-border: #5cb86c;
+
+      --review-bg: #4d2c0d;
+      --review-text: #ffd9a8;
+      --review-border: #f59e0b;
 
       --task-item-bg: #1a2332;
       --day-row-bg: #182230;
@@ -153,7 +163,7 @@
       font-weight: 600;
     }
 
-    /* Echtzeit-Taktung Statuszeile (Punkt 1) */
+    /* Echtzeit-Taktung Statuszeile */
     .live-clock-pill {
       display: inline-block;
       margin-top: 4px;
@@ -177,7 +187,7 @@
       cursor: pointer;
     }
 
-    /* Dynamischer Tages-Zeitbudget-Balken + Zweiter Freistunden-Balken (Punkt 3) */
+    /* Dynamischer Tages-Zeitbudget-Balken + Zweiter Freistunden-Balken */
     .budget-bar-container {
       margin-top: 8px;
       background: var(--bg-main);
@@ -337,18 +347,54 @@
 
     .exam-alert-banner {
       background: var(--vocab-bg);
+      border: 1px solid var(--border-color);
       border-left: 5px solid var(--vocab-border);
-      padding: 10px 14px;
-      border-radius: 6px;
-      font-size: 0.88rem;
-      margin-bottom: 14px;
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 0.86rem;
+      margin-bottom: 12px;
       font-weight: 600;
       color: var(--text-main);
       display: none;
     }
 
     .exam-alert-banner.visible {
-      display: block;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .exam-alert-banner.exam-banner-red {
+      background: var(--red-bg);
+      border-color: var(--red-border);
+      border-left-width: 5px;
+    }
+
+    .exam-alert-banner.exam-banner-yellow {
+      background: var(--yellow-bg);
+      border-color: var(--yellow-border);
+      border-left-width: 5px;
+    }
+
+    .exam-alert-banner.exam-banner-green {
+      background: var(--green-bg);
+      border-color: var(--green-border);
+      border-left-width: 5px;
+    }
+
+    .exam-banner-link {
+      background: var(--primary-light);
+      color: var(--primary);
+      border: 1px solid var(--primary);
+      border-radius: 6px;
+      padding: 4px 10px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+      margin-left: auto;
     }
 
     /* Warnbanner bei Klausur-Kollision am gleichen Tag */
@@ -471,7 +517,7 @@
       border-radius: 4px;
     }
 
-    /* Optische Tage-Badges als helle Pille direkt am Fälligkeitsdatum (Punkt 5) */
+    /* Optische Tage-Badges als helle Pille direkt am Fälligkeitsdatum */
     .days-badge {
       display: inline-block;
       padding: 2px 9px;
@@ -570,7 +616,7 @@
       cursor: pointer;
     }
 
-    /* "In Freistunde schieben"-Button (Punkt 3) */
+    /* "In Freistunde schieben"-Button */
     .btn-free-shift {
       background: var(--free-bg);
       color: var(--free-text);
@@ -710,7 +756,7 @@
       cursor: pointer;
     }
 
-    /* Chronologischer Stundenplan & Tagesaktueller Ausfall (Punkt 1 & 2) */
+    /* Chronologischer Stundenplan & Tagesaktueller Ausfall */
     .day-row {
       border: 1px solid var(--border-color);
       border-radius: 8px;
@@ -789,7 +835,14 @@
       border-color: var(--yellow-border);
     }
 
-    /* Klausur-Radar Karten (Punkt 4) */
+    /* Abgelaufene Schulstunden am heutigen Tag (nicht mehr rückwirkend änderbar) */
+    .override-row.status-expired {
+      opacity: 0.58;
+      background: var(--bg-main);
+      border-style: dashed;
+    }
+
+    /* Klausur-Radar Karten */
     .exam-card {
       border: 2px solid var(--border-color);
       border-radius: 8px;
@@ -971,6 +1024,10 @@
       overflow-y: auto;
     }
 
+    .modal-card.modal-wide {
+      max-width: 680px;
+    }
+
     .modal-title {
       font-size: 1.15rem;
       font-weight: 700;
@@ -1031,6 +1088,204 @@
       background: var(--primary);
       color: #fff;
     }
+
+    /* ==========================================================================
+       NEU v1.5: ABGABE- & PACK-CHECK (ERLEDIGTE AUFGABEN), PRÜF-BADGE & CSV-PRÜFLISTE
+       ========================================================================== */
+    .done-item-today {
+      background: var(--red-bg);
+      border: 2px solid var(--red-border);
+      border-left-width: 5px;
+      opacity: 1;
+    }
+
+    .done-item-tomorrow {
+      background: var(--yellow-bg);
+      border: 2px solid var(--yellow-border);
+      border-left-width: 5px;
+      opacity: 1;
+    }
+
+    .done-item-future {
+      background: var(--green-bg);
+      border: 2px solid var(--green-border);
+      border-left-width: 5px;
+      opacity: 1;
+    }
+
+    .done-item-past {
+      background: var(--task-item-bg);
+      border: 1px solid var(--border-color);
+      opacity: 0.65;
+    }
+
+    .done-item-past .done-task-title {
+      text-decoration: line-through;
+    }
+
+    .done-clickable-card {
+      cursor: pointer;
+    }
+
+    .done-check-pill {
+      display: inline-block;
+      background: var(--bg-card);
+      color: var(--green-text);
+      border: 1px solid var(--green-border);
+      border-radius: 999px;
+      font-size: 0.74rem;
+      font-weight: 700;
+      padding: 1px 8px;
+    }
+
+    .review-badge {
+      display: inline-block;
+      background: var(--review-bg);
+      color: var(--review-text);
+      border: 1px solid var(--review-border);
+      border-radius: 999px;
+      font-size: 0.76rem;
+      font-weight: 700;
+      padding: 2px 8px;
+    }
+
+    .csv-review-row {
+      background: var(--day-row-bg);
+      border: 2px solid var(--border-color);
+      border-radius: 10px;
+      padding: 12px;
+      margin-bottom: 10px;
+    }
+
+    .csv-review-row.is-exam {
+      background: var(--vocab-bg);
+      border-color: var(--vocab-border);
+    }
+
+    .csv-review-top {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-bottom: 8px;
+    }
+
+    .csv-review-subject {
+      flex: 1;
+      min-width: 140px;
+      padding: 6px 8px;
+      font-size: 0.88rem;
+      font-weight: 700;
+    }
+
+    .csv-type-toggle {
+      display: inline-flex;
+      border: 2px solid var(--border-color);
+      border-radius: 8px;
+      overflow: hidden;
+      background: var(--bg-card);
+    }
+
+    .csv-type-btn {
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      padding: 6px 10px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .csv-type-btn.active-hw {
+      background: var(--primary);
+      color: #ffffff;
+    }
+
+    .csv-type-btn.active-exam {
+      background: var(--exam-segment);
+      color: #ffffff;
+    }
+
+    .csv-remove-btn {
+      background: var(--red-bg);
+      color: var(--red-text);
+      border: 1px solid var(--red-border);
+      border-radius: 8px;
+      padding: 5px 10px;
+      font-size: 0.9rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .csv-review-title-input {
+      width: 100%;
+      padding: 7px 10px;
+      font-size: 0.92rem;
+      margin-bottom: 8px;
+      border-width: 1px;
+    }
+
+    .csv-review-controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .csv-chip-group {
+      display: flex;
+      gap: 4px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .csv-chip {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--text-main);
+      cursor: pointer;
+    }
+
+    .csv-chip.active {
+      background: var(--primary);
+      color: #ffffff;
+      border-color: var(--primary);
+    }
+
+    .csv-date-input {
+      width: auto;
+      min-width: 145px;
+      padding: 5px 8px;
+      font-size: 0.86rem;
+    }
+
+    .csv-date-missing {
+      border-color: var(--review-border) !important;
+      background: var(--review-bg) !important;
+    }
+
+    .csv-review-meta {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      margin-top: 6px;
+      font-weight: 600;
+    }
+
+    .csv-review-collision {
+      margin-top: 6px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--yellow-text);
+      background: var(--yellow-bg);
+      border: 1px solid var(--yellow-border);
+      border-radius: 6px;
+      padding: 5px 8px;
+    }
   </style>
 </head>
 <body>
@@ -1059,10 +1314,10 @@
       </div>
     </div>
 
-    <!-- 2. Balken: Freistunden- & Ausfall-Kapazität am nächsten Schultag -->
+    <!-- 2. Balken: Freistunden- & Ausfall-Kapazität (Heute bzw. Nächster Schultag) -->
     <div class="free-bar-container" id="freePeriodBarContainer">
       <div class="budget-header">
-        <span id="freePeriodBarTitle">Freistunden-Puffer (Nächster Schultag):</span>
+        <span id="freePeriodBarTitle">Freistunden-Puffer:</span>
         <span id="freePeriodStatusText">0 / 0 Min. genutzt</span>
       </div>
       <div class="budget-track">
@@ -1140,11 +1395,14 @@
       <!-- Smarte Freistunden-Hinweise (unterhalb der Vokabeln, oberhalb der erledigten Aufgaben) -->
       <div class="smart-free-banner" id="smartFreeAdviceBanner"></div>
 
-      <!-- ERLEDIGTE AUFGABEN -->
+      <!-- ERLEDIGTE AUFGABEN (MIT ABGABE- & PACK-CHECK) -->
       <div class="card">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-          <strong>Bereits erledigte Aufgaben</strong>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; gap:8px; flex-wrap:wrap;">
+          <strong>Bereits erledigte Aufgaben (Abgabe- &amp; Pack-Check)</strong>
           <button type="button" class="btn-secondary" id="clearDoneBtn" style="padding:4px 10px; font-size:0.8rem;">Erledigte aufräumen</button>
+        </div>
+        <div class="zone-subtitle" style="margin-bottom:10px;">
+          Automatisch nach Abgabe sortiert: <strong>Rot</strong> = heute dran · <strong>Gelb</strong> = morgen einpacken · <strong>Grün</strong> = später · Durchgestrichen = Abgabetag vorbei. Tippe auf eine Karte zum Nachlesen.
         </div>
         <div id="list-done"></div>
       </div>
@@ -1152,11 +1410,17 @@
     </section>
 
     <!-- ==================================================================
-         ANSICHT 2: HAUSAUFGABE EINTRAGEN
+         ANSICHT 2: HAUSAUFGABE EINTRAGEN (+ DIREKTER CSV-SAMMELIMPORT)
          ================================================================== -->
     <section id="tab-add" class="tab-section">
       <div class="card">
-        <h2 style="margin-bottom:14px; font-size:1.15rem; color:var(--primary);">Neue Hausaufgabe eintragen</h2>
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:14px;">
+          <h2 style="margin-bottom:0; font-size:1.15rem; color:var(--primary);">Neue Hausaufgabe eintragen</h2>
+          <label class="btn-secondary" style="cursor:pointer; display:inline-block; border-color:var(--primary); color:var(--primary); font-weight:700; padding:7px 12px; font-size:0.86rem;">
+            📥 Aufgaben aus CSV einlesen
+            <input type="file" id="quickCsvImportInput" accept=".csv" style="display:none;">
+          </label>
+        </div>
 
         <div class="form-group">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; flex-wrap:wrap; gap:4px;">
@@ -1206,9 +1470,17 @@
     </section>
 
     <!-- ==================================================================
-         ANSICHT 3: KLAUSUR- & TEST-RADAR
+         ANSICHT 3: KLAUSUR- & TEST-RADAR (ÜBERSICHT OBEN, EINGABE UNTEN)
          ================================================================== -->
     <section id="tab-exams" class="tab-section">
+      <div class="card">
+        <h2 style="margin-bottom:10px; font-size:1.1rem; color:var(--primary);">Anstehende Arbeiten, Tests &amp; Projekte</h2>
+        <p style="font-size:0.84rem; color:var(--text-muted); margin-bottom:10px;">
+          Tipp: Tippe auf eine Klausur oder auf <strong>„📄 Lesen / Kopieren“</strong>, um den gesamten Lernstoff im Lesefenster zu öffnen oder in deinen Kalender zu kopieren.
+        </p>
+        <div id="examsListContainer"></div>
+      </div>
+
       <div class="card">
         <h2 style="margin-bottom:8px; font-size:1.15rem; color:var(--primary);">Klausur, Klassenarbeit oder Projekt eintragen</h2>
         <p style="font-size:0.88rem; color:var(--text-muted); margin-bottom:14px;">
@@ -1245,14 +1517,6 @@
 
         <button type="button" class="btn-primary" id="saveExamBtn">In das Klausur-Radar aufnehmen</button>
       </div>
-
-      <div class="card">
-        <h2 style="margin-bottom:10px; font-size:1.1rem; color:var(--primary);">Anstehende Arbeiten, Tests &amp; Projekte</h2>
-        <p style="font-size:0.84rem; color:var(--text-muted); margin-bottom:10px;">
-          Tipp: Tippe auf eine Klausur oder auf <strong>„📄 Lesen / Kopieren“</strong>, um den gesamten Lernstoff im Lesefenster zu öffnen oder in deinen Kalender zu kopieren.
-        </p>
-        <div id="examsListContainer"></div>
-      </div>
     </section>
 
     <!-- ==================================================================
@@ -1270,7 +1534,7 @@
           </div>
         </div>
         <p style="font-size:0.86rem; color:var(--text-muted); margin-bottom:10px;">
-          Markiere hier kurzfristige Ausfälle oder Vertretungs-Tausche. Dein fester A/B-Basisplan bleibt unangetastet! Es werden nur deine für dieses Halbjahr aktivierten Fächer zur Auswahl angeboten.
+          Markiere hier kurzfristige Ausfälle oder Vertretungs-Tausche. <strong>Zeit-Automatik:</strong> Bereits abgelaufene Stunden von heute sind gesperrt und werden nach Ende automatisch zurückgesetzt. Was du für den nächsten Schultag einträgst, rückt am nächsten Morgen automatisch auf „Heute“!
         </p>
         <div id="overrideTargetLabel" style="font-weight:700; font-size:0.92rem; color:var(--primary); margin-bottom:8px;"></div>
         <div id="dailyOverridesContainer"></div>
@@ -1392,15 +1656,15 @@
         </div>
       </div>
 
-      <!-- Akkordeon 2: Darstellung & A/B-Wochenrhythmus -->
+      <!-- Akkordeon 2: Darstellung, Wochenend-Logik & A/B-Wochenrhythmus -->
       <div class="accordion-card" id="acc-appearance">
         <button type="button" class="accordion-header" data-acc="acc-appearance">
-          <span>🌓 2. Darstellung (Dark Mode) &amp; A/B-Wochenrhythmus</span>
+          <span>🌓 2. Darstellung (Dark Mode), Wochenend-Logik &amp; A/B-Wochenrhythmus</span>
           <span class="accordion-icon">▼</span>
         </button>
         <div class="accordion-body">
           <p style="font-size:0.88rem; color:var(--text-muted); margin-bottom:12px;">
-            Hier kannst du das Farbschema zwischen Tag- und Nachtmodus umschalten sowie bei Bedarf den A/B-Wochenrhythmus einmalig korrigieren.
+            Hier kannst du das Farbschema zwischen Tag- und Nachtmodus umschalten, die Wochenend-Anzeige für erledigte Aufgaben steuern sowie bei Bedarf den A/B-Wochenrhythmus korrigieren.
           </p>
           <div style="display:flex; gap:12px; flex-wrap:wrap; align-items:center;">
             <button type="button" class="dark-mode-btn" id="darkModeToggleBtn">
@@ -1411,6 +1675,13 @@
             </button>
           </div>
           <div id="settingsWeekStatusText" style="margin-top:10px; font-size:0.85rem; color:var(--text-muted); font-weight:600;"></div>
+
+          <div style="margin-top:14px; padding:10px; background:var(--day-row-bg); border:1px solid var(--border-color); border-radius:8px; display:flex; align-items:flex-start; gap:10px;">
+            <input type="checkbox" id="doneWeekendBridgeCheckbox" style="width:20px; height:20px; margin-top:2px; cursor:pointer; flex-shrink:0;">
+            <label for="doneWeekendBridgeCheckbox" style="font-size:0.88rem; font-weight:600; color:var(--text-main); cursor:pointer;">
+              Wochenend-Brücke im Abgabe- &amp; Pack-Check (erledigte Aufgaben): Montags-Aufgaben schon ab Freitag/Samstag <strong>Gelb</strong> markieren (sonst strenge Kalendertage: erst ab Sonntag Gelb)
+            </label>
+          </div>
         </div>
       </div>
 
@@ -1437,23 +1708,23 @@
         </div>
       </div>
 
-      <!-- Akkordeon 4: Hausaufgaben CSV-Export & Import -->
+      <!-- Akkordeon 4: Hausaufgaben & Klausuren CSV-Export & Import -->
       <div class="accordion-card" id="acc-csv">
         <button type="button" class="accordion-header" data-acc="acc-csv">
-          <span>📊 4. Hausaufgaben CSV-Export &amp; Import (Excel / Statistik)</span>
+          <span>📊 4. Hausaufgaben &amp; Klausuren CSV-Export &amp; Import (Tracker / Excel)</span>
           <span class="accordion-icon">▼</span>
         </button>
         <div class="accordion-body">
           <p style="font-size:0.88rem; color:var(--text-muted); margin-bottom:12px;">
-            Exportiere alle offenen und erledigten Aufgaben mit Zeitstempeln und Dauer für Auswertungen in Excel oder lade Aufgaben aus einer CSV-Datei hinzu.
-            <strong>Wichtig beim Import:</strong> Bereits eingegebene Hausaufgaben werden <strong>nicht überschrieben</strong>, sondern neue Aufgaben werden sicher angehängt.
+            Exportiere alle Hausaufgaben (offen &amp; erledigt) sowie alle eingetragenen Klausuren/Tests für Auswertungen in Excel oder lade neue Einträge aus dem <strong>SB-Talker / Tracker</strong> über die Schnell-Prüfliste hinzu.
+            <strong>Wichtig beim Import:</strong> Bereits vorhandene Hausaufgaben und Klausuren werden <strong>nicht überschrieben</strong>, sondern neue Einträge werden sicher angehängt.
           </p>
           <div style="display:flex; gap:8px; flex-wrap:wrap;">
             <button type="button" class="btn-secondary" id="exportCsvBtn" style="border-color:var(--primary); font-weight:700;">
-              📊 Hausaufgaben als CSV exportieren (.csv)
+              📊 Hausaufgaben &amp; Klausuren als CSV exportieren (.csv)
             </button>
             <label class="btn-secondary" style="cursor:pointer; display:inline-block; border-color:var(--primary); font-weight:700;">
-              📥 Hausaufgaben aus CSV importieren (anfügen)
+              📥 Hausaufgaben &amp; Klausuren aus CSV importieren (anfügen)
               <input type="file" id="importCsvInput" accept=".csv" style="display:none;">
             </label>
           </div>
@@ -1589,7 +1860,7 @@
   </div>
 
   <!-- ==================================================================
-       MODAL 3: AUFGABENDETAILS & NOTIZEN VOLLBILD LESEN (NUR SCHLIESSEN)
+       MODAL 3: AUFGABENDETAILS & NOTIZEN VOLLBILD LESEN & KOPIEREN
        ================================================================== -->
   <div class="modal-backdrop" id="readModalBackdrop" role="dialog" aria-modal="true" aria-hidden="true">
     <div class="modal-card">
@@ -1599,7 +1870,8 @@
         <div class="reading-content-box" id="readModalText"></div>
       </div>
       <div class="modal-actions">
-        <button type="button" class="modal-btn modal-btn-primary" id="closeReadModalBtn">Schließen</button>
+        <button type="button" class="modal-btn modal-btn-cancel" id="closeReadModalBtn">Schließen</button>
+        <button type="button" class="btn-clipboard" id="copyTaskTextBtn">📋 Alles in Zwischenablage kopieren</button>
       </div>
     </div>
   </div>
@@ -1629,6 +1901,8 @@
       <div class="modal-title">Klausur / Test bearbeiten</div>
       <div class="modal-body">
         <input type="hidden" id="editExamId">
+
+        <div class="collision-warning-box" id="editExamReviewNotice"></div>
 
         <div class="form-group">
           <label class="form-label" for="editExamSubject">Fach:</label>
@@ -1660,6 +1934,25 @@
       <div class="modal-actions">
         <button type="button" class="modal-btn modal-btn-cancel" id="cancelExamEditBtn">Abbrechen</button>
         <button type="button" class="modal-btn modal-btn-primary" id="saveExamEditBtn">Speichern</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================================================================
+       MODAL 6: CSV SCHNELL-PRÜFLISTE (SAMMEL-IMPORT AUS SB-TALKER / TRACKER)
+       ================================================================== -->
+  <div class="modal-backdrop" id="csvReviewModalBackdrop" role="dialog" aria-modal="true" aria-hidden="true">
+    <div class="modal-card modal-wide">
+      <div class="modal-title">📥 CSV Schnell-Prüfliste</div>
+      <div class="modal-body">
+        <div id="csvReviewSubtitle" style="font-size:0.86rem; color:var(--text-muted); margin-bottom:12px;">
+          Prüfe kurz die erkannten Einträge: Zeiten antippen, bei Bedarf auf „Klausur“ umschalten oder Unwichtiges (z. B. Elterninfo) mit <strong>×</strong> entfernen.
+        </div>
+        <div id="csvReviewList"></div>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="modal-btn modal-btn-cancel" id="cancelCsvReviewBtn">Abbrechen</button>
+        <button type="button" class="modal-btn modal-btn-primary" id="confirmCsvReviewBtn">Einträge übernehmen</button>
       </div>
     </div>
   </div>
@@ -1725,12 +2018,13 @@
         weekOffset: 0,
         editingWeek: "A",
         darkMode: false,
+        doneWeekendBridge: false, // false = strenge Kalendertage, true = Wochenend-Brücke (Fr/Sa -> Gelb für Montag)
         subjects: [...DEFAULT_SUBJECTS],
         activeSubjects: [...DEFAULT_ACTIVE_SUBJECTS],
         schedule: JSON.parse(JSON.stringify(DEFAULT_SCHEDULE)),
         timeConfig: { ...DEFAULT_TIME_CONFIG },
         dailyOverrides: {}, // Format: { "YYYY-MM-DD": { "0": { status: "cancelled"|"swapped", subject: "" } } }
-        exams: [],          // Format: [{ id, subject, date, topic, bufferMinutes }]
+        exams: [],          // Format: [{ id, subject, date, topic, bufferMinutes, needsReview }]
         tasks: [],
         vocab: []
       };
@@ -1739,9 +2033,15 @@
       let selectedDueMode = "next";
       let editSelectedDueMode = "next";
       let showAllSubjectsInAdd = false;
-      let overrideTargetMode = "tomorrow"; // "today" oder "tomorrow"
+      let overrideTargetMode = "today"; // Steuert den Editor ("today" oder "tomorrow"), wird zeitabhängig synchronisiert
+      let userManuallySwitchedOverrideTab = false;
       let currentReadExamId = null;
+      let currentReadTaskId = null;
       let liveClockTimer = null;
+
+      /* Zwischenspeicher für die CSV Schnell-Prüfliste (Modal 6) */
+      let pendingCsvReviewItems = [];
+      let pendingCsvSkippedCount = 0;
 
       /* Liefert die aktuell für das Halbjahr aktivierten Fächer (Fallback: alle Fächer) */
       function getActiveSubjectsList() {
@@ -1813,14 +2113,16 @@
               subject: String(ex.subject),
               date: String(ex.date),
               topic: String(ex.topic || ""),
-              bufferMinutes: Number(ex.bufferMinutes) > 0 ? Number(ex.bufferMinutes) : 15
+              bufferMinutes: Number(ex.bufferMinutes) > 0 ? Number(ex.bufferMinutes) : 15,
+              needsReview: Boolean(ex.needsReview)
             }))
           : [];
 
         const safeTasks = Array.isArray(parsed.tasks)
           ? parsed.tasks.map(t => ({
               ...t,
-              plannedInFreePeriod: Boolean(t.plannedInFreePeriod)
+              plannedInFreePeriod: Boolean(t.plannedInFreePeriod),
+              freePeriodDate: typeof t.freePeriodDate === "string" ? t.freePeriodDate : ""
             }))
           : [];
 
@@ -1832,7 +2134,6 @@
         let safeActiveSubjects = [];
         if (Array.isArray(parsed.activeSubjects) && parsed.activeSubjects.length > 0) {
           safeActiveSubjects = [...new Set(parsed.activeSubjects.filter(s => typeof s === "string" && s.trim() !== ""))];
-          // Sicherstellen, dass alle aktiven Fächer auch in der Hauptliste stehen
           safeActiveSubjects.forEach(s => {
             if (s !== "Allgemein / Vertretung" && !mergedSubjects.includes(s)) {
               mergedSubjects.push(s);
@@ -1856,6 +2157,7 @@
           weekOffset: Number.isInteger(parsed.weekOffset) ? ((parsed.weekOffset % 2) + 2) % 2 : 0,
           editingWeek: parsed.editingWeek === "B" ? "B" : "A",
           darkMode: Boolean(parsed.darkMode),
+          doneWeekendBridge: Boolean(parsed.doneWeekendBridge),
           subjects: mergedSubjects,
           activeSubjects: safeActiveSubjects,
           schedule: safeSchedule,
@@ -1876,20 +2178,14 @@
 
             let needsSave = false;
 
-            // Alte Tages-Overrides (älter als 14 Tage) automatisch aufräumen
-            const cutoffDate = new Date();
-            cutoffDate.setDate(cutoffDate.getDate() - 14);
-            const cutoffIso = cutoffDate.toISOString().slice(0, 10);
-            Object.keys(state.dailyOverrides).forEach(dateIso => {
-              if (dateIso < cutoffIso) {
-                delete state.dailyOverrides[dateIso];
-                needsSave = true;
-              }
-            });
+            // Abgelaufene Freistunden/Overrides (vergangene Tage & bereits beendete Stunden von heute) sofort bereinigen
+            if (cleanupExpiredOverridesAndFreeShifts()) {
+              needsSave = true;
+            }
 
             // Fehlende Fälligkeitsdaten vor der Duplikatsprüfung ergänzen
             state.tasks.forEach(t => {
-              if (!t.done && !t.dueDate) {
+              if (!t.dueDate) {
                 const count = t.dueMode === "overnext" ? 2 : 1;
                 t.dueDate = findSubjectOccurrenceDate(t.subject, count, t.createdAt);
                 needsSave = true;
@@ -1933,6 +2229,10 @@
           document.body.classList.remove("dark-theme");
           if (btn) btn.textContent = "🌙 Dark Mode aktivieren";
         }
+        const bridgeCheck = document.getElementById("doneWeekendBridgeCheckbox");
+        if (bridgeCheck) {
+          bridgeCheck.checked = Boolean(state.doneWeekendBridge);
+        }
       }
 
       /* WebView- & Mobile-sicherer Datei-Download (verhindert Abbruch durch zu frühes revokeObjectURL) */
@@ -1953,15 +2253,45 @@
       }
 
       /* ==========================================================================
-         CSV-EXPORT & CSV-IMPORT (EXCEL-KOMPATIBEL & ZEILENUMBRUCH-SICHER)
+         CSV-EXPORT & CSV-IMPORT (BACKUP-CSV + SB-TALKER / TRACKER SCHNELL-PRÜFLISTE)
          ========================================================================== */
+      function showNoticeModal(title, message) {
+        const backdrop = document.getElementById("confirmModalBackdrop");
+        const titleEl = document.getElementById("confirmModalTitle");
+        const textEl = document.getElementById("confirmModalText");
+        const actionsEl = document.getElementById("confirmModalActions");
+        if (!backdrop || !titleEl || !textEl || !actionsEl) return;
+
+        titleEl.textContent = title;
+        textEl.style.whiteSpace = "pre-line";
+        textEl.textContent = message;
+        actionsEl.innerHTML = "";
+
+        const okBtn = document.createElement("button");
+        okBtn.type = "button";
+        okBtn.className = "modal-btn modal-btn-primary";
+        okBtn.textContent = "OK";
+        okBtn.addEventListener("click", () => {
+          backdrop.classList.remove("show");
+          backdrop.setAttribute("aria-hidden", "true");
+        });
+
+        actionsEl.appendChild(okBtn);
+        backdrop.classList.add("show");
+        backdrop.setAttribute("aria-hidden", "false");
+      }
+
       function exportTasksToCSV() {
-        if (!state.tasks || state.tasks.length === 0) {
-          alert("Keine Hausaufgaben zum Exportieren vorhanden.");
+        const hasTasks = Array.isArray(state.tasks) && state.tasks.length > 0;
+        const hasExams = Array.isArray(state.exams) && state.exams.length > 0;
+
+        if (!hasTasks && !hasExams) {
+          showNoticeModal("CSV-Export", "Keine Hausaufgaben oder Klausuren zum Exportieren vorhanden.");
           return;
         }
 
         const headers = [
+          "Typ",
           "ID",
           "Fach",
           "Aufgabe",
@@ -1970,8 +2300,10 @@
           "Faellig_Am",
           "Frist_Modus",
           "In_Freistunde_Geplant",
+          "Freistunde_Datum",
           "Status",
-          "Erledigt_Am"
+          "Erledigt_Am",
+          "Pruefen"
         ];
 
         function escapeCsvCell(val) {
@@ -1983,7 +2315,8 @@
           return str;
         }
 
-        const rows = state.tasks.map(t => [
+        const taskRows = (state.tasks || []).map(t => [
+          escapeCsvCell("Hausaufgabe"),
           escapeCsvCell(t.id),
           escapeCsvCell(t.subject),
           escapeCsvCell(t.title),
@@ -1992,13 +2325,31 @@
           escapeCsvCell(t.dueDate || ""),
           escapeCsvCell(t.dueMode || "next"),
           escapeCsvCell(t.plannedInFreePeriod ? "Ja" : "Nein"),
+          escapeCsvCell(t.freePeriodDate || ""),
           escapeCsvCell(t.done ? "Erledigt" : "Offen"),
-          escapeCsvCell(t.completedAt || "")
+          escapeCsvCell(t.completedAt || ""),
+          escapeCsvCell("Nein")
         ].join(";"));
 
-        const csvContent = "\uFEFF" + [headers.join(";"), ...rows].join("\r\n");
+        const examRows = (state.exams || []).map(ex => [
+          escapeCsvCell("Klausur"),
+          escapeCsvCell(ex.id),
+          escapeCsvCell(ex.subject),
+          escapeCsvCell(ex.topic || ""),
+          escapeCsvCell(ex.bufferMinutes || 15),
+          escapeCsvCell(""),
+          escapeCsvCell(ex.date || ""),
+          escapeCsvCell("Klausur"),
+          escapeCsvCell("Nein"),
+          escapeCsvCell(""),
+          escapeCsvCell(getDaysUntilDue(ex.date) < 0 ? "Vergangen" : "Anstehend"),
+          escapeCsvCell(""),
+          escapeCsvCell(ex.needsReview ? "Ja" : "Nein")
+        ].join(";"));
+
+        const csvContent = "\uFEFF" + [headers.join(";"), ...taskRows, ...examRows].join("\r\n");
         const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-        triggerFileDownload(blob, `hausaufgaben-statistik-${toISODate(new Date())}.csv`);
+        triggerFileDownload(blob, `hausaufgaben-klausuren-${toISODate(new Date())}.csv`);
       }
 
       function parseCSV(text) {
@@ -2058,40 +2409,292 @@
         return lines;
       }
 
+      /* Normalisiert ISO-Daten (YYYY-MM-DD) und deutsche Daten (DD.MM.YYYY / DD.MM.YY) */
+      function normalizeIncomingDateToISO(rawStr) {
+        if (!rawStr) return "";
+        const s = String(rawStr).trim();
+        if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+        const m = s.match(/^(\d{1,2})\.(\d{1,2})\.(\d{2,4})$/);
+        if (m) {
+          const dd = String(Number(m[1])).padStart(2, "0");
+          const mm = String(Number(m[2])).padStart(2, "0");
+          let yyyy = Number(m[3]);
+          if (yyyy < 100) yyyy += 2000;
+          if (Number(mm) >= 1 && Number(mm) <= 12 && Number(dd) >= 1 && Number(dd) <= 31) {
+            return `${yyyy}-${mm}-${dd}`;
+          }
+        }
+        return "";
+      }
+
+      /* Extrahiert ein Datum aus Freitext (z. B. "Kausur am 15.12.26" -> "2026-12-15") */
+      function extractDateFromText(text, refDateIso = "") {
+        if (!text) return "";
+        const str = String(text);
+
+        const isoMatch = str.match(/\b(20\d{2})-(\d{2})-(\d{2})\b/);
+        if (isoMatch) {
+          return `${isoMatch[1]}-${isoMatch[2]}-${isoMatch[3]}`;
+        }
+
+        const deFull = str.match(/\b(\d{1,2})\.(\d{1,2})\.(\d{2,4})\b/);
+        if (deFull) {
+          const dd = Number(deFull[1]);
+          const mm = Number(deFull[2]);
+          let yyyy = Number(deFull[3]);
+          if (yyyy < 100) yyyy += 2000;
+          if (mm >= 1 && mm <= 12 && dd >= 1 && dd <= 31) {
+            return `${yyyy}-${String(mm).padStart(2, "0")}-${String(dd).padStart(2, "0")}`;
+          }
+        }
+
+        const deShort = str.match(/\b(\d{1,2})\.(\d{1,2})\.(?!\d)/);
+        if (deShort) {
+          const dd = Number(deShort[1]);
+          const mm = Number(deShort[2]);
+          if (mm >= 1 && mm <= 12 && dd >= 1 && dd <= 31) {
+            const ref = refDateIso ? parseISODate(refDateIso) : new Date();
+            let yyyy = ref.getFullYear();
+            const candidate = new Date(yyyy, mm - 1, dd);
+            if (candidate.getTime() < ref.getTime() - 86400000 * 30) {
+              yyyy += 1;
+            }
+            return `${yyyy}-${String(mm).padStart(2, "0")}-${String(dd).padStart(2, "0")}`;
+          }
+        }
+
+        return "";
+      }
+
+      /* Erkennt Signalwörter für Klassenarbeiten / Klausuren / Tests (inkl. häufiger Tippfehler) */
+      function detectExamKeyword(text) {
+        if (!text) return false;
+        const lower = String(text).toLowerCase();
+        return /\b(klausur|kausur|kluasur|klassenarbeit|kursarbeit|schularbeit|lernzielkontrolle|vokabeltest|kurztest|test|prüfung|pruefung|referat|projektarbeit)\b/.test(lower);
+      }
+
+      /* Ordnet Kombifächer (z. B. "Religion / Ethik") intelligent den aktiven Halbjahres-Fächern zu */
+      function mapIncomingSubject(rawSubject) {
+        const cleaned = String(rawSubject || "").trim();
+        if (!cleaned) return "Allgemein / Vertretung";
+
+        const activeList = getActiveSubjectsList();
+        const exactActive = activeList.find(s => s.toLowerCase() === cleaned.toLowerCase());
+        if (exactActive) return exactActive;
+
+        const exactAll = state.subjects.find(s => s.toLowerCase() === cleaned.toLowerCase());
+        if (exactAll) return exactAll;
+
+        // Kombifächer wie "Religion / Ethik" oder "Biologie/Chemie" aufteilen und gegen aktive Fächer prüfen
+        const parts = cleaned.split(/[\/&,]+/).map(p => p.trim()).filter(Boolean);
+        if (parts.length > 1) {
+          for (const part of parts) {
+            const matchActive = activeList.find(s => s.toLowerCase() === part.toLowerCase());
+            if (matchActive) return matchActive;
+          }
+          for (const part of parts) {
+            const matchAll = state.subjects.find(s => s.toLowerCase() === part.toLowerCase());
+            if (matchAll) return matchAll;
+          }
+        }
+
+        // Teilwort-Treffer (z. B. "Mathematik" -> "Mathe")
+        const partialActive = activeList.find(s => cleaned.toLowerCase().startsWith(s.toLowerCase()) || s.toLowerCase().startsWith(cleaned.toLowerCase()));
+        if (partialActive) return partialActive;
+
+        return cleaned;
+      }
+
+      /* Prüft ob eine CSV eine vollständige Planer-Export-CSV oder eine Tracker/SB-Talker-CSV ist */
       function importTasksFromCSV(csvText) {
         const rows = parseCSV(csvText);
         if (rows.length < 2) {
-          alert("Die CSV-Datei enthält keine lesbaren Datenzeilen.");
+          showNoticeModal("CSV-Import", "Die CSV-Datei enthält keine lesbaren Datenzeilen.");
           return;
         }
 
         const header = rows[0].map(h => h.toLowerCase().replace(/[\s_"]/g, ""));
-        const idIdx = header.findIndex(h => h.includes("id"));
-        const subjIdx = header.findIndex(h => h.includes("fach"));
-        const titleIdx = header.findIndex(h => h.includes("aufgabe") || h.includes("titel") || h.includes("text"));
-        const durIdx = header.findIndex(h => h.includes("dauer") || h.includes("zeit") || h.includes("min"));
-        const createdIdx = header.findIndex(h => h.includes("erstellt"));
-        const dueIdx = header.findIndex(h => h.includes("faellig") || h.includes("abgabe") || h.includes("datum"));
-        const modeIdx = header.findIndex(h => h.includes("modus") || h.includes("frist"));
-        const freeIdx = header.findIndex(h => h.includes("freistunde"));
-        const statusIdx = header.findIndex(h => h.includes("status") || (h.includes("erledigt") && !h.includes("erledigtam")));
-        const completedIdx = header.findIndex(h => h.includes("erledigtam") || h.includes("fertig"));
+        const isPlannerBackupCsv =
+          header.some(h => h === "status" || h.includes("erledigtam") || h.includes("faelligam") || h.includes("geplantedauerminuten") || h.includes("infreistundegeplant"));
 
-        let addedCount = 0;
-        let skippedCount = 0;
-        const existingIds = new Set(state.tasks.map(t => String(t.id)));
+        if (isPlannerBackupCsv) {
+          importBackupCSVDirect(rows, header);
+          return;
+        }
+
+        // SB-Talker / Schulbegleitungs-Tracker CSV (z. B. Datum;Fach;Aufgabe;Notiz) -> Schnell-Prüfliste öffnen
+        const dateIdx = header.findIndex(h => h.includes("datum") || h.includes("erstellt"));
+        const subjIdx = header.findIndex(h => h.includes("fach"));
+        const taskIdx = header.findIndex(h => h.includes("aufgabe") || h.includes("titel") || h.includes("text") || h.includes("thema"));
+        const noteIdx = header.findIndex(h => h.includes("notiz") || h.includes("bemerkung") || h.includes("kommentar") || h.includes("info"));
+        const typeIdx = header.findIndex(h => h.includes("typ") || h.includes("art") || h.includes("kategorie"));
+
+        const reviewItems = [];
+        let skippedDuplicates = 0;
 
         for (let i = 1; i < rows.length; i++) {
           const row = rows[i];
           if (row.length === 0 || (row.length === 1 && !row[0])) continue;
 
+          const rawDate = (dateIdx !== -1 && row[dateIdx]) ? row[dateIdx].trim() : "";
+          const createdAt = normalizeIncomingDateToISO(rawDate) || toISODate(new Date());
+          const rawSubj = (subjIdx !== -1 && row[subjIdx]) ? row[subjIdx].trim() : "";
+          const rawTask = (taskIdx !== -1 && row[taskIdx]) ? row[taskIdx].trim() : "";
+          const rawNote = (noteIdx !== -1 && row[noteIdx]) ? row[noteIdx].trim() : "";
+          const rawType = (typeIdx !== -1 && row[typeIdx]) ? row[typeIdx].toLowerCase().trim() : "";
+
+          let combinedTitle = rawTask;
+          if (rawNote) {
+            combinedTitle = combinedTitle ? `${combinedTitle} (${rawNote})` : rawNote;
+          }
+          combinedTitle = combinedTitle.replace(/\s{2,}/g, " ").trim();
+          if (!combinedTitle && !rawSubj) continue;
+
+          const mappedSubject = mapIncomingSubject(rawSubj);
+          const isExamDetected =
+            rawType.includes("klausur") ||
+            rawType.includes("arbeit") ||
+            rawType.includes("test") ||
+            detectExamKeyword(combinedTitle);
+
+          const extractedExamDate = extractDateFromText(combinedTitle, createdAt);
+          const autoDueDate = findSubjectOccurrenceDate(mappedSubject, 1, createdAt);
+
+          // Duplikatsprüfung gegen bereits gespeicherte Hausaufgaben und Klausuren
+          const normalizedTitleLower = (combinedTitle || "Hausaufgabe").toLowerCase().trim();
+          const alreadyExistsAsTask = state.tasks.some(t =>
+            t.subject.toLowerCase() === mappedSubject.toLowerCase() &&
+            (t.title || "").toLowerCase().trim() === normalizedTitleLower &&
+            (t.createdAt === createdAt || t.dueDate === autoDueDate)
+          );
+          const alreadyExistsAsExam = isExamDetected && state.exams.some(ex =>
+            ex.subject.toLowerCase() === mappedSubject.toLowerCase() &&
+            (ex.topic || "").toLowerCase().trim() === normalizedTitleLower &&
+            (!extractedExamDate || ex.date === extractedExamDate)
+          );
+
+          if (alreadyExistsAsTask || alreadyExistsAsExam) {
+            skippedDuplicates++;
+            continue;
+          }
+
+          reviewItems.push({
+            tempId: `csv_${Date.now()}_${i}`,
+            type: isExamDetected ? "exam" : "hw",
+            subject: mappedSubject,
+            rawSubject: rawSubj,
+            title: combinedTitle || "Hausaufgabe",
+            createdAt,
+            duration: 15,
+            dueMode: "next",
+            dueDate: autoDueDate,
+            examDate: extractedExamDate,
+            examDateAutoExtracted: Boolean(extractedExamDate),
+            bufferMinutes: 15,
+            needsReview: isExamDetected ? (!extractedExamDate) : false
+          });
+        }
+
+        if (reviewItems.length === 0) {
+          showNoticeModal(
+            "CSV-Import",
+            skippedDuplicates > 0
+              ? `Alle ${skippedDuplicates} Einträge aus der Datei sind bereits im Planer vorhanden – nichts doppelt angelegt.`
+              : "In der CSV-Datei wurden keine neuen Aufgaben gefunden."
+          );
+          return;
+        }
+
+        openCsvReviewModal(reviewItems, skippedDuplicates);
+      }
+
+      /* Direkter Anhänge-Import für vollständige Planer-Export-CSVs (inkl. erledigter Aufgaben & Klausuren) */
+      function importBackupCSVDirect(rows, header) {
+        const typeIdx = header.findIndex(h => h.includes("typ") || h.includes("art"));
+        const idIdx = header.findIndex(h => h.includes("id"));
+        const subjIdx = header.findIndex(h => h.includes("fach"));
+        const titleIdx = header.findIndex(h => h.includes("aufgabe") || h.includes("titel") || h.includes("text") || h.includes("thema"));
+        const durIdx = header.findIndex(h => h.includes("dauer") || h.includes("zeit") || h.includes("min") || h.includes("puffer"));
+        const createdIdx = header.findIndex(h => h.includes("erstellt"));
+        const dueIdx = header.findIndex(h => h.includes("faellig") || h.includes("abgabe") || (h.includes("datum") && !h.includes("freistunde")));
+        const modeIdx = header.findIndex(h => h.includes("modus") || h.includes("frist"));
+        const freeIdx = header.findIndex(h => h.includes("freistunde") && !h.includes("datum"));
+        const freeDateIdx = header.findIndex(h => h.includes("freistundedatum"));
+        const statusIdx = header.findIndex(h => h.includes("status") || (h.includes("erledigt") && !h.includes("erledigtam")));
+        const completedIdx = header.findIndex(h => h.includes("erledigtam") || h.includes("fertig"));
+        const reviewIdx = header.findIndex(h => h.includes("pruef") || h.includes("prüf") || h.includes("review"));
+
+        let addedTasksCount = 0;
+        let addedExamsCount = 0;
+        let skippedCount = 0;
+        const existingTaskIds = new Set(state.tasks.map(t => String(t.id)));
+        const existingExamIds = new Set((state.exams || []).map(ex => String(ex.id)));
+
+        for (let i = 1; i < rows.length; i++) {
+          const row = rows[i];
+          if (row.length === 0 || (row.length === 1 && !row[0])) continue;
+
+          const rawType = (typeIdx !== -1 && row[typeIdx]) ? row[typeIdx].toLowerCase().trim() : "";
           let id = idIdx !== -1 && row[idIdx] ? row[idIdx].trim() : "";
           const subject = (subjIdx !== -1 && row[subjIdx]) ? row[subjIdx].trim() : "Allgemein";
-          const title = (titleIdx !== -1 && row[titleIdx]) ? row[titleIdx].trim() : "Hausaufgabe";
+          const title = (titleIdx !== -1 && row[titleIdx]) ? row[titleIdx].trim() : "";
           const duration = (durIdx !== -1 && !isNaN(Number(row[durIdx])) && Number(row[durIdx]) > 0) ? Number(row[durIdx]) : 15;
-          const createdAt = (createdIdx !== -1 && row[createdIdx]) ? row[createdIdx].trim() : toISODate(new Date());
-          const rawDueDate = (dueIdx !== -1 && row[dueIdx]) ? row[dueIdx].trim() : "";
-          const dueMode = rawDueDate ? "custom" : ((modeIdx !== -1 && row[modeIdx]) ? row[modeIdx].trim() : "next");
+          const rawDueDate = (dueIdx !== -1 && row[dueIdx]) ? normalizeIncomingDateToISO(row[dueIdx].trim()) : "";
+          const rawMode = (modeIdx !== -1 && row[modeIdx]) ? row[modeIdx].trim() : "";
+          const rawReview = (reviewIdx !== -1 && row[reviewIdx]) ? row[reviewIdx].toLowerCase().trim() : "";
+
+          const isExamRow =
+            rawType.includes("klausur") ||
+            rawType.includes("arbeit") ||
+            rawType.includes("test") ||
+            rawMode.toLowerCase() === "klausur" ||
+            id.startsWith("ex_");
+
+          if (isExamRow) {
+            const examDate = rawDueDate || toISODate(getNextSchoolDayDate(new Date()));
+            const examTopic = title || "Klassenarbeit / Test";
+            const needsReview = (rawReview === "ja" || rawReview === "true" || rawReview === "1") || !rawDueDate;
+
+            const isExamDuplicate =
+              (id && existingExamIds.has(id)) ||
+              state.exams.some(ex =>
+                ex.subject.toLowerCase() === subject.toLowerCase() &&
+                ex.date === examDate &&
+                (ex.topic || "").toLowerCase().trim() === examTopic.toLowerCase().trim()
+              );
+
+            if (isExamDuplicate) {
+              skippedCount++;
+              continue;
+            }
+
+            if (!id) {
+              id = "ex_" + Date.now() + "_" + i + "_" + Math.floor(Math.random() * 10000);
+            }
+
+            if (subject && subject !== "Allgemein / Vertretung") {
+              if (!state.subjects.includes(subject)) state.subjects.push(subject);
+              if (!state.activeSubjects.includes(subject)) state.activeSubjects.push(subject);
+            }
+
+            state.exams.push({
+              id,
+              subject,
+              date: examDate,
+              topic: examTopic,
+              bufferMinutes: duration,
+              needsReview
+            });
+
+            existingExamIds.add(id);
+            addedExamsCount++;
+            continue;
+          }
+
+          // Reguläre Hausaufgabe importieren
+          const hwTitle = title || "Hausaufgabe";
+          const createdAt = (createdIdx !== -1 && row[createdIdx]) ? (normalizeIncomingDateToISO(row[createdIdx].trim()) || toISODate(new Date())) : toISODate(new Date());
+          const dueMode = rawDueDate ? "custom" : (rawMode || "next");
           const occurrenceCount = dueMode === "overnext" ? 2 : 1;
           const dueDate = rawDueDate || findSubjectOccurrenceDate(subject, occurrenceCount, createdAt);
 
@@ -2100,6 +2703,7 @@
             const fVal = row[freeIdx].toLowerCase().trim();
             plannedInFreePeriod = (fVal === "ja" || fVal === "true" || fVal === "1");
           }
+          const freePeriodDate = (freeDateIdx !== -1 && row[freeDateIdx]) ? row[freeDateIdx].trim() : "";
 
           let isDone = false;
           const completedVal = (completedIdx !== -1 && row[completedIdx]) ? row[completedIdx].trim() : "";
@@ -2114,9 +2718,9 @@
           }
           const completedAt = completedVal || (isDone ? createdAt : "");
 
-          const isDuplicate = (id && existingIds.has(id)) || state.tasks.some(t => {
+          const isDuplicate = (id && existingTaskIds.has(id)) || state.tasks.some(t => {
             return t.subject.toLowerCase() === subject.toLowerCase() &&
-                   t.title.toLowerCase().trim() === title.toLowerCase().trim() &&
+                   t.title.toLowerCase().trim() === hwTitle.toLowerCase().trim() &&
                    t.dueDate === dueDate;
           });
 
@@ -2130,31 +2734,29 @@
           }
 
           if (subject && subject !== "Allgemein / Vertretung") {
-            if (!state.subjects.includes(subject)) {
-              state.subjects.push(subject);
-            }
-            if (!state.activeSubjects.includes(subject)) {
-              state.activeSubjects.push(subject);
-            }
+            if (!state.subjects.includes(subject)) state.subjects.push(subject);
+            if (!state.activeSubjects.includes(subject)) state.activeSubjects.push(subject);
           }
 
           state.tasks.push({
             id,
             subject,
-            title,
+            title: hwTitle,
             duration,
             dueDate,
             dueMode,
             plannedInFreePeriod,
+            freePeriodDate,
             done: isDone,
             createdAt,
             completedAt
           });
 
-          existingIds.add(id);
-          addedCount++;
+          existingTaskIds.add(id);
+          addedTasksCount++;
         }
 
+        cleanupExpiredOverridesAndFreeShifts();
         saveState();
         renderActiveSubjectsManager();
         renderSubjectDropdowns();
@@ -2162,7 +2764,10 @@
         renderExamsTab();
         renderPlanTab();
 
-        alert(`CSV-Import erfolgreich abgeschlossen!\n\n• Hinzugefügte neue Aufgaben: ${addedCount}\n• Übersprungene (bereits vorhandene) Aufgaben: ${skippedCount}\n\nDeine aktuellen Aufgaben wurden nicht verändert.`);
+        showNoticeModal(
+          "CSV-Import erfolgreich abgeschlossen",
+          `• Hinzugefügte neue Hausaufgaben: ${addedTasksCount}\n• Hinzugefügte neue Klausuren: ${addedExamsCount}\n• Übersprungene (bereits vorhandene) Einträge: ${skippedCount}\n\nDeine bestehenden Daten wurden nicht überschrieben.`
+        );
       }
       /* ==========================================================================
          TEIL 3: ECHTZEIT-TAKTUNG, FREISTUNDEN-ENGINE, KLAUSUR-RADAR & EVENTS
@@ -2209,7 +2814,7 @@
         return isEven ? "A" : "B";
       }
 
-      /* Ermittelt das Datum des nächsten regulären Schultags (Mo–Fr) ab heute */
+      /* Ermittelt das Datum des nächsten regulären Schultags (Mo–Fr) strikt nach dem übergebenen Datum */
       function getNextSchoolDayDate(fromDateObj = new Date()) {
         const d = getStartOfDay(fromDateObj);
         do {
@@ -2225,7 +2830,7 @@
         return `${hh}:${mm}`;
       }
 
-      /* Berechnet das genaue Zeitraster der 1. bis 8. Schulstunde (Punkt 1) */
+      /* Berechnet das genaue Zeitraster der 1. bis 8. Schulstunde */
       function getPeriodTimings() {
         const cfg = state.timeConfig || DEFAULT_TIME_CONFIG;
         const parts = (cfg.schoolStart || "07:50").split(":");
@@ -2255,7 +2860,138 @@
         return timings;
       }
 
-      /* Kombiniert den A/B-Basisplan eines Datums mit tagesaktuellen Ausfällen/Tauschen (Punkt 1 & 2) */
+      /* Ermittelt das Unterrichtsende (in Minuten ab 00:00 Uhr) für ein Datum anhand des Stundenplans */
+      function getLastScheduledPeriodEndMin(dateObj) {
+        const d = getStartOfDay(dateObj);
+        const dayOfWeek = d.getDay();
+        const timings = getPeriodTimings();
+        if (dayOfWeek < 1 || dayOfWeek > 5) return 0;
+
+        const wType = getWeekTypeForDate(d);
+        const baseArr = normalizeDayPeriods(
+          state.schedule[wType] && state.schedule[wType][dayOfWeek],
+          []
+        );
+        const dateIso = toISODate(d);
+        const dayOverrides = (state.dailyOverrides && state.dailyOverrides[dateIso]) || {};
+
+        let lastIdx = -1;
+        for (let i = 0; i < MAX_PERIODS; i++) {
+          const hasBase = Boolean(baseArr[i] && baseArr[i].trim() !== "");
+          const ov = dayOverrides[i];
+          const hasSwapped = Boolean(ov && ov.status === "swapped" && ov.subject);
+          if (hasBase || hasSwapped) {
+            lastIdx = i;
+          }
+        }
+
+        if (lastIdx === -1) {
+          // Fallback: Ende der 6. Stunde, falls an einem Werktag noch keine Fächer eingetragen sind
+          return timings[5] ? timings[5].endMin : 800;
+        }
+        return timings[lastIdx].endMin;
+      }
+
+      /* Prüft, ob der heutige Schultag bereits vorbei ist (Nachmittags-Modus oder Wochenende) */
+      function isSchoolDayOverToday(now = new Date()) {
+        const day = now.getDay();
+        if (day === 0 || day === 6) return true;
+        const nowMin = now.getHours() * 60 + now.getMinutes();
+        const lastEndMin = getLastScheduledPeriodEndMin(now);
+        return nowMin >= lastEndMin;
+      }
+
+      /* Prüft stundengenau, ob eine bestimmte Schulstunde (Index 0–7) am heutigen Tag bereits abgelaufen ist */
+      function isPeriodExpiredToday(periodIdx, now = new Date()) {
+        if (isSchoolDayOverToday(now)) return true;
+        const timings = getPeriodTimings();
+        const slot = timings[periodIdx];
+        if (!slot) return true;
+        const nowMin = now.getHours() * 60 + now.getMinutes();
+        return nowMin >= slot.endMin;
+      }
+
+      /* Liefert das aktive Planungs-Datum für Freistunden:
+         - Vor/während des heutigen Unterrichts: HEUTE (damit morgens eingetragene oder gestern für heute vorgemerkte Freistunden heute wirken)
+         - Sobald der heutige Unterricht vorbei ist (Nachmittag/Wochenende): NÄCHSTER SCHULTAG */
+      function getActivePlanningSchoolDate(now = new Date()) {
+        if (!isSchoolDayOverToday(now)) {
+          return getStartOfDay(now);
+        }
+        return getNextSchoolDayDate(now);
+      }
+
+      /* Automatischer Reset (Auto-Cleanup):
+         1. Löscht alle Einträge vergangener Tage.
+         2. Löscht am heutigen Tag jede Freistunde/Vertretung sofort, sobald die jeweilige Schulstunde (bzw. der Schultag) vorbei ist.
+         3. Setzt in Freistunden geschobene Aufgaben zurück, sobald der betreffende Freistunden-Tag abgelaufen ist. */
+      function cleanupExpiredOverridesAndFreeShifts(now = new Date()) {
+        const todayIso = toISODate(now);
+        const schoolOverToday = isSchoolDayOverToday(now);
+        let changed = false;
+
+        if (state.dailyOverrides && typeof state.dailyOverrides === "object") {
+          Object.keys(state.dailyOverrides).forEach(dateIso => {
+            if (dateIso < todayIso) {
+              delete state.dailyOverrides[dateIso];
+              changed = true;
+            } else if (dateIso === todayIso) {
+              if (schoolOverToday) {
+                delete state.dailyOverrides[todayIso];
+                changed = true;
+              } else {
+                const dayOv = state.dailyOverrides[todayIso];
+                if (dayOv && typeof dayOv === "object") {
+                  Object.keys(dayOv).forEach(pKey => {
+                    const pIdx = Number(pKey);
+                    if (isPeriodExpiredToday(pIdx, now)) {
+                      delete dayOv[pKey];
+                      changed = true;
+                    }
+                  });
+                  if (Object.keys(dayOv).length === 0) {
+                    delete state.dailyOverrides[todayIso];
+                  }
+                }
+              }
+            }
+          });
+        }
+
+        const activeTargetIso = toISODate(getActivePlanningSchoolDate(now));
+        if (Array.isArray(state.tasks)) {
+          state.tasks.forEach(t => {
+            if (t.plannedInFreePeriod) {
+              if (t.done) {
+                t.plannedInFreePeriod = false;
+                t.freePeriodDate = "";
+                changed = true;
+              } else if (t.freePeriodDate) {
+                if (t.freePeriodDate < todayIso || (t.freePeriodDate === todayIso && schoolOverToday)) {
+                  t.plannedInFreePeriod = false;
+                  t.freePeriodDate = "";
+                  changed = true;
+                }
+              } else {
+                t.freePeriodDate = activeTargetIso;
+                changed = true;
+              }
+            }
+          });
+        }
+
+        // Standard-Auswahl im Editor automatisch dem Tagesstatus anpassen, sofern nicht manuell umgeschaltet
+        if (!userManuallySwitchedOverrideTab) {
+          overrideTargetMode = schoolOverToday ? "tomorrow" : "today";
+        }
+
+        if (changed) {
+          recalculateAutoTaskDates();
+        }
+        return changed;
+      }
+
+      /* Kombiniert den A/B-Basisplan eines Datums mit tagesaktuellen Ausfällen/Tauschen */
       function getEffectiveDaySchedule(dateObj) {
         const d = getStartOfDay(dateObj);
         const dayOfWeek = d.getDay();
@@ -2276,11 +3012,14 @@
           []
         );
         const dateIso = toISODate(d);
+        const todayIso = toISODate(new Date());
+        const isToday = (dateIso === todayIso);
         const dayOverrides = (state.dailyOverrides && state.dailyOverrides[dateIso]) || {};
 
         return timings.map((t, idx) => {
           const baseSubj = baseArr[idx] || "";
-          const ov = dayOverrides[idx];
+          const expiredToday = isToday && isPeriodExpiredToday(idx);
+          const ov = (!expiredToday) ? dayOverrides[idx] : null;
 
           if (ov && ov.status === "cancelled") {
             return {
@@ -2307,7 +3046,7 @@
         });
       }
 
-      /* Echtzeit-Status für die Kopfzeile (Punkt 1) */
+      /* Echtzeit-Status für die Kopfzeile */
       function getCurrentLivePeriodStatus() {
         const now = new Date();
         const day = now.getDay();
@@ -2317,14 +3056,14 @@
 
         const nowMin = now.getHours() * 60 + now.getMinutes();
         const slots = getEffectiveDaySchedule(now);
-        const activeSlots = slots.filter(s => s.effectiveSubject !== "" || s.status === "cancelled");
+        const activeSlots = slots.filter(s => s.effectiveSubject !== "" || s.status === "cancelled" || s.baseSubject !== "");
 
         if (activeSlots.length === 0) {
           return "📅 Heute keine Schulstunden im Raster hinterlegt";
         }
 
         const firstStart = activeSlots[0].startMin;
-        const lastEnd = activeSlots[activeSlots.length - 1].endMin;
+        const lastEnd = getLastScheduledPeriodEndMin(now);
 
         if (nowMin < firstStart) {
           const diff = firstStart - nowMin;
@@ -2333,7 +3072,7 @@
         }
 
         if (nowMin >= lastEnd) {
-          return "🏡 Unterrichtsende – Nachmittags- & Hausaufgaben-Modus";
+          return "🏡 Unterrichtsende – Nachmittags-Modus (Heutige Freistunden zurückgesetzt)";
         }
 
         for (let i = 0; i < slots.length; i++) {
@@ -2360,7 +3099,8 @@
         return "🏡 Nachmittags-Modus aktiv";
       }
 
-      /* Findet das nächste/übernächste Datum, an dem das Fach tatsächlich unterrichtet wird */
+      /* Findet das nächste/übernächste Datum, an dem das Fach tatsächlich unterrichtet wird.
+         Sucht ab dem Referenztag (standardmäßig heute -> nächster Schultag ist Offset 1) */
       function findSubjectOccurrenceDate(subject, occurrenceCount, baseDateIso = null) {
         const today = getStartOfDay(new Date());
         const startDay = (baseDateIso && /^\d{4}-\d{2}-\d{2}$/.test(baseDateIso))
@@ -2416,14 +3156,24 @@
         return match ? match.period : null;
       }
 
-      /* Analysiert alle Freistunden, Ausfälle und Mittagspausen am nächsten Schultag (Punkt 2 & 3) */
+      /* Analysiert alle Freistunden, Ausfälle und Mittagspausen für den aktuell gültigen Planungstag:
+         - Morgens / während der Schulzeit: HEUTE (nur noch nicht abgelaufene Stunden von heute!)
+         - Nachmittags nach Unterrichtsende / am Wochenende: NÄCHSTER SCHULTAG */
       function analyzeNextSchoolDayFreePeriods() {
-        const nextSchoolDate = getNextSchoolDayDate(new Date());
-        const dateIso = toISODate(nextSchoolDate);
-        const dayNames = ["Sonntag", "Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag"];
-        const dayLabel = `${dayNames[nextSchoolDate.getDay()]} (${formatGermanDate(dateIso)})`;
+        const now = new Date();
+        cleanupExpiredOverridesAndFreeShifts(now);
 
-        const slots = getEffectiveDaySchedule(nextSchoolDate);
+        const targetSchoolDate = getActivePlanningSchoolDate(now);
+        const dateIso = toISODate(targetSchoolDate);
+        const todayIso = toISODate(now);
+        const isTargetToday = (dateIso === todayIso);
+        const nowMin = now.getHours() * 60 + now.getMinutes();
+
+        const dayNames = ["Sonntag", "Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag"];
+        const prefix = isTargetToday ? "Heute" : "Nächster Schultag";
+        const dayLabel = `${prefix}: ${dayNames[targetSchoolDate.getDay()]} (${formatGermanDate(dateIso)})`;
+
+        const slots = getEffectiveDaySchedule(targetSchoolDate);
         const pDur = Number(state.timeConfig.periodMinutes) || 45;
 
         let lastTaughtPeriod = 0;
@@ -2437,6 +3187,11 @@
         const freeSlots = [];
 
         slots.forEach(s => {
+          // Am heutigen Tag zählen nur Freistunden, deren Zeitfenster noch nicht abgelaufen ist
+          if (isTargetToday && nowMin >= s.endMin) {
+            return;
+          }
+
           if (s.status === "cancelled") {
             freeSlots.push({
               period: s.period,
@@ -2461,9 +3216,13 @@
           }
         });
 
-        const p6Occupied = slots.some(s => s.period === 6 && s.effectiveSubject !== "");
-        const p7Occupied = slots.some(s => s.period === 7 && s.effectiveSubject !== "");
-        if (state.timeConfig.useLunchAsBuffer && p6Occupied && p7Occupied) {
+        const p6Slot = slots[5];
+        const p7Slot = slots[6];
+        const p6Occupied = Boolean(p6Slot && p6Slot.effectiveSubject !== "");
+        const p7Occupied = Boolean(p7Slot && p7Slot.effectiveSubject !== "");
+        const lunchNotExpired = !isTargetToday || (p7Slot && nowMin < p7Slot.startMin);
+
+        if (state.timeConfig.useLunchAsBuffer && p6Occupied && p7Occupied && lunchNotExpired) {
           const lunchBreakMin = Math.max(Number(state.timeConfig.bigBreakMinutes) || 15, 30);
           freeSlots.push({
             period: 6.5,
@@ -2477,16 +3236,20 @@
 
         if (totalFreeMinutes === 0) {
           state.tasks.forEach(t => {
-            if (t.plannedInFreePeriod) t.plannedInFreePeriod = false;
+            if (t.plannedInFreePeriod && (!t.freePeriodDate || t.freePeriodDate === dateIso)) {
+              t.plannedInFreePeriod = false;
+              t.freePeriodDate = "";
+            }
           });
         }
 
         const usedFreeMinutes = state.tasks
-          .filter(t => !t.done && t.plannedInFreePeriod)
+          .filter(t => !t.done && t.plannedInFreePeriod && (!t.freePeriodDate || t.freePeriodDate === dateIso))
           .reduce((sum, t) => sum + Number(t.duration || 0), 0);
 
         return {
           dateIso,
+          isTargetToday,
           dayLabel,
           freeSlots,
           totalFreeMinutes,
@@ -2495,7 +3258,7 @@
         };
       }
 
-      /* Prüft stundengenau, ob eine Aufgabe in eine Freistunde VOR der Abgabestunde passt (Punkt 3) */
+      /* Prüft stundengenau, ob eine Aufgabe in eine Freistunde VOR der Abgabestunde passt */
       function evaluateTaskFreePeriodFit(task, freeInfo) {
         if (!freeInfo || freeInfo.totalFreeMinutes === 0) {
           return {
@@ -2507,8 +3270,8 @@
         }
 
         const dur = Number(task.duration) || 15;
-        const isDueOnNextSchoolDay = (task.dueDate === freeInfo.dateIso);
-        const targetPeriod = isDueOnNextSchoolDay
+        const isDueOnTargetDay = (task.dueDate === freeInfo.dateIso);
+        const targetPeriod = isDueOnTargetDay
           ? getFirstSubjectPeriodOnDate(task.subject, freeInfo.dateIso)
           : null;
 
@@ -2534,10 +3297,10 @@
         const slotNames = usableSlotsForTask.map(s => s.label).join(", ");
 
         let smartHint = "";
-        if (isDueOnNextSchoolDay && targetPeriod && fitsCapacity) {
-          smartHint = `💡 Smart-Tipp (${task.subject}): Du musst ${task.subject} am ${freeInfo.dayLabel} erst in der ${targetPeriod}. Stunde abgeben, hast aber vorher frei (${slotNames}). Die Aufgabe (${dur} Min.) passt dort genau rein!`;
+        if (isDueOnTargetDay && targetPeriod && fitsCapacity) {
+          smartHint = `💡 Smart-Tipp (${task.subject}): Abgabe am ${freeInfo.dayLabel} erst in der ${targetPeriod}. Stunde, vorher ist frei (${slotNames}). Die Aufgabe (${dur} Min.) passt dort direkt rein!`;
         } else if (fitsCapacity) {
-          smartHint = `💡 Freistunden-Option (${task.subject}): Passt in deine freie Zeit am ${freeInfo.dayLabel} (${slotNames}).`;
+          smartHint = `💡 Freistunden-Option (${task.subject}): Passt in deine freie Zeit (${freeInfo.dayLabel}: ${slotNames}).`;
         }
 
         return {
@@ -2566,6 +3329,69 @@
         return Math.round(diffMs / 86400000);
       }
 
+      /* Klassifiziert & sortiert erledigte Aufgaben für den Abgabe- & Pack-Check */
+      function classifyDoneTask(task) {
+        const today = getStartOfDay(new Date());
+        const todayDow = today.getDay(); // 0=So, 5=Fr, 6=Sa
+        const dueIso = task.dueDate || task.completedAt || toISODate(today);
+        const daysLeft = getDaysUntilDue(dueIso);
+        const duePeriod = getFirstSubjectPeriodOnDate(task.subject, dueIso);
+
+        const useWeekendBridge = Boolean(state.doneWeekendBridge);
+        const isWeekendBridgeToMonday = useWeekendBridge && (
+          (todayDow === 5 && daysLeft === 3) ||
+          (todayDow === 6 && daysLeft === 2)
+        );
+
+        let tier = "future";
+        let tierOrder = 2;
+        let cardClass = "done-item-future";
+        let badgeClass = "days-badge-ok";
+        let badgeText = `in ${daysLeft} Tagen`;
+
+        if (daysLeft === 0) {
+          tier = "today";
+          tierOrder = 0;
+          cardClass = "done-item-today";
+          badgeClass = "days-badge-urgent";
+          badgeText = duePeriod ? `heute dran (${duePeriod}. Std.)` : "heute dran";
+        } else if (daysLeft === 1 || isWeekendBridgeToMonday) {
+          tier = "tomorrow";
+          tierOrder = 1;
+          cardClass = "done-item-tomorrow";
+          badgeClass = "days-badge-soon";
+          if (daysLeft === 1) {
+            badgeText = duePeriod ? `morgen dran (${duePeriod}. Std.)` : "morgen dran";
+          } else {
+            badgeText = duePeriod ? `Montag dran (${duePeriod}. Std.)` : "Montag dran";
+          }
+        } else if (daysLeft < 0) {
+          tier = "past";
+          tierOrder = 3;
+          cardClass = "done-item-past";
+          badgeClass = "";
+          badgeText = "Abgabetag vorbei";
+        } else {
+          tier = "future";
+          tierOrder = 2;
+          cardClass = "done-item-future";
+          badgeClass = "days-badge-ok";
+          badgeText = `in ${daysLeft} Tagen`;
+        }
+
+        return {
+          ...task,
+          effectiveDueDate: dueIso,
+          daysLeft,
+          duePeriod,
+          tier,
+          tierOrder,
+          cardClass,
+          badgeClass,
+          badgeText
+        };
+      }
+
       /* Prüft, ob an einem Kalendertag bereits eine andere Klausur eingetragen ist (Kollisions-Schutz) */
       function getExamsOnDate(dateIso, excludeExamId = null) {
         if (!dateIso || !Array.isArray(state.exams)) return [];
@@ -2586,28 +3412,38 @@
         }
       }
 
-      /* Klausur- & Test-Radar Auswertung + automatische Puffer-Reservierung (Punkt 4) */
+      /* Klausur- & Test-Radar Auswertung + automatische Puffer-Reservierung */
       function classifyExams() {
-        const sorted = [...(state.exams || [])].sort((a, b) => a.date.localeCompare(b.date));
+        const sorted = [...(state.exams || [])].sort((a, b) => (a.date || "").localeCompare(b.date || ""));
         const upcoming = [];
         let reservedExamBufferToday = 0;
+        let reviewCount = 0;
 
-        // Zähle Klausuren pro Tag für optische Kollisions-Markierung
         const dateCounts = {};
         sorted.forEach(ex => {
-          dateCounts[ex.date] = (dateCounts[ex.date] || 0) + 1;
+          if (ex.date) {
+            dateCounts[ex.date] = (dateCounts[ex.date] || 0) + 1;
+          }
         });
 
         sorted.forEach(ex => {
           const daysLeft = getDaysUntilDue(ex.date);
-          if (daysLeft < 0) return; // Vergangene Klausuren ausblenden
+          if (daysLeft < 0 && !ex.needsReview) return;
+
+          if (ex.needsReview) {
+            reviewCount++;
+          }
 
           let urgency = "green";
           let urgencyLabel = "Langfristig / Projekt (> 7 Tage)";
           if (daysLeft <= 3) {
             urgency = "red";
-            urgencyLabel = daysLeft === 0 ? "HEUTE!" : `Akut: Noch ${daysLeft} Tag(e)!`;
-            reservedExamBufferToday += Number(ex.bufferMinutes) || 15;
+            urgencyLabel = daysLeft < 0
+              ? "Datum prüfen (vergangen)"
+              : (daysLeft === 0 ? "HEUTE!" : `Akut: Noch ${daysLeft} Tag(e)!`);
+            if (daysLeft >= 0) {
+              reservedExamBufferToday += Number(ex.bufferMinutes) || 15;
+            }
           } else if (daysLeft <= 7) {
             urgency = "yellow";
             urgencyLabel = `Vorbereitung: Noch ${daysLeft} Tage`;
@@ -2619,24 +3455,27 @@
             daysLeft,
             urgency,
             urgencyLabel,
-            hasSameDayCollision: (dateCounts[ex.date] || 0) > 1
+            needsReview: Boolean(ex.needsReview),
+            hasSameDayCollision: Boolean(ex.date) && (dateCounts[ex.date] || 0) > 1
           });
         });
 
         return {
           upcoming,
-          reservedExamBufferToday
+          reservedExamBufferToday,
+          reviewCount
         };
       }
 
-      /* Klassifiziert alle Hausaufgaben in Rot, Gelb, Grün unter Berücksichtigung von Klausur- & Freistunden-Puffer */
+      /* Klassifiziert alle Hausaufgaben in Rot, Gelb, Grün + sortierte Erledigt-Liste (Abgabe- & Pack-Check) */
       function classifyTasks() {
         const today = getStartOfDay(new Date());
         const todayDayOfWeek = today.getDay();
 
-        let stateMutated = false;
+        let stateMutated = cleanupExpiredOverridesAndFreeShifts(new Date());
+
         state.tasks.forEach(task => {
-          if (!task.done && !task.dueDate) {
+          if (!task.dueDate) {
             const count = task.dueMode === "overnext" ? 2 : 1;
             task.dueDate = findSubjectOccurrenceDate(task.subject, count, task.createdAt);
             stateMutated = true;
@@ -2650,7 +3489,25 @@
         const examInfo = classifyExams();
 
         const openTasks = state.tasks.filter(t => !t.done);
-        const doneTasks = state.tasks.filter(t => t.done);
+        const doneTasks = state.tasks
+          .filter(t => t.done)
+          .map(classifyDoneTask)
+          .sort((a, b) => {
+            if (a.tierOrder !== b.tierOrder) return a.tierOrder - b.tierOrder;
+            if (a.tier === "today") {
+              const pA = a.duePeriod || 99;
+              const pB = b.duePeriod || 99;
+              if (pA !== pB) return pA - pB;
+              return (a.subject || "").localeCompare(b.subject || "");
+            }
+            if (a.tier === "past") {
+              return (b.effectiveDueDate || "").localeCompare(a.effectiveDueDate || "");
+            }
+            if (a.effectiveDueDate !== b.effectiveDueDate) {
+              return (a.effectiveDueDate || "").localeCompare(b.effectiveDueDate || "");
+            }
+            return (a.duePeriod || 99) - (b.duePeriod || 99);
+          });
 
         openTasks.sort((a, b) => {
           if (a.dueDate !== b.dueDate) return a.dueDate.localeCompare(b.dueDate);
@@ -2684,7 +3541,7 @@
               duePeriod,
               freeFit,
               reason: task.plannedInFreePeriod
-                ? `In Freistunde eingeplant${periodSuffix}`
+                ? `In Freistunde eingeplant (${freeInfo.dayLabel})`
                 : (daysLeft < 0 ? "Überfällig!" : `Nächster Schultag / Pflicht${periodSuffix}`)
             });
           } else {
@@ -2711,7 +3568,7 @@
           if (task.plannedInFreePeriod) {
             yellow.push({
               ...task,
-              reason: `Für Freistunde am ${freeInfo.dayLabel} vorgemerkt`
+              reason: `Für Freistunde (${freeInfo.dayLabel}) vorgemerkt`
             });
           } else if (plannedMinutesToday + dur <= state.dailyBudgetMinutes) {
             yellow.push({
@@ -2768,7 +3625,10 @@
         const task = state.tasks.find(t => t.id === id);
         if (task) {
           task.done = doneStatus;
-          if (doneStatus) task.plannedInFreePeriod = false;
+          if (doneStatus) {
+            task.plannedInFreePeriod = false;
+            task.freePeriodDate = "";
+          }
           task.completedAt = doneStatus ? toISODate(new Date()) : "";
           saveState();
           renderPlanTab();
@@ -2787,8 +3647,10 @@
             return;
           }
           task.plannedInFreePeriod = true;
+          task.freePeriodDate = freeInfo.dateIso;
         } else {
           task.plannedInFreePeriod = false;
+          task.freePeriodDate = "";
         }
         saveState();
         renderPlanTab();
@@ -2801,6 +3663,9 @@
       }
 
       function switchTab(targetTabId) {
+        if (cleanupExpiredOverridesAndFreeShifts(new Date())) {
+          saveState();
+        }
         document.querySelectorAll(".tab-section").forEach(sec => sec.classList.toggle("active", sec.id === targetTabId));
         document.querySelectorAll(".nav-btn").forEach(btn => btn.classList.toggle("active", btn.getAttribute("data-tab") === targetTabId));
         if (targetTabId === "tab-add") {
@@ -2813,6 +3678,8 @@
         } else if (targetTabId === "tab-legal") {
           renderActiveSubjectsManager();
           renderHeader();
+        } else if (targetTabId === "tab-plan") {
+          renderPlanTab();
         }
         window.scrollTo({ top: 0, behavior: "instant" });
       }
@@ -2873,6 +3740,22 @@
         }
       }
 
+      /* Gemeinsamer Handler für CSV-Dateiauswahl (sowohl in "+ Aufgabe" als auch in "Einstellungen") */
+      function handleCsvFileSelection(e) {
+        const file = e.target.files && e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function(evt) {
+          try {
+            importTasksFromCSV(evt.target.result);
+          } catch (err) {
+            alert("Fehler beim Verarbeiten der CSV-Datei. Bitte prüfe das Format.");
+          }
+          e.target.value = "";
+        };
+        reader.readAsText(file);
+      }
+
       /* ==========================================================================
          ZENTRALE EVENT INITIALISIERUNG
          ========================================================================== */
@@ -2890,16 +3773,35 @@
           }
         });
 
-        // Echtzeit-Uhr-Intervall (alle 30 Sekunden aktualisieren)
+        // Echtzeit-Uhr-Intervall (alle 30 Sekunden prüfen, abgelaufene Freistunden sofort aufräumen & UI aktualisieren)
         if (liveClockTimer) clearInterval(liveClockTimer);
         liveClockTimer = setInterval(() => {
+          const hadExpired = cleanupExpiredOverridesAndFreeShifts(new Date());
           renderHeader();
+          if (hadExpired) {
+            saveState();
+            renderDailyOverridesEditor();
+            renderSubjectDropdowns();
+            updateDuePreview();
+            renderPlanTab();
+          }
         }, 30000);
 
         // Hauptnavigation
         document.querySelectorAll(".nav-btn").forEach(btn => {
           btn.addEventListener("click", () => switchTab(btn.getAttribute("data-tab")));
         });
+
+        // Kompakter Klausur-Balken im Ampel-Plan: Nur die kleine Schaltfläche rechts öffnet das Klausur-Radar
+        const examPlanBannerEl = document.getElementById("examPlanBanner");
+        if (examPlanBannerEl) {
+          examPlanBannerEl.addEventListener("click", (e) => {
+            const btn = e.target.closest(".exam-banner-link");
+            if (btn) {
+              switchTab("tab-exams");
+            }
+          });
+        }
 
         // Akkordeon-Steuerung in den Einstellungen ("Jalousie"-Prinzip)
         document.getElementById("expandAllAccordionsBtn").addEventListener("click", () => setAllAccordions(true));
@@ -2971,6 +3873,16 @@
           applyDarkMode();
         });
 
+        // Wochenend-Brücke im Abgabe- & Pack-Check (in Einstellungen)
+        const bridgeCheck = document.getElementById("doneWeekendBridgeCheckbox");
+        if (bridgeCheck) {
+          bridgeCheck.addEventListener("change", () => {
+            state.doneWeekendBridge = Boolean(bridgeCheck.checked);
+            saveState();
+            renderPlanTab();
+          });
+        }
+
         // A/B-Woche umschalten (in Einstellungen)
         document.getElementById("weekToggleBtn").addEventListener("click", () => {
           promptDoubleConfirmation(
@@ -2990,9 +3902,9 @@
           );
         });
 
-        // Event Delegation für den gesamten Ampel-Plan-Tab (inkl. Freistunden-Schieber)
+        // Event Delegation für den gesamten Ampel-Plan-Tab (inkl. Freistunden-Schieber & vollflächig antippbare erledigte Karten)
         document.getElementById("tab-plan").addEventListener("click", (e) => {
-          const btn = e.target.closest("button[data-action]");
+          const btn = e.target.closest("[data-action]");
           if (!btn) return;
 
           const action = btn.dataset.action;
@@ -3069,7 +3981,8 @@
               subject,
               date: dateVal,
               topic,
-              bufferMinutes
+              bufferMinutes,
+              needsReview: false
             });
             topicInput.value = "";
             updateExamCollisionWarning("", "examCollisionWarning", null);
@@ -3142,13 +4055,17 @@
           });
         });
 
-        // Tagesaktuelle Ausfälle & Fächertausch (Punkt 2)
+        // Tagesaktuelle Ausfälle & Fächertausch (Heute vs. Nächster Schultag)
         document.getElementById("overrideTodayBtn").addEventListener("click", () => {
+          cleanupExpiredOverridesAndFreeShifts(new Date());
+          userManuallySwitchedOverrideTab = true;
           overrideTargetMode = "today";
           renderDailyOverridesEditor();
         });
 
         document.getElementById("overrideTomorrowBtn").addEventListener("click", () => {
+          cleanupExpiredOverridesAndFreeShifts(new Date());
+          userManuallySwitchedOverrideTab = true;
           overrideTargetMode = "tomorrow";
           renderDailyOverridesEditor();
         });
@@ -3156,9 +4073,23 @@
         document.getElementById("dailyOverridesContainer").addEventListener("change", (e) => {
           const sel = e.target.closest("select[data-override-period]");
           if (!sel) return;
-          const dateIso = sel.dataset.dateIso;
+
+          const now = new Date();
+          cleanupExpiredOverridesAndFreeShifts(now);
+
+          let dateIso = sel.dataset.dateIso;
           const pIdx = Number(sel.dataset.overridePeriod);
           const val = sel.value;
+          const todayIso = toISODate(now);
+
+          // Schutzlogik: Falls die Stunde heute inzwischen vorbei ist, gilt die Auswahl automatisch für den nächsten Schultag
+          if (dateIso === todayIso && isPeriodExpiredToday(pIdx, now)) {
+            const nextSchoolIso = toISODate(getNextSchoolDayDate(now));
+            dateIso = nextSchoolIso;
+            overrideTargetMode = "tomorrow";
+            userManuallySwitchedOverrideTab = true;
+            alert(`Die ${pIdx + 1}. Stunde ist heute bereits vorbei. Deine Auswahl wurde deshalb automatisch für den nächsten Schultag (${formatGermanDate(nextSchoolIso)}) übernommen.`);
+          }
 
           if (!state.dailyOverrides[dateIso]) {
             state.dailyOverrides[dateIso] = {};
@@ -3166,6 +4097,9 @@
 
           if (val === "__NORMAL__") {
             delete state.dailyOverrides[dateIso][pIdx];
+            if (Object.keys(state.dailyOverrides[dateIso]).length === 0) {
+              delete state.dailyOverrides[dateIso];
+            }
           } else if (val === "__CANCELLED__") {
             state.dailyOverrides[dateIso][pIdx] = { status: "cancelled", subject: "" };
           } else {
@@ -3196,7 +4130,7 @@
           }
         });
 
-        // Zeitraster & Mittagspausen-Einstellungen (Punkt 1 & 3)
+        // Zeitraster & Mittagspausen-Einstellungen
         const timeInputs = ["schoolStartTimeInput", "periodDurationInput", "shortBreakInput", "bigBreakInput", "useLunchBreakCheckbox"];
         timeInputs.forEach(inputId => {
           const el = document.getElementById(inputId);
@@ -3209,6 +4143,7 @@
               bigBreakMinutes: Number(document.getElementById("bigBreakInput").value) >= 0 ? Number(document.getElementById("bigBreakInput").value) : 15,
               useLunchAsBuffer: Boolean(document.getElementById("useLunchBreakCheckbox").checked)
             };
+            cleanupExpiredOverridesAndFreeShifts(new Date());
             saveState();
             renderHeader();
             renderScheduleTab();
@@ -3216,7 +4151,7 @@
           });
         });
 
-        // Event Delegation für das 8-Stunden-Raster im Basis-Stundenplan (Punkt 1)
+        // Event Delegation für das 8-Stunden-Raster im Basis-Stundenplan
         document.getElementById("scheduleDaysContainer").addEventListener("change", (e) => {
           const select = e.target.closest(".period-select[data-day-idx][data-period-idx]");
           if (!select) return;
@@ -3231,6 +4166,7 @@
           }
           activeWeekData[dayIdx][periodIdx] = subj;
 
+          cleanupExpiredOverridesAndFreeShifts(new Date());
           recalculateAutoTaskDates();
           saveState();
           renderHeader();
@@ -3308,6 +4244,7 @@
             dueDate,
             dueMode: selectedDueMode,
             plannedInFreePeriod: false,
+            freePeriodDate: "",
             done: false,
             createdAt: toISODate(new Date()),
             completedAt: ""
@@ -3321,6 +4258,23 @@
         document.getElementById("cancelEditBtn").addEventListener("click", closeEditModal);
         document.getElementById("saveEditBtn").addEventListener("click", saveEditedTask);
         document.getElementById("closeReadModalBtn").addEventListener("click", closeReadModal);
+
+        // Hausaufgaben-Details mit einem Klick in die Zwischenablage kopieren (z. B. für SMS / WhatsApp / Teams)
+        document.getElementById("copyTaskTextBtn").addEventListener("click", () => {
+          const task = (state.tasks || []).find(t => t.id === currentReadTaskId);
+          const copyText = task
+            ? `Hausaufgabe: ${task.subject}\nAbgabe bis: ${formatGermanDate(task.dueDate)} (${task.dueDate})\nAufgabe:\n${task.title || "-"}`
+            : document.getElementById("readModalText").textContent;
+
+          copyTextToClipboard(copyText, () => {
+            const copyBtn = document.getElementById("copyTaskTextBtn");
+            const originalLabel = copyBtn.textContent;
+            copyBtn.textContent = "✓ In Zwischenablage kopiert!";
+            setTimeout(() => {
+              copyBtn.textContent = originalLabel;
+            }, 2200);
+          });
+        });
 
         document.querySelectorAll("#editDueModeChoices .choice-btn").forEach(btn => {
           btn.addEventListener("click", () => {
@@ -3428,8 +4382,9 @@
           reader.onload = function(evt) {
             try {
               const imported = JSON.parse(evt.target.result);
-              if (imported && Array.isArray(imported.tasks)) {
+              if (imported && (Array.isArray(imported.tasks) || Array.isArray(imported.exams))) {
                 sanitizeAndMergeState(imported);
+                cleanupExpiredOverridesAndFreeShifts(new Date());
                 recalculateAutoTaskDates();
                 saveState();
                 applyDarkMode();
@@ -3439,35 +4394,118 @@
                 renderScheduleTab();
                 renderExamsTab();
                 renderPlanTab();
-                alert("Backup erfolgreich geladen!");
+                showNoticeModal(
+                  "Gesamt-Backup wiederhergestellt",
+                  `Backup erfolgreich geladen!\n• Hausaufgaben: ${state.tasks.length}\n• Klausuren/Termine: ${state.exams.length}`
+                );
               } else {
-                alert("Ungültige Backup-Datei.");
+                showNoticeModal("Backup-Fehler", "Ungültige Backup-Datei.");
               }
             } catch (err) {
-              alert("Fehler beim Lesen der Datei.");
+              showNoticeModal("Backup-Fehler", "Fehler beim Lesen der Datei.");
             }
             e.target.value = "";
           };
           reader.readAsText(file);
         });
 
-        // CSV Export & Import
+        // CSV Export & Import (Einstellungen + Schnellzugriff in "+ Aufgabe")
         document.getElementById("exportCsvBtn").addEventListener("click", exportTasksToCSV);
+        document.getElementById("importCsvInput").addEventListener("change", handleCsvFileSelection);
+        const quickCsvInput = document.getElementById("quickCsvImportInput");
+        if (quickCsvInput) {
+          quickCsvInput.addEventListener("change", handleCsvFileSelection);
+        }
 
-        document.getElementById("importCsvInput").addEventListener("change", (e) => {
-          const file = e.target.files && e.target.files[0];
-          if (!file) return;
-          const reader = new FileReader();
-          reader.onload = function(evt) {
-            try {
-              importTasksFromCSV(evt.target.result);
-            } catch (err) {
-              alert("Fehler beim Verarbeiten der CSV-Datei. Bitte prüfe das Format.");
+        // CSV Schnell-Prüfliste (Modal 6) Event-Steuerung
+        const cancelCsvBtn = document.getElementById("cancelCsvReviewBtn");
+        if (cancelCsvBtn) cancelCsvBtn.addEventListener("click", closeCsvReviewModal);
+
+        const confirmCsvBtn = document.getElementById("confirmCsvReviewBtn");
+        if (confirmCsvBtn) confirmCsvBtn.addEventListener("click", commitCsvReviewItems);
+
+        const csvReviewListEl = document.getElementById("csvReviewList");
+        if (csvReviewListEl) {
+          csvReviewListEl.addEventListener("click", (e) => {
+            const btn = e.target.closest("[data-csv-action]");
+            if (!btn) return;
+
+            const action = btn.dataset.csvAction;
+            const tempId = btn.dataset.tempId;
+            const idx = pendingCsvReviewItems.findIndex(item => item.tempId === tempId);
+            if (idx === -1) return;
+            const item = pendingCsvReviewItems[idx];
+
+            if (action === "remove") {
+              pendingCsvReviewItems.splice(idx, 1);
+              if (pendingCsvReviewItems.length === 0) {
+                closeCsvReviewModal();
+                return;
+              }
+              renderCsvReviewList();
+            } else if (action === "set-type") {
+              const newType = btn.dataset.val;
+              item.type = newType;
+              if (newType === "exam") {
+                if (!item.examDate) {
+                  const found = extractDateFromText(item.title, item.createdAt);
+                  if (found) {
+                    item.examDate = found;
+                    item.examDateAutoExtracted = true;
+                  }
+                }
+                item.needsReview = !item.examDate;
+              }
+              renderCsvReviewList();
+            } else if (action === "set-duration") {
+              item.duration = Number(btn.dataset.val) || 15;
+              renderCsvReviewList();
+            } else if (action === "set-duemode") {
+              const mode = btn.dataset.val === "overnext" ? "overnext" : "next";
+              item.dueMode = mode;
+              item.dueDate = findSubjectOccurrenceDate(item.subject, mode === "overnext" ? 2 : 1, item.createdAt);
+              renderCsvReviewList();
+            } else if (action === "set-buffer") {
+              item.bufferMinutes = Number(btn.dataset.val) || 15;
+              renderCsvReviewList();
             }
-            e.target.value = "";
-          };
-          reader.readAsText(file);
-        });
+          });
+
+          csvReviewListEl.addEventListener("change", (e) => {
+            const el = e.target.closest("[data-csv-field]");
+            if (!el) return;
+            const field = el.dataset.csvField;
+            const tempId = el.dataset.tempId;
+            const item = pendingCsvReviewItems.find(x => x.tempId === tempId);
+            if (!item) return;
+
+            if (field === "subject") {
+              item.subject = el.value;
+              item.dueDate = findSubjectOccurrenceDate(item.subject, item.dueMode === "overnext" ? 2 : 1, item.createdAt);
+              renderCsvReviewList();
+            } else if (field === "examDate") {
+              item.examDate = el.value;
+              item.examDateAutoExtracted = false;
+              if (item.examDate) {
+                item.needsReview = false;
+              }
+              renderCsvReviewList();
+            } else if (field === "needsReview") {
+              item.needsReview = Boolean(el.checked);
+              renderCsvReviewList();
+            }
+          });
+
+          csvReviewListEl.addEventListener("input", (e) => {
+            const el = e.target.closest("[data-csv-field='title']");
+            if (!el) return;
+            const tempId = el.dataset.tempId;
+            const item = pendingCsvReviewItems.find(x => x.tempId === tempId);
+            if (item) {
+              item.title = el.value;
+            }
+          });
+        }
 
         // Gesamt-Reset
         document.getElementById("resetAllDataBtn").addEventListener("click", () => {
@@ -3494,9 +4532,246 @@
           document.getElementById("datenschutz-bereich").scrollIntoView({ behavior: "smooth" });
         });
       }
-      /* ==========================================================================
-         TEIL 4: RENDERING-ROUTINEN, BADGES, KLAUSUR-RADAR & MODALS
+     
+     /* ==========================================================================
+         TEIL 4: RENDERING-ROUTINEN, ZEITGESPERRTER AUSFALL-EDITOR, MODALS & RECHT
          ========================================================================== */
+
+      // Zentrale Einstellungen: Hier bei Bedarf Version & Links an einer einzigen Stelle pflegen
+      const APP_VERSION = "v1.5.0";
+      const KOFI_URL = "https://ko-fi.com/DEIN_KOFI_NAME";
+      const GITHUB_URL = "https://github.com/DEIN_GITHUB_NAME/Hausaufgaben-Puffer-Planer";
+
+      /* Ergänzt die Stil-Klassen für die Impressum-, Lizenz- & Datenschutz-Boxen (Light- & Dark-Mode) */
+      function injectLegalStyles() {
+        if (document.getElementById("legalEnhancementStyles")) return;
+        const styleEl = document.createElement("style");
+        styleEl.id = "legalEnhancementStyles";
+        styleEl.textContent = `
+          .legal-section-box {
+            background: var(--day-row-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 12px 14px;
+            margin-bottom: 12px;
+            font-size: 0.9rem;
+            line-height: 1.55;
+            color: var(--text-main);
+          }
+          .legal-section-box h4 {
+            margin-bottom: 6px;
+            font-size: 0.96rem;
+            color: var(--primary);
+          }
+          .legal-section-box p {
+            margin-bottom: 8px;
+          }
+          .legal-section-box p:last-child {
+            margin-bottom: 0;
+          }
+          .legal-section-box a {
+            color: var(--primary);
+            font-weight: 700;
+          }
+          .legal-box-primary {
+            border-left: 4px solid var(--primary);
+          }
+          .legal-box-support {
+            background: var(--yellow-bg);
+            border-color: var(--yellow-border);
+            border-left: 4px solid var(--yellow-border);
+          }
+          .legal-box-support h4 {
+            color: var(--yellow-text);
+          }
+          .legal-kofi-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            width: 100%;
+            padding: 10px 12px;
+            border-radius: 8px;
+            background: var(--yellow-border);
+            color: #1e293b !important;
+            font-weight: 800;
+            font-size: 0.9rem;
+            text-decoration: none;
+            margin-top: 4px;
+          }
+          .legal-box-license {
+            background: var(--green-bg);
+            border-color: var(--green-border);
+            border-left: 4px solid var(--green-border);
+          }
+          .legal-box-license h4 {
+            color: var(--green-text);
+          }
+          .legal-license-pre {
+            margin-top: 8px;
+            padding: 10px;
+            background: var(--bg-main);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 0.74rem;
+            white-space: pre-wrap;
+            line-height: 1.45;
+            color: var(--text-main);
+            user-select: text;
+          }
+          .footer-version-pill {
+            color: var(--primary);
+            font-weight: 700;
+          }
+        `;
+        document.head.appendChild(styleEl);
+      }
+
+      /* Befüllt Impressum (Akkordeon 5), Datenschutz (Akkordeon 6) & Versionsanzeige im Footer zentral */
+      function renderLegalContent() {
+        // 1. Impressum, MIT-Lizenz & freiwillige Unterstützung (Akkordeon 5)
+        const impressumCard = document.getElementById("impressum-bereich");
+        if (impressumCard) {
+          const headerSpan = impressumCard.querySelector(".accordion-header span");
+          if (headerSpan) {
+            headerSpan.textContent = "⚖️ 5. Impressum, MIT-Lizenz & Unterstützung";
+          }
+          const bodyEl = impressumCard.querySelector(".accordion-body");
+          if (bodyEl) {
+            bodyEl.innerHTML = `
+              <div class="legal-section-box legal-box-primary">
+                <h4>💻 Entwickler-Impressum (Angaben gem. § 5 DDG)</h4>
+                <p>
+                  <strong>Applikation:</strong> Hausaufgaben-Puffer-Planer
+                  <span style="color:var(--primary); font-weight:700;">${escapeHTML(APP_VERSION)}</span>
+                  | Reizarme Offline-WebApp zur Hausaufgaben-Strukturierung, Zeitbudgetierung und Entlastung im Schulalltag
+                </p>
+                <p>
+                  <strong>Verantwortlich &amp; Entwicklung:</strong><br>
+                  <strong>Heiko Limbeck</strong> (Projekt: Konzept23)<br>
+                  Lindenstraße 61<br>
+                  53945 Blankenheim, Deutschland
+                </p>
+                <p style="font-size:0.84rem; color:var(--text-muted);">
+                  Web: <a href="https://www.konzept23.de" target="_blank" rel="noopener noreferrer">www.konzept23.de</a> •
+                  E-Mail: <a href="mailto:info@konzept23.de">info@konzept23.de</a>
+                </p>
+                <p style="font-size:0.82rem; color:var(--text-muted); margin-top:6px;">
+                  <strong>Haftungsausschluss:</strong> Die Inhalte und Zeitberechnungen wurden mit größter Sorgfalt erstellt. Für die Richtigkeit, Vollständigkeit und Aktualität der dynamisch errechneten Termine und Pufferzeiten wird keine Gewähr übernommen.
+                </p>
+              </div>
+
+              <div class="legal-section-box legal-box-support">
+                <h4>☕ Projekt freiwillig unterstützen</h4>
+                <p style="font-size:0.86rem;">
+                  Der Hausaufgaben-Puffer-Planer ist und bleibt kostenlos, werbefrei und Open Source. Wenn dir die App im Schulalltag hilft und Zeit spart, kannst du die Weiterentwicklung mit einem freiwilligen Dankeschön (virtueller Kaffee) unterstützen:
+                </p>
+                <a href="${escapeHTML(KOFI_URL)}" target="_blank" rel="noopener noreferrer" class="legal-kofi-btn">
+                  ☕ Einen Kaffee ausgeben (Ko-fi)
+                </a>
+              </div>
+
+              <div class="legal-section-box legal-box-license">
+                <h4>📜 Open-Source-Lizenz (MIT License)</h4>
+                <p style="font-size:0.86rem;">
+                  Diese Software steht unter der offenen <strong>MIT-Lizenz</strong>: Sie darf kostenlos genutzt, weitergegeben und angepasst werden, sofern der Urheber- und Lizenzvermerk (<strong>Heiko Limbeck / Konzept23</strong>) auch bei Weiterentwicklungen erhalten bleibt. Bei eigener Veröffentlichung einer modifizierten Version wird um die sichtbare Nennung als ursprünglicher Entwickler gebeten (als rechtlich Verantwortlicher im Impressum ist dann der jeweilige Anbieter selbst einzutragen).
+                  Quellcode &amp; Anleitung:
+                  <a href="${escapeHTML(GITHUB_URL)}" target="_blank" rel="noopener noreferrer">GitHub-Repository öffnen ↗</a>
+                </p>
+                <details style="margin-top:6px;">
+                  <summary style="cursor:pointer; color:var(--primary); font-size:0.84rem; font-weight:700;">
+                    📄 Vollständigen MIT-Lizenztext einblenden
+                  </summary>
+                  <pre class="legal-license-pre">MIT License
+
+Copyright (c) 2026 Heiko Limbeck / Konzept23
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.</pre>
+                </details>
+              </div>
+            `;
+          }
+        }
+
+        // 2. Datenschutzerklärung (DSGVO – passend zum Hausaufgaben-Puffer-Planer, Akkordeon 6)
+        const datenschutzCard = document.getElementById("datenschutz-bereich");
+        if (datenschutzCard) {
+          const headerSpan = datenschutzCard.querySelector(".accordion-header span");
+          if (headerSpan) {
+            headerSpan.textContent = "🛡️ 6. Datenschutzerklärung (DSGVO – 100 % Lokal)";
+          }
+          const bodyEl = datenschutzCard.querySelector(".accordion-body");
+          if (bodyEl) {
+            bodyEl.innerHTML = `
+              <div class="legal-section-box legal-box-primary">
+                <h4>1. 100 % Lokale Offline-Datenhaltung (Zero-Server-Architektur)</h4>
+                <p>
+                  Diese WebApp arbeitet vollständig lokal auf deinem Endgerät (Single-File Offline-App). Sämtliche erfassten Daten (Stundenplan, Hausaufgaben, Klausuren, Vokabeln, Fächerwahl und Einstellungen) werden ausschließlich im lokalen Speicher deines Browsers (<code>localStorage</code>) abgelegt. Es findet <strong>keinerlei Übertragung deiner Planungsdaten an externe Server, Clouds, Analyse- oder Tracking-Dienste</strong> statt. Es werden weder Cookies noch externe Schriftarten oder CDNs verwendet.
+                </p>
+              </div>
+
+              <div class="legal-section-box">
+                <h4>2. Grundsatz der Datenminimierung (Art. 5, 25 DSGVO)</h4>
+                <p>
+                  Für die Nutzung des Hausaufgaben-Puffer-Planers ist weder ein Benutzerkonto noch die Eingabe persönlicher Daten erforderlich. Bitte verzichte in Aufgabentexten und Notizen auf unnötige personenbezogene Daten Dritter.
+                </p>
+              </div>
+
+              <div class="legal-section-box">
+                <h4>3. Betroffenenrechte, Export &amp; Löschkonzept (Art. 17 DSGVO)</h4>
+                <p>
+                  Alle gespeicherten Daten können jederzeit im Bereich <strong>Einstellungen</strong> als Komplettsicherung (<code>.json</code>) oder Tabelle (<code>.csv</code>) exportiert sowie über die zweistufige Sicherheitsabfrage rückstandslos aus dem lokalen Browser-Speicher gelöscht werden.
+                </p>
+              </div>
+
+              <div class="legal-section-box">
+                <h4>4. Bereitstellung über GitHub Pages (Online-Aufruf)</h4>
+                <p>
+                  Wird diese WebApp über eine Online-Adresse bei <strong>GitHub Pages</strong> (GitHub, Inc.) aufgerufen, übermittelt dein Browser technisch bedingt die IP-Adresse sowie Verbindungs-Metadaten an Server von GitHub, um die HTML-Datei auszuliefern (Server-Logfiles). <strong>Alle danach in der App eingegebenen Hausaufgaben-, Klausur- und Stundenplandaten verbleiben ausschließlich lokal auf deinem Gerät</strong> und werden zu keinem Zeitpunkt an GitHub übertragen. Bei lokaler Nutzung der heruntergeladenen HTML-Datei findet überhaupt kein Serverkontakt statt.
+                </p>
+              </div>
+
+              <div class="legal-section-box">
+                <h4>5. Externe Links (GitHub, Website &amp; freiwillige Unterstützung)</h4>
+                <p>
+                  Diese App enthält freiwillige Links zu externen Seiten (z. B. GitHub-Repository, konzept23.de oder Ko-fi). Erst wenn du einen solchen Link aktiv anklickst, verlässt du die lokale App und es wird eine Verbindung zum jeweiligen Anbieter aufgebaut; es gelten dann dessen Datenschutzbestimmungen.
+                </p>
+              </div>
+
+              <div class="legal-section-box">
+                <h4>6. Verantwortlicher im Sinne der DSGVO</h4>
+                <p>
+                  Heiko Limbeck (Konzept23), Lindenstraße 61, 53945 Blankenheim, Deutschland • E-Mail: <strong>info@konzept23.de</strong>
+                </p>
+              </div>
+            `;
+          }
+        }
+
+        // 3. Versionsnummer automatisch in die Fußzeile schreiben (Buttons bleiben unberührt)
+        const footerSpan = document.querySelector("footer span");
+        if (footerSpan) {
+          footerSpan.innerHTML = `100 % Lokal &amp; Werbefrei • Entwicklung: Konzept23 • <span class="footer-version-pill">${escapeHTML(APP_VERSION)}</span>`;
+        }
+      }
+
       function renderHeader() {
         const now = new Date();
         const fullDays = ["Sonntag", "Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag"];
@@ -3516,6 +4791,11 @@
         const settingsWeekText = document.getElementById("settingsWeekStatusText");
         if (settingsWeekText) {
           settingsWeekText.textContent = `Aktueller Rhythmus: Woche ${currentWeekType} (Kann bei Bedarf über den Button oben umgeschaltet werden).`;
+        }
+
+        const bridgeCheck = document.getElementById("doneWeekendBridgeCheckbox");
+        if (bridgeCheck) {
+          bridgeCheck.checked = Boolean(state.doneWeekendBridge);
         }
       }
 
@@ -3593,11 +4873,49 @@
         const examBanner = document.getElementById("examPlanBanner");
         if (!banner) return;
 
+        // Kompakter Klausur-Balken mit nächster Klausur, Ampelfarben, Prüf-Hinweis & kleiner Schaltfläche rechts
+        if (examBanner) {
+          examBanner.classList.remove("exam-banner-red", "exam-banner-yellow", "exam-banner-green");
+          if (result.examInfo && result.examInfo.upcoming.length > 0) {
+            const nextEx = result.examInfo.upcoming[0];
+            const moreCount = result.examInfo.upcoming.length - 1;
+            examBanner.classList.add(`exam-banner-${nextEx.urgency}`, "visible");
+
+            const badgeClass = nextEx.urgency === "red"
+              ? "days-badge-urgent"
+              : (nextEx.urgency === "yellow" ? "days-badge-soon" : "days-badge-ok");
+            const daysText = nextEx.daysLeft < 0
+              ? "Datum prüfen"
+              : (nextEx.daysLeft === 0
+                  ? "HEUTE!"
+                  : (nextEx.daysLeft === 1 ? "morgen (1 Tag)" : `noch ${nextEx.daysLeft} Tage`));
+            const bufferInfo = result.examInfo.reservedExamBufferToday > 0
+              ? ` · Heute ${result.examInfo.reservedExamBufferToday} Min. Puffer`
+              : "";
+            const moreInfo = moreCount > 0 ? ` (+${moreCount} weitere)` : "";
+            const reviewPill = result.examInfo.reviewCount > 0
+              ? `<span class="review-badge">⚠️ ${result.examInfo.reviewCount} prüfen</span>`
+              : "";
+
+            examBanner.innerHTML = `
+              <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+                <span>🎯 <strong>Nächste Klausur:</strong> ${escapeHTML(nextEx.subject)} (${formatGermanDate(nextEx.date)})</span>
+                <span class="days-badge ${badgeClass}">${daysText}</span>
+                ${reviewPill}
+                <span style="font-size:0.8rem; color:var(--text-muted);">${bufferInfo}${moreInfo}</span>
+              </div>
+              <button type="button" class="exam-banner-link">Klausur-Radar ➔</button>
+            `;
+          } else {
+            examBanner.classList.remove("visible");
+            examBanner.innerHTML = "";
+          }
+        }
+
         const totalOpen = result.red.length + result.yellow.length + result.green.length;
         if (totalOpen === 0) {
           banner.textContent = "Alles erledigt! Aktuell stehen keine offenen Hausaufgaben an.";
           if (freeBanner) freeBanner.classList.remove("visible");
-          if (examBanner) examBanner.classList.remove("visible");
           return;
         }
 
@@ -3607,15 +4925,6 @@
             freeBanner.classList.add("visible");
           } else {
             freeBanner.classList.remove("visible");
-          }
-        }
-
-        if (examBanner) {
-          if (result.examInfo.reservedExamBufferToday > 0) {
-            examBanner.textContent = `⚡ Klausur-Radar: Heute sind ${result.examInfo.reservedExamBufferToday} Min. Lernpuffer für anstehende Arbeiten reserviert.`;
-            examBanner.classList.add("visible");
-          } else {
-            examBanner.classList.remove("visible");
           }
         }
 
@@ -3636,7 +4945,6 @@
       function renderPlanTab() {
         const result = classifyTasks();
         const limit = state.dailyBudgetMinutes;
-        const used = result.plannedMinutesToday;
 
         updateBudgetBar(result, limit);
         updateFreePeriodBar(result.freeInfo);
@@ -3668,18 +4976,21 @@
         }
 
         const fragment = document.createDocumentFragment();
+        const activeFreeInfo = analyzeNextSchoolDayFreePeriods();
 
         tasks.forEach(task => {
           const item = document.createElement("div");
           item.className = "task-item" + (task.plannedInFreePeriod ? " in-free-period" : "");
 
-          const isLongText = (task.title || "").length > 60 || (task.title || "").includes("\n");
           const safeId = escapeHTML(task.id);
 
           const daysLeft = getDaysUntilDue(task.dueDate);
           let badgeClass = "days-badge-ok";
           let badgeText = `noch ${daysLeft} Tage`;
-          if (daysLeft === 0) {
+          if (daysLeft < 0) {
+            badgeClass = "days-badge-urgent";
+            badgeText = "überfällig";
+          } else if (daysLeft === 0) {
             badgeClass = "days-badge-urgent";
             badgeText = "heute fällig";
           } else if (daysLeft === 1) {
@@ -3690,7 +5001,7 @@
             badgeText = `noch ${daysLeft} Tage`;
           }
 
-          const freeFit = task.freeFit || evaluateTaskFreePeriodFit(task, analyzeNextSchoolDayFreePeriods());
+          const freeFit = task.freeFit || evaluateTaskFreePeriodFit(task, activeFreeInfo);
           const showFreeButton = freeFit.canShowButton;
           const isShifted = Boolean(task.plannedInFreePeriod);
 
@@ -3701,8 +5012,8 @@
                 <span class="days-badge ${badgeClass}">${badgeText}</span>
                 ${isShifted ? `<span class="free-period-pill">⚡ In Freistunde</span>` : ""}
               </div>
-              <div class="task-title ${isLongText ? "clickable-title" : ""}" data-action="read-task" data-id="${safeId}" title="${escapeHTML(task.title)}">${escapeHTML(task.title)}</div>
-              ${isLongText ? `<button type="button" class="btn-read-more" data-action="read-task" data-id="${safeId}">Aufgabe / Notizen ganz lesen ↗</button>` : ""}
+              <div class="task-title clickable-title" data-action="read-task" data-id="${safeId}" title="${escapeHTML(task.title)}">${escapeHTML(task.title)}</div>
+              <button type="button" class="btn-read-more" data-action="read-task" data-id="${safeId}">📄 Groß lesen &amp; kopieren ↗</button>
               <div class="task-meta">Dauer: ca. ${Number(task.duration)} Min. | Abgabe: ${formatGermanDate(task.dueDate)} (${escapeHTML(task.reason)})</div>
             </div>
             <div class="task-actions">
@@ -3719,6 +5030,8 @@
         container.appendChild(fragment);
       }
 
+      /* Abgabe- & Pack-Check: Automatisch nach Abgabe sortiert (Rot -> Gelb -> Grün -> Vergangen),
+         erst nach Ablauf des Abgabetags durchgestrichen, vollflächig antippbar für das Lese-Pop-up */
       function renderDoneList(containerId, tasks) {
         const container = document.getElementById(containerId);
         container.innerHTML = "";
@@ -3735,21 +5048,34 @@
 
         tasks.forEach(task => {
           const item = document.createElement("div");
-          item.className = "task-item";
-          item.style.opacity = "0.75";
+          item.className = `task-item done-clickable-card ${task.cardClass || "done-item-past"}`;
+          item.setAttribute("data-action", "read-task");
+          item.setAttribute("data-id", task.id);
+          item.setAttribute("title", "Antippen zum Groß lesen & Kopieren");
 
-          const isLongText = (task.title || "").length > 60 || (task.title || "").includes("\n");
-          const doneDateStr = task.completedAt ? ` | Erledigt: ${formatGermanDate(task.completedAt)}` : "";
           const safeId = escapeHTML(task.id);
+          const doneDateStr = task.completedAt ? ` | Erledigt: ${formatGermanDate(task.completedAt)}` : "";
+          const periodInfo = task.duePeriod ? ` (${task.duePeriod}. Std.)` : "";
+          const badgeHtml = task.badgeClass
+            ? `<span class="days-badge ${task.badgeClass}">${escapeHTML(task.badgeText)}</span>`
+            : `<span style="font-size:0.78rem; color:var(--text-muted); font-weight:700;">(${escapeHTML(task.badgeText)})</span>`;
 
           item.innerHTML = `
             <div class="task-info">
-              <strong>${escapeHTML(task.subject)}:</strong>
-              <span style="text-decoration:line-through;">${escapeHTML(task.title)}</span>
-              (${Number(task.duration)} Min.${doneDateStr})
-              ${isLongText ? `<br><button type="button" class="btn-read-more" data-action="read-task" data-id="${safeId}">Text ansehen ↗</button>` : ""}
+              <div class="task-header-row">
+                <span class="task-subject">${escapeHTML(task.subject)}</span>
+                <span class="done-check-pill">✓ Erledigt</span>
+                ${badgeHtml}
+              </div>
+              <div class="task-title done-task-title">${escapeHTML(task.title)}</div>
+              <div class="task-meta">
+                Abgabe: <strong>${formatGermanDate(task.effectiveDueDate)}${periodInfo}</strong> | ca. ${Number(task.duration)} Min.${doneDateStr}
+              </div>
+              <button type="button" class="btn-read-more" data-action="read-task" data-id="${safeId}">📄 Groß lesen &amp; kopieren ↗</button>
             </div>
-            <button type="button" class="btn-secondary" style="padding:6px 10px; font-size:0.8rem;" data-action="uncheck-task" data-id="${safeId}">Wieder öffnen</button>
+            <div class="task-actions">
+              <button type="button" class="btn-secondary" style="padding:6px 10px; font-size:0.8rem;" data-action="uncheck-task" data-id="${safeId}">Wieder öffnen</button>
+            </div>
           `;
 
           fragment.appendChild(item);
@@ -3825,7 +5151,7 @@
         container.appendChild(fragment);
       }
 
-      /* Klausur-Radar Tab Renderer (mit Bearbeiten & Vollbild-Lesen) */
+      /* Klausur-Radar Tab Renderer (mit Prüf-Markierung ganz oben, Bearbeiten & Vollbild-Lesen) */
       function renderExamsTab() {
         const select = document.getElementById("examSubject");
         const editSelect = document.getElementById("editExamSubject");
@@ -3859,8 +5185,15 @@
           return;
         }
 
+        // Klausuren mit Prüf-Markierung stehen ganz oben im Blickfeld
+        const displayExams = [...examInfo.upcoming].sort((a, b) => {
+          const revDiff = (b.needsReview ? 1 : 0) - (a.needsReview ? 1 : 0);
+          if (revDiff !== 0) return revDiff;
+          return (a.date || "").localeCompare(b.date || "");
+        });
+
         const fragment = document.createDocumentFragment();
-        examInfo.upcoming.forEach(ex => {
+        displayExams.forEach(ex => {
           const card = document.createElement("div");
           card.className = `exam-card exam-${ex.urgency}`;
           const safeId = escapeHTML(ex.id);
@@ -3871,15 +5204,16 @@
               <div class="task-header-row">
                 <span class="task-subject">${escapeHTML(ex.subject)}</span>
                 <span class="days-badge days-badge-${ex.urgency === "red" ? "urgent" : (ex.urgency === "yellow" ? "soon" : "ok")}">${escapeHTML(ex.urgencyLabel)}</span>
+                ${ex.needsReview ? `<span class="review-badge">⚠️ Datum / Stoff prüfen</span>` : ""}
                 ${ex.hasSameDayCollision ? `<span style="background:var(--yellow-border); color:#fff; font-size:0.72rem; font-weight:700; padding:2px 6px; border-radius:4px;">⚠️ Doppeltag</span>` : ""}
               </div>
               <div class="task-title ${isLongTopic ? "clickable-title" : ""}" data-action="read-exam" data-id="${safeId}" style="margin-top:4px;" title="${escapeHTML(ex.topic)}">${escapeHTML(ex.topic)}</div>
-              ${isLongTopic ? `<button type="button" class="btn-read-more" data-action="read-exam" data-id="${safeId}">📄 Vollständigen Stoff lesen & kopieren ↗</button>` : ""}
+              ${isLongTopic ? `<button type="button" class="btn-read-more" data-action="read-exam" data-id="${safeId}">📄 Vollständigen Stoff lesen &amp; kopieren ↗</button>` : ""}
               <div class="task-meta">Datum: ${formatGermanDate(ex.date)} | Lernpuffer: ${ex.bufferMinutes} Min./Tag</div>
             </div>
             <div class="task-actions">
               <button type="button" class="btn-read-more" data-action="read-exam" data-id="${safeId}" style="padding:6px 10px; font-weight:700; background:var(--bg-main); border:1px solid var(--border-color); border-radius:6px; text-decoration:none;">📄 Lesen / Kopieren</button>
-              <button type="button" class="btn-edit" data-action="edit-exam" data-id="${safeId}" title="Klausur bearbeiten">✏️ Ändern</button>
+              <button type="button" class="btn-edit" data-action="edit-exam" data-id="${safeId}" title="Klausur bearbeiten">${ex.needsReview ? "✏️ Prüfen &amp; Ändern" : "✏️ Ändern"}</button>
               <button type="button" class="btn-delete" data-action="delete-exam" data-id="${safeId}" title="Termin löschen">×</button>
             </div>
           `;
@@ -3889,12 +5223,25 @@
         container.appendChild(fragment);
       }
 
-      /* Tagesaktuelle Ausfälle & Tausch Editor */
+      /* Tagesaktuelle Ausfälle & Tausch Editor (mit Zeitsperre für abgelaufene Stunden von heute) */
       function renderDailyOverridesEditor() {
-        const targetDate = overrideTargetMode === "today" ? getStartOfDay(new Date()) : getNextSchoolDayDate(new Date());
+        const now = new Date();
+        cleanupExpiredOverridesAndFreeShifts(now);
+
+        const schoolOverToday = isSchoolDayOverToday(now);
+        const todayDate = getStartOfDay(now);
+        const nextSchoolDate = getNextSchoolDayDate(now);
+
+        const targetDate = overrideTargetMode === "today" ? todayDate : nextSchoolDate;
         const dateIso = toISODate(targetDate);
+        const isEditingToday = (overrideTargetMode === "today");
+
         const dayNames = ["Sonntag", "Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag"];
-        const labelText = `Anpassung für: ${dayNames[targetDate.getDay()]} (${formatGermanDate(dateIso)})`;
+        const modeTitle = isEditingToday ? "HEUTE" : "NÄCHSTER SCHULTAG";
+        let labelText = `Anpassung für ${modeTitle}: ${dayNames[targetDate.getDay()]} (${formatGermanDate(dateIso)})`;
+        if (isEditingToday && schoolOverToday) {
+          labelText += " — ⏹️ Heutiger Unterricht beendet (Nur noch nächster Schultag planbar)";
+        }
 
         const lbl = document.getElementById("overrideTargetLabel");
         if (lbl) lbl.textContent = labelText;
@@ -3902,15 +5249,28 @@
         const btnToday = document.getElementById("overrideTodayBtn");
         const btnTomorrow = document.getElementById("overrideTomorrowBtn");
         if (btnToday && btnTomorrow) {
-          btnToday.style.background = overrideTargetMode === "today" ? "var(--primary)" : "var(--bg-main)";
-          btnToday.style.color = overrideTargetMode === "today" ? "#fff" : "var(--text-main)";
-          btnTomorrow.style.background = overrideTargetMode === "tomorrow" ? "var(--primary)" : "var(--bg-main)";
-          btnTomorrow.style.color = overrideTargetMode === "tomorrow" ? "#fff" : "var(--text-main)";
+          btnToday.style.background = isEditingToday ? "var(--primary)" : "var(--bg-main)";
+          btnToday.style.color = isEditingToday ? "#fff" : "var(--text-main)";
+          btnToday.textContent = schoolOverToday
+            ? `Heute (${formatGermanDate(toISODate(todayDate))} – vorbei)`
+            : `Heute anpassen (${formatGermanDate(toISODate(todayDate))})`;
+
+          btnTomorrow.style.background = !isEditingToday ? "var(--primary)" : "var(--bg-main)";
+          btnTomorrow.style.color = !isEditingToday ? "#fff" : "var(--text-main)";
+          btnTomorrow.textContent = `Nächster Schultag (${formatGermanDate(toISODate(nextSchoolDate))})`;
         }
 
         const container = document.getElementById("dailyOverridesContainer");
         if (!container) return;
         container.innerHTML = "";
+
+        if (isEditingToday && schoolOverToday) {
+          const infoBox = document.createElement("div");
+          infoBox.className = "advice-banner";
+          infoBox.style.marginBottom = "10px";
+          infoBox.innerHTML = `<strong>Der heutige Schultag ist bereits vorbei.</strong> Alle heutigen Freistunden-Einträge wurden automatisch zurückgesetzt. Rückwirkende Einträge für heute sind gesperrt – bitte nutze den Button <strong>„Nächster Schultag (${formatGermanDate(toISODate(nextSchoolDate))})“</strong> für morgen!`;
+          container.appendChild(infoBox);
+        }
 
         const timings = getPeriodTimings();
         const effectiveSlots = getEffectiveDaySchedule(targetDate);
@@ -3920,24 +5280,32 @@
 
         timings.forEach((t, idx) => {
           const eff = effectiveSlots[idx];
-          const ov = dayOverrides[idx];
+          const isExpiredSlot = isEditingToday && isPeriodExpiredToday(idx, now);
+          const ov = (!isExpiredSlot) ? dayOverrides[idx] : null;
+
           const row = document.createElement("div");
           let rowClass = "override-row";
-          if (eff.status === "cancelled") rowClass += " status-cancelled";
+          if (isExpiredSlot) rowClass += " status-expired";
+          else if (eff.status === "cancelled") rowClass += " status-cancelled";
           else if (eff.status === "swapped") rowClass += " status-swapped";
           row.className = rowClass;
 
           let statusText = `Regulär: ${eff.baseSubject || "Frei"}`;
-          if (ov && ov.status === "cancelled") statusText = "⚡ AUSGEFALLEN (Wird Freistunde)";
-          else if (ov && ov.status === "swapped") statusText = `🔄 Getauscht zu ${ov.subject}`;
+          if (isExpiredSlot) {
+            statusText = `⏱️ Vorbei (${eff.baseSubject || "Frei"}) – zeitlich abgelaufen & zurückgesetzt`;
+          } else if (ov && ov.status === "cancelled") {
+            statusText = "⚡ AUSGEFALLEN (Wird Freistunde)";
+          } else if (ov && ov.status === "swapped") {
+            statusText = `🔄 Getauscht zu ${ov.subject}`;
+          }
 
           const selectId = `ov_sel_${dateIso}_${idx}`;
           row.innerHTML = `
-            <div style="font-weight:700; font-size:0.9rem; min-width:90px;">${t.period}. Std. (${t.startStr})</div>
+            <div style="font-weight:700; font-size:0.9rem; min-width:115px;">${t.period}. Std. (${t.startStr}–${t.endStr})</div>
             <div style="font-size:0.85rem; color:var(--text-muted); flex:1; min-width:140px;">${statusText}</div>
             <div style="display:flex; gap:6px; align-items:center;">
-              <select id="${selectId}" data-override-period="${idx}" data-date-iso="${dateIso}" style="padding:4px 8px; font-size:0.85rem; width:160px;">
-                <option value="__NORMAL__" ${!ov ? "selected" : ""}>Plan belassen</option>
+              <select id="${selectId}" data-override-period="${idx}" data-date-iso="${dateIso}" style="padding:4px 8px; font-size:0.85rem; width:175px;" ${isExpiredSlot ? "disabled" : ""}>
+                <option value="__NORMAL__" ${!ov ? "selected" : ""}>${isExpiredSlot ? "Stunde vorbei (gesperrt)" : "Plan belassen"}</option>
                 <option value="__CANCELLED__" ${ov && ov.status === "cancelled" ? "selected" : ""}>⚡ Ausfall (Freistunde)</option>
                 ${activeList.map(s => `<option value="${s}" ${ov && ov.status === "swapped" && ov.subject === s ? "selected" : ""}>Tausch: ${s}</option>`).join("")}
               </select>
@@ -3976,7 +5344,7 @@
           }
 
           const effectiveSlots = getEffectiveDaySchedule(targetDate);
-          const scheduledToday = [...new Set(effectiveSlots.map(s => s.effectiveSubject).filter(Boolean))].filter(s => activeList.includes(s));
+          const scheduledToday = [...new Set(effectiveSlots.map(s => s.effectiveSubject || s.baseSubject).filter(Boolean))].filter(s => activeList.includes(s));
 
           const topOpt = document.createElement("option");
           topOpt.value = "Allgemein / Vertretung";
@@ -4134,19 +5502,263 @@
       }
 
       /* ==========================================================================
-         DIALOGE: VOLLANSICHT, KLAUSUR-LESEN & BEARBEITEN
+         DIALOGE: CSV SCHNELL-PRÜFLISTE, VOLLANSICHT, KLAUSUR-LESEN & BEARBEITEN
          ========================================================================== */
+      function openCsvReviewModal(items, skippedCount) {
+        pendingCsvReviewItems = items;
+        pendingCsvSkippedCount = skippedCount || 0;
+        renderCsvReviewList();
+
+        const backdrop = document.getElementById("csvReviewModalBackdrop");
+        if (backdrop) {
+          backdrop.classList.add("show");
+          backdrop.setAttribute("aria-hidden", "false");
+        }
+      }
+
+      function closeCsvReviewModal() {
+        pendingCsvReviewItems = [];
+        pendingCsvSkippedCount = 0;
+        const backdrop = document.getElementById("csvReviewModalBackdrop");
+        if (backdrop) {
+          backdrop.classList.remove("show");
+          backdrop.setAttribute("aria-hidden", "true");
+        }
+      }
+
+      function renderCsvReviewList() {
+        const container = document.getElementById("csvReviewList");
+        const subtitleEl = document.getElementById("csvReviewSubtitle");
+        const confirmBtn = document.getElementById("confirmCsvReviewBtn");
+        if (!container) return;
+
+        const hwCount = pendingCsvReviewItems.filter(x => x.type === "hw").length;
+        const examCount = pendingCsvReviewItems.filter(x => x.type === "exam").length;
+
+        if (subtitleEl) {
+          const dupHint = pendingCsvSkippedCount > 0
+            ? ` (${pendingCsvSkippedCount} bereits vorhandene Einträge wurden automatisch übersprungen.)`
+            : "";
+          subtitleEl.innerHTML = `<strong>${pendingCsvReviewItems.length} neue Einträge</strong> erkannt: Zeiten per Tipp anpassen, bei Bedarf auf <strong>Klausur</strong> umschalten oder Unwichtiges (z. B. Elterninfo) mit <strong>×</strong> entfernen.${dupHint}`;
+        }
+
+        if (confirmBtn) {
+          if (hwCount > 0 && examCount > 0) {
+            confirmBtn.textContent = `✓ ${hwCount} Aufgabe(n) & ${examCount} Klausur(en) übernehmen`;
+          } else if (examCount > 0) {
+            confirmBtn.textContent = `✓ ${examCount} Klausur(en) ins Radar übernehmen`;
+          } else {
+            confirmBtn.textContent = `✓ Alle ${hwCount} Aufgabe(n) übernehmen`;
+          }
+        }
+
+        container.innerHTML = "";
+        const activeList = getActiveSubjectsList();
+        const fragment = document.createDocumentFragment();
+
+        pendingCsvReviewItems.forEach(item => {
+          const isExam = item.type === "exam";
+          const safeTempId = escapeHTML(item.tempId);
+
+          // Fächer-Optionen inklusive evtl. neuem Fach aus der CSV
+          const subjectOptions = ["Allgemein / Vertretung", ...activeList];
+          if (item.subject && !subjectOptions.includes(item.subject)) {
+            subjectOptions.push(item.subject);
+          }
+
+          const row = document.createElement("div");
+          row.className = "csv-review-row" + (isExam ? " is-exam" : "");
+
+          let controlsHtml = "";
+          let metaHtml = "";
+          let collisionHtml = "";
+
+          if (!isExam) {
+            const duePeriod = getFirstSubjectPeriodOnDate(item.subject, item.dueDate);
+            const periodText = duePeriod ? `, ${duePeriod}. Std.` : "";
+            const rawSubjHint = (item.rawSubject && item.rawSubject.toLowerCase() !== item.subject.toLowerCase())
+              ? ` · CSV: „${escapeHTML(item.rawSubject)}“`
+              : "";
+
+            controlsHtml = `
+              <div class="csv-review-controls">
+                <div class="csv-chip-group">
+                  <span style="font-size:0.78rem; color:var(--text-muted); font-weight:700; margin-right:2px;">Dauer:</span>
+                  ${[10, 15, 30, 45].map(min => `
+                    <button type="button" class="csv-chip ${Number(item.duration) === min ? "active" : ""}" data-csv-action="set-duration" data-val="${min}" data-temp-id="${safeTempId}">${min} Min.</button>
+                  `).join("")}
+                </div>
+                <div class="csv-chip-group">
+                  <button type="button" class="csv-chip ${item.dueMode !== "overnext" ? "active" : ""}" data-csv-action="set-duemode" data-val="next" data-temp-id="${safeTempId}">Nächste Std.</button>
+                  <button type="button" class="csv-chip ${item.dueMode === "overnext" ? "active" : ""}" data-csv-action="set-duemode" data-val="overnext" data-temp-id="${safeTempId}">Übernächste</button>
+                </div>
+              </div>
+            `;
+            metaHtml = `<div class="csv-review-meta">Abgabe (Auto): ${formatGermanDate(item.dueDate)}${periodText}${rawSubjHint}</div>`;
+          } else {
+            const dateMissingClass = !item.examDate ? "csv-date-missing" : "";
+            controlsHtml = `
+              <div class="csv-review-controls">
+                <div class="csv-chip-group">
+                  <span style="font-size:0.78rem; color:var(--text-muted); font-weight:700;">Datum:</span>
+                  <input type="date" class="csv-date-input ${dateMissingClass}" data-csv-field="examDate" data-temp-id="${safeTempId}" value="${escapeHTML(item.examDate || "")}">
+                </div>
+                <div class="csv-chip-group">
+                  <span style="font-size:0.78rem; color:var(--text-muted); font-weight:700;">Puffer:</span>
+                  ${[10, 15, 20, 30].map(min => `
+                    <button type="button" class="csv-chip ${Number(item.bufferMinutes) === min ? "active" : ""}" data-csv-action="set-buffer" data-val="${min}" data-temp-id="${safeTempId}">${min}m</button>
+                  `).join("")}
+                </div>
+                <label style="display:inline-flex; align-items:center; gap:5px; font-size:0.8rem; font-weight:700; color:var(--review-text); cursor:pointer;">
+                  <input type="checkbox" data-csv-field="needsReview" data-temp-id="${safeTempId}" ${item.needsReview ? "checked" : ""} style="width:16px; height:16px;">
+                  ⚠️ Später prüfen
+                </label>
+              </div>
+            `;
+
+            if (item.examDate && item.examDateAutoExtracted) {
+              metaHtml = `<div class="csv-review-meta">✓ Termin automatisch aus dem Text erkannt: <strong>${formatGermanDate(item.examDate)}</strong> (kommt direkt ins Klausur-Radar)</div>`;
+            } else if (!item.examDate) {
+              metaHtml = `<div class="csv-review-meta" style="color:var(--review-text);">⚠️ Kein Datum erkannt – wähle oben ein Datum oder übernimm mit „Später prüfen“ (wird im Klausur-Radar markiert).</div>`;
+            } else {
+              metaHtml = `<div class="csv-review-meta">Prüfungstermin: <strong>${formatGermanDate(item.examDate)}</strong> (kommt direkt ins Klausur-Radar)</div>`;
+            }
+
+            if (item.examDate) {
+              const existingSameDay = getExamsOnDate(item.examDate, null).map(e => e.subject);
+              const pendingSameDay = pendingCsvReviewItems
+                .filter(other => other.tempId !== item.tempId && other.type === "exam" && other.examDate === item.examDate)
+                .map(other => other.subject);
+              const allCollisions = [...new Set([...existingSameDay, ...pendingSameDay])];
+              if (allCollisions.length > 0) {
+                collisionHtml = `<div class="csv-review-collision">⚠️ Doppeltag-Hinweis: Am ${formatGermanDate(item.examDate)} liegt bereits eine Klausur (${escapeHTML(allCollisions.join(", "))}).</div>`;
+              }
+            }
+          }
+
+          row.innerHTML = `
+            <div class="csv-review-top">
+              <select class="csv-review-subject" data-csv-field="subject" data-temp-id="${safeTempId}">
+                ${subjectOptions.map(s => `<option value="${escapeHTML(s)}" ${s === item.subject ? "selected" : ""}>${escapeHTML(s)}</option>`).join("")}
+              </select>
+              <div class="csv-type-toggle">
+                <button type="button" class="csv-type-btn ${!isExam ? "active-hw" : ""}" data-csv-action="set-type" data-val="hw" data-temp-id="${safeTempId}">Hausaufgabe</button>
+                <button type="button" class="csv-type-btn ${isExam ? "active-exam" : ""}" data-csv-action="set-type" data-val="exam" data-temp-id="${safeTempId}">Klausur</button>
+              </div>
+              <button type="button" class="csv-remove-btn" data-csv-action="remove" data-temp-id="${safeTempId}" title="Eintrag verwerfen (z. B. Elterninfo)">×</button>
+            </div>
+            <input type="text" class="csv-review-title-input" data-csv-field="title" data-temp-id="${safeTempId}" value="${escapeHTML(item.title)}" placeholder="Aufgabe oder Klausur-Thema">
+            ${controlsHtml}
+            ${metaHtml}
+            ${collisionHtml}
+          `;
+
+          fragment.appendChild(row);
+        });
+
+        container.appendChild(fragment);
+      }
+
+      function commitCsvReviewItems() {
+        if (!Array.isArray(pendingCsvReviewItems) || pendingCsvReviewItems.length === 0) {
+          closeCsvReviewModal();
+          return;
+        }
+
+        let addedTasks = 0;
+        let addedExams = 0;
+        let reviewMarkedExams = 0;
+        const skippedDuplicates = pendingCsvSkippedCount;
+
+        pendingCsvReviewItems.forEach((item, idx) => {
+          const subject = (item.subject || "").trim() || "Allgemein / Vertretung";
+          const title = (item.title || "").trim() || (item.type === "exam" ? "Klassenarbeit / Test" : "Hausaufgabe");
+
+          if (subject && subject !== "Allgemein / Vertretung") {
+            if (!state.subjects.includes(subject)) state.subjects.push(subject);
+            if (!state.activeSubjects.includes(subject)) state.activeSubjects.push(subject);
+          }
+
+          if (item.type === "exam") {
+            const examDate = item.examDate || toISODate(getNextSchoolDayDate(new Date()));
+            const needsReview = Boolean(item.needsReview) || !item.examDate;
+            if (needsReview) reviewMarkedExams++;
+
+            state.exams.push({
+              id: "ex_" + Date.now() + "_" + idx + "_" + Math.floor(Math.random() * 10000),
+              subject,
+              date: examDate,
+              topic: title,
+              bufferMinutes: Number(item.bufferMinutes) || 15,
+              needsReview
+            });
+            addedExams++;
+          } else {
+            const dueMode = item.dueMode === "overnext" ? "overnext" : "next";
+            const createdAt = item.createdAt || toISODate(new Date());
+            const dueDate = item.dueDate || findSubjectOccurrenceDate(subject, dueMode === "overnext" ? 2 : 1, createdAt);
+
+            state.tasks.push({
+              id: "hw_" + Date.now() + "_" + idx + "_" + Math.floor(Math.random() * 10000),
+              subject,
+              title,
+              duration: Number(item.duration) || 15,
+              dueDate,
+              dueMode,
+              plannedInFreePeriod: false,
+              freePeriodDate: "",
+              done: false,
+              createdAt,
+              completedAt: ""
+            });
+            addedTasks++;
+          }
+        });
+
+        closeCsvReviewModal();
+        cleanupExpiredOverridesAndFreeShifts(new Date());
+        saveState();
+        renderActiveSubjectsManager();
+        renderSubjectDropdowns();
+        renderScheduleTab();
+        renderExamsTab();
+        renderPlanTab();
+
+        if (addedTasks === 0 && addedExams > 0) {
+          switchTab("tab-exams");
+        } else {
+          switchTab("tab-plan");
+        }
+
+        const lines = [
+          `• Übernommene Hausaufgaben: ${addedTasks}`,
+          `• Übernommene Klausuren/Tests: ${addedExams}`
+        ];
+        if (reviewMarkedExams > 0) {
+          lines.push(`• Davon im Klausur-Radar mit „⚠️ Prüfen“ markiert: ${reviewMarkedExams}`);
+        }
+        if (skippedDuplicates > 0) {
+          lines.push(`• Übersprungene (bereits vorhandene) Einträge: ${skippedDuplicates}`);
+        }
+
+        showNoticeModal("CSV-Import abgeschlossen", lines.join("\n"));
+      }
+
       function openReadModal(taskId) {
         const task = state.tasks.find(t => t.id === taskId);
         if (!task) return;
 
+        currentReadTaskId = task.id;
         const subjectEl = document.getElementById("readModalSubject");
         const metaEl = document.getElementById("readModalMeta");
         const textEl = document.getElementById("readModalText");
         const backdrop = document.getElementById("readModalBackdrop");
 
+        const period = getFirstSubjectPeriodOnDate(task.subject, task.dueDate);
+        const periodInfo = period ? ` (${period}. Std.)` : "";
+
         subjectEl.textContent = `Fach: ${task.subject}`;
-        metaEl.textContent = `Dauer: ca. ${task.duration} Min. | Abgabe: ${formatGermanDate(task.dueDate)} ${task.done ? "✓ (Erledigt)" : ""}`;
+        metaEl.textContent = `Dauer: ca. ${task.duration} Min. | Abgabe: ${formatGermanDate(task.dueDate)}${periodInfo} ${task.done ? "✓ (Erledigt)" : ""}`;
         textEl.textContent = task.title || "(Kein Aufgabentext eingetragen)";
 
         backdrop.classList.add("show");
@@ -4154,6 +5766,7 @@
       }
 
       function closeReadModal() {
+        currentReadTaskId = null;
         const backdrop = document.getElementById("readModalBackdrop");
         backdrop.classList.remove("show");
         backdrop.setAttribute("aria-hidden", "true");
@@ -4165,7 +5778,7 @@
 
         currentReadExamId = exam.id;
         document.getElementById("examReadModalSubject").textContent = `Klausur / Arbeit: ${exam.subject}`;
-        document.getElementById("examReadModalMeta").textContent = `Datum: ${formatGermanDate(exam.date)} | Lernpuffer: ${exam.bufferMinutes} Min./Tag`;
+        document.getElementById("examReadModalMeta").textContent = `Datum: ${formatGermanDate(exam.date)} | Lernpuffer: ${exam.bufferMinutes} Min./Tag${exam.needsReview ? " | ⚠️ Zur Prüfung markiert" : ""}`;
         document.getElementById("examReadModalText").textContent = exam.topic || "(Kein Lernstoff eingetragen)";
 
         const backdrop = document.getElementById("examReadModalBackdrop");
@@ -4186,11 +5799,30 @@
 
         renderExamsTab();
 
+        const editSubjSelect = document.getElementById("editExamSubject");
+        if (editSubjSelect && exam.subject && !Array.from(editSubjSelect.options).some(o => o.value === exam.subject)) {
+          const opt = document.createElement("option");
+          opt.value = exam.subject;
+          opt.textContent = exam.subject;
+          editSubjSelect.appendChild(opt);
+        }
+
         document.getElementById("editExamId").value = exam.id;
         document.getElementById("editExamSubject").value = exam.subject;
         document.getElementById("editExamDate").value = exam.date;
         document.getElementById("editExamBuffer").value = String(exam.bufferMinutes || 15);
         document.getElementById("editExamTopic").value = exam.topic || "";
+
+        const reviewNotice = document.getElementById("editExamReviewNotice");
+        if (reviewNotice) {
+          if (exam.needsReview) {
+            reviewNotice.textContent = "⚠️ Diese Klausur wurde beim Import zur Prüfung markiert. Prüfe kurz Fach, Datum und Lernstoff – beim Speichern wird die Markierung automatisch entfernt.";
+            reviewNotice.classList.add("visible");
+          } else {
+            reviewNotice.textContent = "";
+            reviewNotice.classList.remove("visible");
+          }
+        }
 
         updateExamCollisionWarning(exam.date, "editExamCollisionWarning", exam.id);
 
@@ -4210,10 +5842,23 @@
         const exam = (state.exams || []).find(x => x.id === examId);
         if (!exam) return;
 
+        const newDate = document.getElementById("editExamDate").value;
+        if (!newDate) {
+          alert("Bitte wähle ein gültiges Datum für die Klausur.");
+          return;
+        }
+
         exam.subject = document.getElementById("editExamSubject").value;
-        exam.date = document.getElementById("editExamDate").value;
+        exam.date = newDate;
         exam.bufferMinutes = Number(document.getElementById("editExamBuffer").value) || 15;
         exam.topic = document.getElementById("editExamTopic").value.trim() || "Klassenarbeit / Test";
+        exam.needsReview = false;
+
+        const reviewNotice = document.getElementById("editExamReviewNotice");
+        if (reviewNotice) {
+          reviewNotice.textContent = "";
+          reviewNotice.classList.remove("visible");
+        }
 
         updateExamCollisionWarning("", "editExamCollisionWarning", null);
         saveState();
@@ -4289,12 +5934,20 @@
 
         renderSubjectDropdowns();
 
+        const editSubjSelect = document.getElementById("editHwSubject");
+        if (editSubjSelect && task.subject && !Array.from(editSubjSelect.options).some(o => o.value === task.subject)) {
+          const opt = document.createElement("option");
+          opt.value = task.subject;
+          opt.textContent = task.subject;
+          editSubjSelect.appendChild(opt);
+        }
+
         document.getElementById("editTaskId").value = task.id;
         document.getElementById("editHwSubject").value = task.subject;
         document.getElementById("editHwTitle").value = task.title;
         document.getElementById("editHwDuration").value = task.duration;
 
-        editSelectedDueMode = task.dueMode || "next";
+        editSelectedDueMode = task.dueMode || "custom";
         document.querySelectorAll("#editDueModeChoices .choice-btn").forEach(btn => {
           btn.classList.toggle("selected", btn.getAttribute("data-mode") === editSelectedDueMode);
         });
@@ -4345,7 +5998,9 @@
       /* ==========================================================================
          START DER ANWENDUNG
          ========================================================================== */
+      injectLegalStyles();
       loadState();
+      renderLegalContent();
       renderHeader();
       renderActiveSubjectsManager();
       renderSubjectDropdowns();
@@ -4358,3 +6013,4 @@
   </script>
 </body>
 </html>
+     
