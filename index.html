@@ -265,16 +265,16 @@
       width: 100%;
     }
 
-    /* Hauptnavigation (5 Tabs) */
+    /* Hauptnavigation (6 Buttons: 6x1 Desktop, 3x2 Handy) */
     nav.main-nav {
       display: grid;
-      grid-template-columns: repeat(5, 1fr);
+      grid-template-columns: repeat(6, 1fr);
       gap: 6px;
       padding: 10px 16px;
       background: var(--bg-main);
     }
 
-    @media (max-width: 560px) {
+    @media (max-width: 620px) {
       nav.main-nav {
         grid-template-columns: repeat(3, 1fr);
       }
@@ -285,17 +285,66 @@
       border: 2px solid var(--border-color);
       border-radius: 8px;
       padding: 9px 4px;
-      font-size: 0.84rem;
+      font-size: 0.82rem;
       font-weight: 600;
       color: var(--text-main);
       cursor: pointer;
       text-align: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      white-space: nowrap;
     }
 
     .nav-btn.active {
       background: var(--primary);
       color: #ffffff;
       border-color: var(--primary);
+    }
+
+    .nav-btn-pack {
+      border-color: var(--primary);
+      background: var(--primary-light);
+      color: var(--primary);
+      font-weight: 700;
+    }
+
+    .nav-btn-pack.has-urgent {
+      border-color: var(--red-border);
+      background: var(--red-bg);
+      color: var(--red-text);
+    }
+
+    .nav-btn-pack.has-soon {
+      border-color: var(--yellow-border);
+      background: var(--yellow-bg);
+      color: var(--yellow-text);
+    }
+
+    .nav-count-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 18px;
+      height: 18px;
+      padding: 0 5px;
+      border-radius: 999px;
+      font-size: 0.72rem;
+      font-weight: 800;
+      line-height: 1;
+      background: var(--primary);
+      color: #ffffff;
+    }
+
+    .nav-btn-pack.has-urgent .nav-count-badge {
+      background: var(--red-border);
+      color: #ffffff;
+    }
+
+    .nav-btn-pack.has-soon .nav-count-badge {
+      background: var(--yellow-border);
+      color: #1e293b;
     }
 
     main {
@@ -871,7 +920,7 @@
       border-color: var(--green-border);
     }
 
-    /* Jalousie- / Akkordeon-System für Einstellungen & Recht */
+    /* Jalousie- / Akkordeon-System (Stundenplan, Einstellungen & Erledigt-Archiv) */
     .accordion-controls {
       display: flex;
       justify-content: space-between;
@@ -927,6 +976,25 @@
       display: block;
     }
 
+    .archive-accordion {
+      margin-top: 12px;
+      margin-bottom: 0;
+      background: var(--day-row-bg);
+      border: 1px dashed var(--border-color);
+    }
+
+    .archive-accordion .accordion-header {
+      background: var(--day-row-bg);
+      padding: 11px 14px;
+      font-size: 0.92rem;
+      color: var(--text-muted);
+    }
+
+    .archive-accordion .accordion-body {
+      padding: 12px;
+      background: var(--bg-card);
+    }
+
     /* Fächer-Chips für die Halbjahr-Auswahl */
     .subject-filter-grid {
       display: grid;
@@ -959,22 +1027,94 @@
       font-weight: 700;
     }
 
-    .legal-box h3 {
-      margin-top: 14px;
-      margin-bottom: 6px;
-      color: var(--primary);
-      font-size: 1rem;
-    }
-
-    .legal-box p, .legal-box ul {
+    /* Einheitliche Impressum-, Lizenz- & Datenschutz-Boxen (Light- & Dark-Mode) */
+    .legal-section-box {
+      background: var(--day-row-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 12px 14px;
+      margin-bottom: 12px;
       font-size: 0.9rem;
+      line-height: 1.55;
       color: var(--text-main);
-      margin-bottom: 10px;
-      line-height: 1.6;
     }
 
-    .legal-box ul {
-      padding-left: 20px;
+    .legal-section-box h4 {
+      margin-bottom: 6px;
+      font-size: 0.96rem;
+      color: var(--primary);
+    }
+
+    .legal-section-box p {
+      margin-bottom: 8px;
+    }
+
+    .legal-section-box p:last-child {
+      margin-bottom: 0;
+    }
+
+    .legal-section-box a {
+      color: var(--primary);
+      font-weight: 700;
+    }
+
+    .legal-box-primary {
+      border-left: 4px solid var(--primary);
+    }
+
+    .legal-box-support {
+      background: var(--yellow-bg);
+      border-color: var(--yellow-border);
+      border-left: 4px solid var(--yellow-border);
+    }
+
+    .legal-box-support h4 {
+      color: var(--yellow-text);
+    }
+
+    .legal-kofi-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 8px;
+      background: var(--yellow-border);
+      color: #1e293b !important;
+      font-weight: 800;
+      font-size: 0.9rem;
+      text-decoration: none;
+      margin-top: 4px;
+    }
+
+    .legal-box-license {
+      background: var(--green-bg);
+      border-color: var(--green-border);
+      border-left: 4px solid var(--green-border);
+    }
+
+    .legal-box-license h4 {
+      color: var(--green-text);
+    }
+
+    .legal-license-pre {
+      margin-top: 8px;
+      padding: 10px;
+      background: var(--bg-main);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      font-family: monospace;
+      font-size: 0.74rem;
+      white-space: pre-wrap;
+      line-height: 1.45;
+      color: var(--text-main);
+      user-select: text;
+    }
+
+    .footer-version-pill {
+      color: var(--primary);
+      font-weight: 700;
     }
 
     footer {
@@ -1090,7 +1230,7 @@
     }
 
     /* ==========================================================================
-       NEU v1.5: ABGABE- & PACK-CHECK (ERLEDIGTE AUFGABEN), PRÜF-BADGE & CSV-PRÜFLISTE
+       ABGABE- & PACK-CHECK (ERLEDIGTE AUFGABEN), PRÜF-BADGE & CSV-PRÜFLISTE
        ========================================================================== */
     .done-item-today {
       background: var(--red-bg);
@@ -1136,6 +1276,19 @@
       font-size: 0.74rem;
       font-weight: 700;
       padding: 1px 8px;
+    }
+
+    .pack-check-group-title {
+      font-size: 0.92rem;
+      font-weight: 800;
+      margin: 12px 0 6px 0;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .pack-check-group-title:first-child {
+      margin-top: 0;
     }
 
     .review-badge {
@@ -1327,13 +1480,17 @@
     </div>
   </header>
 
-  <!-- ================= HAUPTNAVIGATION (5 TABS) ================= -->
+  <!-- ================= HAUPTNAVIGATION (6 BUTTONS: 3x2 AUF DEM HANDY) ================= -->
   <nav class="main-nav">
     <button type="button" class="nav-btn active" data-tab="tab-plan">Ampel-Plan</button>
     <button type="button" class="nav-btn" data-tab="tab-add">+ Aufgabe</button>
     <button type="button" class="nav-btn" data-tab="tab-exams">Klausur-Radar</button>
     <button type="button" class="nav-btn" data-tab="tab-schedule">Stundenplan</button>
     <button type="button" class="nav-btn" data-tab="tab-legal">Einstellungen</button>
+    <button type="button" class="nav-btn nav-btn-pack" id="packCheckNavBtn" title="Schnellblick: Was muss heute oder morgen mit in die Schule?">
+      <span>🎒 Pack-Check</span>
+      <span class="nav-count-badge" id="packCheckNavBadge" style="display:none;">0</span>
+    </button>
   </nav>
 
   <main>
@@ -1395,16 +1552,31 @@
       <!-- Smarte Freistunden-Hinweise (unterhalb der Vokabeln, oberhalb der erledigten Aufgaben) -->
       <div class="smart-free-banner" id="smartFreeAdviceBanner"></div>
 
-      <!-- ERLEDIGTE AUFGABEN (MIT ABGABE- & PACK-CHECK) -->
-      <div class="card">
+      <!-- ERLEDIGTE AUFGABEN: AKTIVE ABGABE-AMPEL OBEN + EINKLAPPBARE ARCHIV-JALOUSIE UNTEN -->
+      <div class="card" id="doneTasksCard">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; gap:8px; flex-wrap:wrap;">
           <strong>Bereits erledigte Aufgaben (Abgabe- &amp; Pack-Check)</strong>
-          <button type="button" class="btn-secondary" id="clearDoneBtn" style="padding:4px 10px; font-size:0.8rem;">Erledigte aufräumen</button>
+          <button type="button" class="btn-secondary" id="clearDoneBtn" style="padding:4px 10px; font-size:0.8rem;" title="Löscht nur abgelaufene Aufgaben aus dem Archiv – Rot/Gelb/Grün bleiben geschützt">
+            Archiv aufräumen
+          </button>
         </div>
         <div class="zone-subtitle" style="margin-bottom:10px;">
-          Automatisch nach Abgabe sortiert: <strong>Rot</strong> = heute dran · <strong>Gelb</strong> = morgen einpacken · <strong>Grün</strong> = später · Durchgestrichen = Abgabetag vorbei. Tippe auf eine Karte zum Nachlesen.
+          <strong>Immer sichtbar (Abgabe noch offen):</strong> <strong>Rot</strong> = heute dran · <strong>Gelb</strong> = morgen einpacken · <strong>Grün</strong> = später. Bereits verstrichene Abgaben wandern durchgestrichen in die Archiv-Jalousie darunter.
         </div>
-        <div id="list-done"></div>
+
+        <!-- Immer sichtbare Abgabe-Ampel (Rot, Gelb, Grün) -->
+        <div id="list-done-active"></div>
+
+        <!-- Einklappbare Archiv-Jalousie für abgelaufene Abgabetage -->
+        <div class="accordion-card archive-accordion" id="acc-done-archive">
+          <button type="button" class="accordion-header" data-acc="acc-done-archive">
+            <span id="doneArchiveHeaderLabel">📦 Archiv: Abgabetag vorbei (0)</span>
+            <span class="accordion-icon">▼</span>
+          </button>
+          <div class="accordion-body">
+            <div id="list-done-archive"></div>
+          </div>
+        </div>
       </div>
 
     </section>
@@ -1418,7 +1590,7 @@
           <h2 style="margin-bottom:0; font-size:1.15rem; color:var(--primary);">Neue Hausaufgabe eintragen</h2>
           <label class="btn-secondary" style="cursor:pointer; display:inline-block; border-color:var(--primary); color:var(--primary); font-weight:700; padding:7px 12px; font-size:0.86rem;">
             📥 Aufgaben aus CSV einlesen
-            <input type="file" id="quickCsvImportInput" accept=".csv" style="display:none;">
+            <input type="file" id="quickCsvImportInput" accept=".csv,text/csv,text/plain" style="display:none;">
           </label>
         </div>
 
@@ -1520,97 +1692,120 @@
     </section>
 
     <!-- ==================================================================
-         ANSICHT 4: STUNDENPLAN, ZEITRASTER & KURZFRISTIGER AUSFALL
+         ANSICHT 4: STUNDENPLAN, ZEITRASTER & AUSFÄLLE (JALOUSIE-SYSTEM)
          ================================================================== -->
     <section id="tab-schedule" class="tab-section">
 
-      <!-- Kurzfristiger Unterrichtsausfall & Tausch (Heute / Morgen) -->
-      <div class="card">
-        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:8px;">
-          <h2 style="font-size:1.1rem; color:var(--primary);">Kurzfristiger Ausfall &amp; Fächertausch (Tagesaktuell)</h2>
-          <div style="display:flex; gap:6px;">
+      <div class="accordion-controls">
+        <strong style="color:var(--primary); font-size:1rem;">Stundenplan, Zeiten &amp; Ausfälle</strong>
+        <div style="display:flex; gap:6px;">
+          <button type="button" class="btn-secondary" id="expandAllScheduleAccBtn" style="padding:6px 10px; font-size:0.82rem;">▼ Alle aufklappen</button>
+          <button type="button" class="btn-secondary" id="collapseAllScheduleAccBtn" style="padding:6px 10px; font-size:0.82rem;">▲ Alle schließen</button>
+        </div>
+      </div>
+
+      <!-- Jalousie 1: Kurzfristiger Unterrichtsausfall & Tausch (standardmäßig geöffnet) -->
+      <div class="accordion-card open" id="acc-sched-overrides">
+        <button type="button" class="accordion-header" data-acc="acc-sched-overrides">
+          <span>⚡ 1. Kurzfristiger Ausfall &amp; Fächertausch (Tagesaktuell)</span>
+          <span class="accordion-icon">▲</span>
+        </button>
+        <div class="accordion-body">
+          <div style="display:flex; justify-content:flex-end; flex-wrap:wrap; gap:6px; margin-bottom:10px;">
             <button type="button" class="btn-secondary" id="overrideTodayBtn">Heute anpassen</button>
             <button type="button" class="btn-secondary" id="overrideTomorrowBtn">Nächsten Schultag anpassen</button>
           </div>
-        </div>
-        <p style="font-size:0.86rem; color:var(--text-muted); margin-bottom:10px;">
-          Markiere hier kurzfristige Ausfälle oder Vertretungs-Tausche. <strong>Zeit-Automatik:</strong> Bereits abgelaufene Stunden von heute sind gesperrt und werden nach Ende automatisch zurückgesetzt. Was du für den nächsten Schultag einträgst, rückt am nächsten Morgen automatisch auf „Heute“!
-        </p>
-        <div id="overrideTargetLabel" style="font-weight:700; font-size:0.92rem; color:var(--primary); margin-bottom:8px;"></div>
-        <div id="dailyOverridesContainer"></div>
-        <div style="margin-top:10px;">
-          <button type="button" class="btn-secondary" id="resetDayOverridesBtn" style="font-size:0.82rem; padding:6px 10px;">
-            Tagesaktuelle Änderungen für diesen Tag zurücksetzen
-          </button>
+          <p style="font-size:0.86rem; color:var(--text-muted); margin-bottom:10px;">
+            Markiere hier kurzfristige Ausfälle oder Vertretungs-Tausche. <strong>Zeit-Automatik:</strong> Bereits abgelaufene Stunden von heute sind gesperrt und werden nach Ende automatisch zurückgesetzt. Was du für den nächsten Schultag einträgst, rückt am nächsten Morgen automatisch auf „Heute“!
+          </p>
+          <div id="overrideTargetLabel" style="font-weight:700; font-size:0.92rem; color:var(--primary); margin-bottom:8px;"></div>
+          <div id="dailyOverridesContainer"></div>
+          <div style="margin-top:10px;">
+            <button type="button" class="btn-secondary" id="resetDayOverridesBtn" style="font-size:0.82rem; padding:6px 10px;">
+              Tagesaktuelle Änderungen für diesen Tag zurücksetzen
+            </button>
+          </div>
         </div>
       </div>
 
-      <!-- Zeitraster, Echtzeit-Taktung & Mittagspause -->
-      <div class="card">
-        <h2 style="font-size:1.1rem; color:var(--primary); margin-bottom:8px;">Zeitraster, Schulbeginn &amp; Mittagspausen-Puffer</h2>
-        <p style="font-size:0.86rem; color:var(--text-muted); margin-bottom:12px;">
-          Synchronisiert die App mit deiner Schulglocke und legt fest, ob Freistunden &amp; Mittagspausen für Hausaufgaben genutzt werden dürfen.
-        </p>
-        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(150px, 1fr)); gap:10px; margin-bottom:12px;">
-          <div>
-            <label class="form-label" for="schoolStartTimeInput" style="font-size:0.85rem;">Schulbeginn (1. Std.):</label>
-            <input type="time" id="schoolStartTimeInput" value="07:50">
+      <!-- Jalousie 2: Zeitraster, Echtzeit-Taktung & Mittagspause -->
+      <div class="accordion-card" id="acc-sched-time">
+        <button type="button" class="accordion-header" data-acc="acc-sched-time">
+          <span>⏰ 2. Zeitraster, Schulbeginn &amp; Mittagspausen-Puffer</span>
+          <span class="accordion-icon">▼</span>
+        </button>
+        <div class="accordion-body">
+          <p style="font-size:0.86rem; color:var(--text-muted); margin-bottom:12px;">
+            Synchronisiert die App mit deiner Schulglocke und legt fest, ob Freistunden &amp; Mittagspausen für Hausaufgaben genutzt werden dürfen.
+          </p>
+          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(150px, 1fr)); gap:10px; margin-bottom:12px;">
+            <div>
+              <label class="form-label" for="schoolStartTimeInput" style="font-size:0.85rem;">Schulbeginn (1. Std.):</label>
+              <input type="time" id="schoolStartTimeInput" value="07:50">
+            </div>
+            <div>
+              <label class="form-label" for="periodDurationInput" style="font-size:0.85rem;">Dauer je Stunde (Min.):</label>
+              <input type="number" id="periodDurationInput" min="30" max="90" step="5" value="45">
+            </div>
+            <div>
+              <label class="form-label" for="shortBreakInput" style="font-size:0.85rem;">Kleine Pause (Min.):</label>
+              <input type="number" id="shortBreakInput" min="0" max="30" step="5" value="5">
+            </div>
+            <div>
+              <label class="form-label" for="bigBreakInput" style="font-size:0.85rem;">Große Pause (nach 2./4. Std.):</label>
+              <input type="number" id="bigBreakInput" min="5" max="45" step="5" value="15">
+            </div>
           </div>
-          <div>
-            <label class="form-label" for="periodDurationInput" style="font-size:0.85rem;">Dauer je Stunde (Min.):</label>
-            <input type="number" id="periodDurationInput" min="30" max="90" step="5" value="45">
-          </div>
-          <div>
-            <label class="form-label" for="shortBreakInput" style="font-size:0.85rem;">Kleine Pause (Min.):</label>
-            <input type="number" id="shortBreakInput" min="0" max="30" step="5" value="5">
-          </div>
-          <div>
-            <label class="form-label" for="bigBreakInput" style="font-size:0.85rem;">Große Pause (nach 2./4. Std.):</label>
-            <input type="number" id="bigBreakInput" min="5" max="45" step="5" value="15">
-          </div>
-        </div>
 
-        <div style="padding:10px; background:var(--free-bg); border:1px solid var(--free-border); border-radius:8px; display:flex; align-items:center; gap:10px;">
-          <input type="checkbox" id="useLunchBreakCheckbox" style="width:20px; height:20px; cursor:pointer;">
-          <label for="useLunchBreakCheckbox" style="font-size:0.9rem; font-weight:600; color:var(--free-text); cursor:pointer;">
-            Mittagspause / Freie Blöcke zwischen Vormittag (6. Std.) und Nachmittag (7./8. Std.) als Hausaufgaben-Puffer aktivieren
-          </label>
+          <div style="padding:10px; background:var(--free-bg); border:1px solid var(--free-border); border-radius:8px; display:flex; align-items:center; gap:10px;">
+            <input type="checkbox" id="useLunchBreakCheckbox" style="width:20px; height:20px; cursor:pointer;">
+            <label for="useLunchBreakCheckbox" style="font-size:0.9rem; font-weight:600; color:var(--free-text); cursor:pointer;">
+              Mittagspause / Freie Blöcke zwischen Vormittag (6. Std.) und Nachmittag (7./8. Std.) als Hausaufgaben-Puffer aktivieren
+            </label>
+          </div>
         </div>
       </div>
 
-      <!-- Nachmittags-Zeitbudget -->
-      <div class="card">
-        <h2 style="font-size:1.1rem; color:var(--primary); margin-bottom:8px;">Tägliches Hausaufgaben-Zeitbudget (Nachmittag)</h2>
-        <p style="font-size:0.88rem; color:var(--text-muted); margin-bottom:12px;">
-          Wie viele Minuten Hausaufgaben pro Nachmittag sind gut machbar, ohne dass Überforderung entsteht?
-        </p>
-        <div class="choice-grid" id="budgetLimitChoices">
-          <button type="button" class="choice-btn" data-limit="30">30 Min. / Tag</button>
-          <button type="button" class="choice-btn selected" data-limit="45">45 Min. / Tag</button>
-          <button type="button" class="choice-btn" data-limit="60">60 Min. / Tag</button>
-          <button type="button" class="choice-btn" data-limit="75">75 Min. / Tag</button>
+      <!-- Jalousie 3: Nachmittags-Zeitbudget -->
+      <div class="accordion-card" id="acc-sched-budget">
+        <button type="button" class="accordion-header" data-acc="acc-sched-budget">
+          <span>⏱️ 3. Tägliches Hausaufgaben-Zeitbudget (Nachmittag)</span>
+          <span class="accordion-icon">▼</span>
+        </button>
+        <div class="accordion-body">
+          <p style="font-size:0.88rem; color:var(--text-muted); margin-bottom:12px;">
+            Wie viele Minuten Hausaufgaben pro Nachmittag sind gut machbar, ohne dass Überforderung entsteht?
+          </p>
+          <div class="choice-grid" id="budgetLimitChoices">
+            <button type="button" class="choice-btn" data-limit="30">30 Min. / Tag</button>
+            <button type="button" class="choice-btn selected" data-limit="45">45 Min. / Tag</button>
+            <button type="button" class="choice-btn" data-limit="60">60 Min. / Tag</button>
+            <button type="button" class="choice-btn" data-limit="75">75 Min. / Tag</button>
+          </div>
         </div>
       </div>
 
-      <!-- Chronologischer Basis-Stundenplan (1. bis 8. Stunde) -->
-      <div class="card">
-        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:12px;">
-          <h2 style="font-size:1.1rem; color:var(--primary);">Basis-Stundenplan im Schulstunden-Raster (Woche A &amp; B)</h2>
-          <div style="display:flex; gap:6px;">
-            <button type="button" class="btn-secondary" id="editWeekABtn" style="border-color:var(--primary);">Woche A bearbeiten</button>
-            <button type="button" class="btn-secondary" id="editWeekBBtn">Woche B bearbeiten</button>
+      <!-- Jalousie 4: Chronologischer Basis-Stundenplan (1. bis 8. Stunde) -->
+      <div class="accordion-card" id="acc-sched-base">
+        <button type="button" class="accordion-header" data-acc="acc-sched-base">
+          <span>📅 4. Basis-Stundenplan im Schulstunden-Raster (Woche A &amp; B)</span>
+          <span class="accordion-icon">▼</span>
+        </button>
+        <div class="accordion-body">
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:10px;">
+            <div style="display:flex; gap:6px;">
+              <button type="button" class="btn-secondary" id="editWeekABtn" style="border-color:var(--primary);">Woche A bearbeiten</button>
+              <button type="button" class="btn-secondary" id="editWeekBBtn">Woche B bearbeiten</button>
+            </div>
+            <button type="button" class="btn-secondary" id="copyAtoBBtn" style="font-size:0.82rem; padding:6px 10px;">
+              Woche A auf Woche B kopieren
+            </button>
           </div>
+          <p style="font-size:0.88rem; color:var(--text-muted); margin-bottom:12px;">
+            Ordne jedem Tag deine Fächer nach konkreten Schulstunden (1. bis 8. Stunde) zu. Lücken zwischen zwei Unterrichtsstunden erkennt der Planer automatisch als <strong>Freistunde</strong>!
+          </p>
+          <div id="scheduleDaysContainer"></div>
         </div>
-        <p style="font-size:0.88rem; color:var(--text-muted); margin-bottom:12px;">
-          Ordne jedem Tag deine Fächer nach konkreten Schulstunden (1. bis 8. Stunde) zu. Lücken zwischen zwei Unterrichtsstunden erkennt der Planer automatisch als <strong>Freistunde</strong>!
-        </p>
-        <div style="margin-bottom:12px;">
-          <button type="button" class="btn-secondary" id="copyAtoBBtn" style="font-size:0.82rem; padding:6px 10px;">
-            Stundenplan von Woche A auf Woche B kopieren
-          </button>
-        </div>
-
-        <div id="scheduleDaysContainer"></div>
       </div>
 
     </section>
@@ -1699,7 +1894,7 @@
             <button type="button" class="btn-secondary" id="exportDataBtn">Gesamt-Backup sichern (.json)</button>
             <label class="btn-secondary" style="cursor:pointer; display:inline-block;">
               Gesamt-Backup wiederherstellen
-              <input type="file" id="importDataInput" accept=".json" style="display:none;">
+              <input type="file" id="importDataInput" accept=".json,application/json" style="display:none;">
             </label>
             <button type="button" class="btn-secondary" id="resetAllDataBtn" style="color:var(--red-text); border-color:var(--red-border);">
               Alle lokalen Daten löschen
@@ -1725,75 +1920,28 @@
             </button>
             <label class="btn-secondary" style="cursor:pointer; display:inline-block; border-color:var(--primary); font-weight:700;">
               📥 Hausaufgaben &amp; Klausuren aus CSV importieren (anfügen)
-              <input type="file" id="importCsvInput" accept=".csv" style="display:none;">
+              <input type="file" id="importCsvInput" accept=".csv,text/csv,text/plain" style="display:none;">
             </label>
           </div>
         </div>
       </div>
 
-      <!-- Akkordeon 5: Impressum nach § 5 DDG -->
+      <!-- Akkordeon 5: Impressum, MIT-Lizenz & Unterstützung (wird zentral in Teil 4 befüllt) -->
       <div class="accordion-card legal-box" id="impressum-bereich">
         <button type="button" class="accordion-header" data-acc="impressum-bereich">
-          <span>⚖️ 5. Impressum (Angaben gemäß § 5 DDG)</span>
+          <span>⚖️ 5. Impressum, MIT-Lizenz &amp; Unterstützung</span>
           <span class="accordion-icon">▼</span>
         </button>
-        <div class="accordion-body">
-          <h3>Angaben gemäß § 5 Digitale-Dienste-Gesetz (DDG)</h3>
-          <p>
-            <strong>Herausgeber und Entwickler:</strong><br>
-            Heiko Limbeck<br>
-            Konzept23 / Schulbegleitung &amp; Assistenz<br>
-            Euskirchener Straße / Eifel-Region<br>
-            53945 Blankenheim (NRW), Deutschland
-          </p>
-          <p>
-            <strong>Kontakt:</strong><br>
-            E-Mail: info@konzept23.de<br>
-            Web: mind-pacifique.de
-          </p>
-          <h3>Zweck des Dienstes</h3>
-          <p>
-            Diese WebApp ist ein reizarmes, pädagogisches Werkzeug zur Hausaufgaben-Strukturierung, Zeitbudgetierung und Entlastung im Rahmen von Schulbegleitung, Inklusion und individuellem Fördertraining.
-          </p>
-          <h3>Haftungsausschluss</h3>
-          <p>
-            Die Inhalte und Zeitberechnungen wurden mit größter Sorgfalt erstellt. Für die Richtigkeit, Vollständigkeit und Aktualität der dynamisch errechneten Termine und Pufferzeiten wird keine Gewähr übernommen.
-          </p>
-        </div>
+        <div class="accordion-body"></div>
       </div>
 
-      <!-- Akkordeon 6: Datenschutzerklärung (DSGVO) -->
+      <!-- Akkordeon 6: Datenschutzerklärung (DSGVO, wird zentral in Teil 4 befüllt) -->
       <div class="accordion-card legal-box" id="datenschutz-bereich">
         <button type="button" class="accordion-header" data-acc="datenschutz-bereich">
-          <span>🔒 6. Datenschutzerklärung (DSGVO – 100 % Lokal)</span>
+          <span>🛡️ 6. Datenschutzerklärung (DSGVO – 100 % Lokal)</span>
           <span class="accordion-icon">▼</span>
         </button>
-        <div class="accordion-body">
-          <p>
-            Der Schutz persönlicher Daten hat oberste Priorität. Diese Anwendung ist nach dem Grundsatz <strong>„Privacy by Design“</strong> und <strong>„Privacy by Default“</strong> aufgebaut.
-          </p>
-          <h3>1. Verantwortliche Stelle</h3>
-          <p>
-            Verantwortlich für die Datenverarbeitung im Sinne der DSGVO ist der oben im Impressum genannte Entwickler.
-          </p>
-          <h3>2. 100 % Lokale Datenverarbeitung (Keine Server, keine Übertragung)</h3>
-          <p>
-            Diese Anwendung läuft vollständig <strong>offline und lokal</strong> im Browser Ihres Endgeräts:
-          </p>
-          <ul>
-            <li><strong>Keine Serverkommunikation:</strong> Kein Backend, keine Cloud, keine externen APIs.</li>
-            <li><strong>Keine Tracker oder Analyse-Tools:</strong> Keine Cookies, kein Google Analytics, kein Tracking.</li>
-            <li><strong>Keine externen Schriftarten oder CDNs:</strong> Sämtliche Schriften und Stile stammen aus dem Betriebssystem.</li>
-          </ul>
-          <h3>3. Speicherung im Web Storage (localStorage)</h3>
-          <p>
-            Einträge und Einstellungen werden ausschließlich lokal in der <code>localStorage</code>-Schnittstelle Ihres Browsers gesichert.
-          </p>
-          <h3>4. Löschung &amp; Datenexport (DSGVO)</h3>
-          <p>
-            Über die Schaltflächen in diesem Bereich können Sie Ihre Daten jederzeit exportieren (.json / .csv) oder vollständig löschen.
-          </p>
-        </div>
+        <div class="accordion-body"></div>
       </div>
 
     </section>
@@ -1956,12 +2104,36 @@
       </div>
     </div>
   </div>
+
+  <!-- ==================================================================
+       MODAL 7: PACK-CHECK POP-UP (HEUTE & MORGEN ABZUGEBENDE ERLEDIGTE AUFGABEN)
+       ================================================================== -->
+  <div class="modal-backdrop" id="packCheckModalBackdrop" role="dialog" aria-modal="true" aria-hidden="true">
+    <div class="modal-card">
+      <div class="modal-title">🎒 Abgabe- &amp; Pack-Check</div>
+      <div class="modal-body">
+        <div style="font-size:0.85rem; color:var(--text-muted); margin-bottom:12px;">
+          Bereits erledigte Aufgaben, die du <strong>heute</strong> oder <strong>morgen</strong> im Unterricht brauchst. Tippe auf eine Karte zum schnellen Nachlesen.
+        </div>
+        <div id="packCheckModalBody"></div>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="modal-btn modal-btn-cancel" id="closePackCheckBtn">Schließen</button>
+        <button type="button" class="modal-btn modal-btn-primary" id="jumpToDoneListBtn">Zur kompletten Liste ↓</button>
+      </div>
+    </div>
+  </div>
   <!-- ==================================================================
        TEIL 2: JS INITIALISIERUNG, STATE-MANAGEMENT & SPEICHERSCHNITTSTELLE
        ================================================================== -->
   <script>
     (function() {
       "use strict";
+
+      // Zentrale Einstellungen: Hier bei Bedarf Version & Links an einer einzigen Stelle pflegen
+      const APP_VERSION = "v1.6.0";
+      const KOFI_URL = "https://ko-fi.com/DEIN_KOFI_NAME";
+      const GITHUB_URL = "https://github.com/Konzept23/hausaufgaben-planer";
 
       const STORAGE_KEY = "schulbegleitung_hw_puffer_planer_v1";
       const MAX_PERIODS = 8; // 1. bis 8. Schulstunde im Raster
@@ -2912,7 +3084,7 @@
       }
 
       /* Liefert das aktive Planungs-Datum für Freistunden:
-         - Vor/während des heutigen Unterrichts: HEUTE (damit morgens eingetragene oder gestern für heute vorgemerkte Freistunden heute wirken)
+         - Vor/während des heutigen Unterrichts: HEUTE
          - Sobald der heutige Unterricht vorbei ist (Nachmittag/Wochenende): NÄCHSTER SCHULTAG */
       function getActivePlanningSchoolDate(now = new Date()) {
         if (!isSchoolDayOverToday(now)) {
@@ -3156,9 +3328,7 @@
         return match ? match.period : null;
       }
 
-      /* Analysiert alle Freistunden, Ausfälle und Mittagspausen für den aktuell gültigen Planungstag:
-         - Morgens / während der Schulzeit: HEUTE (nur noch nicht abgelaufene Stunden von heute!)
-         - Nachmittags nach Unterrichtsende / am Wochenende: NÄCHSTER SCHULTAG */
+      /* Analysiert alle Freistunden, Ausfälle und Mittagspausen für den aktuell gültigen Planungstag */
       function analyzeNextSchoolDayFreePeriods() {
         const now = new Date();
         cleanupExpiredOverridesAndFreeShifts(now);
@@ -3329,7 +3499,7 @@
         return Math.round(diffMs / 86400000);
       }
 
-      /* Klassifiziert & sortiert erledigte Aufgaben für den Abgabe- & Pack-Check */
+      /* Klassifiziert & sortiert erledigte Aufgaben für die Abgabe-Ampel (Rot/Gelb/Grün) vs. Archiv (Vergangen) */
       function classifyDoneTask(task) {
         const today = getStartOfDay(new Date());
         const todayDow = today.getDay(); // 0=So, 5=Fr, 6=Sa
@@ -3467,7 +3637,7 @@
         };
       }
 
-      /* Klassifiziert alle Hausaufgaben in Rot, Gelb, Grün + sortierte Erledigt-Liste (Abgabe- & Pack-Check) */
+      /* Klassifiziert alle Hausaufgaben in Rot, Gelb, Grün + getrennte Erledigt-Listen (Abgabe-Ampel & Archiv) */
       function classifyTasks() {
         const today = getStartOfDay(new Date());
         const todayDayOfWeek = today.getDay();
@@ -3508,6 +3678,9 @@
             }
             return (a.duePeriod || 99) - (b.duePeriod || 99);
           });
+
+        const doneActive = doneTasks.filter(t => t.tier !== "past");
+        const doneArchive = doneTasks.filter(t => t.tier === "past");
 
         openTasks.sort((a, b) => {
           if (a.dueDate !== b.dueDate) return a.dueDate.localeCompare(b.dueDate);
@@ -3591,6 +3764,8 @@
           yellow,
           green,
           done: doneTasks,
+          doneActive,
+          doneArchive,
           plannedMinutesToday,
           homeworkAfternoonMinutes,
           redMinutes: redAfternoonMinutes,
@@ -3667,7 +3842,7 @@
           saveState();
         }
         document.querySelectorAll(".tab-section").forEach(sec => sec.classList.toggle("active", sec.id === targetTabId));
-        document.querySelectorAll(".nav-btn").forEach(btn => btn.classList.toggle("active", btn.getAttribute("data-tab") === targetTabId));
+        document.querySelectorAll(".nav-btn[data-tab]").forEach(btn => btn.classList.toggle("active", btn.getAttribute("data-tab") === targetTabId));
         if (targetTabId === "tab-add") {
           renderSubjectDropdowns();
         } else if (targetTabId === "tab-exams") {
@@ -3692,7 +3867,7 @@
           .replace(/"/g, "&quot;");
       }
 
-      /* Steuert das Jalousie-/Akkordeon-System im Einstellungen-Tab */
+      /* Steuert alle Jalousie-/Akkordeon-Kacheln (Stundenplan, Einstellungen & Erledigt-Archiv) */
       function toggleAccordion(accId, forceOpen = null) {
         const card = document.getElementById(accId);
         if (!card) return;
@@ -3704,8 +3879,8 @@
         }
       }
 
-      function setAllAccordions(openState) {
-        document.querySelectorAll("#tab-legal .accordion-card").forEach(card => {
+      function setAllAccordions(openState, containerSelector = "#tab-legal") {
+        document.querySelectorAll(`${containerSelector} .accordion-card`).forEach(card => {
           card.classList.toggle("open", openState);
           const icon = card.querySelector(".accordion-icon");
           if (icon) icon.textContent = openState ? "▲" : "▼";
@@ -3740,7 +3915,7 @@
         }
       }
 
-      /* Gemeinsamer Handler für CSV-Dateiauswahl (sowohl in "+ Aufgabe" als auch in "Einstellungen") */
+      /* Gemeinsamer Handler für CSV-Dateiauswahl (inkl. Android-Fehlerabfang bei überlangen Dateinamen) */
       function handleCsvFileSelection(e) {
         const file = e.target.files && e.target.files[0];
         if (!file) return;
@@ -3749,11 +3924,21 @@
           try {
             importTasksFromCSV(evt.target.result);
           } catch (err) {
-            alert("Fehler beim Verarbeiten der CSV-Datei. Bitte prüfe das Format.");
+            showNoticeModal(
+              "CSV-Lesefehler",
+              "Die CSV-Datei konnte nicht verarbeitet werden. Bitte prüfe das Dateiformat."
+            );
           }
           e.target.value = "";
         };
-        reader.readAsText(file);
+        reader.onerror = function() {
+          showNoticeModal(
+            "Datei konnte nicht gelesen werden",
+            "Dein Gerät oder Dateimanager hat den Zugriff auf die Datei blockiert – das passiert auf Android gelegentlich bei sehr langen Dateinamen oder Sonderzeichen.\n\nTipp: Benenne die CSV-Datei kurz um (z. B. hw.csv) und wähle sie erneut aus."
+          );
+          e.target.value = "";
+        };
+        reader.readAsText(file, "UTF-8");
       }
 
       /* ==========================================================================
@@ -3787,10 +3972,47 @@
           }
         }, 30000);
 
-        // Hauptnavigation
-        document.querySelectorAll(".nav-btn").forEach(btn => {
+        // Hauptnavigation (5 Tabs)
+        document.querySelectorAll(".nav-btn[data-tab]").forEach(btn => {
           btn.addEventListener("click", () => switchTab(btn.getAttribute("data-tab")));
         });
+
+        // 6. Navigations-Button: Pack-Check Pop-up (Heute & Morgen)
+        const packCheckNavBtn = document.getElementById("packCheckNavBtn");
+        if (packCheckNavBtn) {
+          packCheckNavBtn.addEventListener("click", openPackCheckModal);
+        }
+
+        const closePackCheckBtn = document.getElementById("closePackCheckBtn");
+        if (closePackCheckBtn) {
+          closePackCheckBtn.addEventListener("click", closePackCheckModal);
+        }
+
+        const jumpToDoneListBtn = document.getElementById("jumpToDoneListBtn");
+        if (jumpToDoneListBtn) {
+          jumpToDoneListBtn.addEventListener("click", () => {
+            closePackCheckModal();
+            switchTab("tab-plan");
+            const doneCard = document.getElementById("doneTasksCard");
+            if (doneCard) {
+              setTimeout(() => doneCard.scrollIntoView({ behavior: "smooth", block: "start" }), 50);
+            }
+          });
+        }
+
+        const packCheckBodyEl = document.getElementById("packCheckModalBody");
+        if (packCheckBodyEl) {
+          packCheckBodyEl.addEventListener("click", (e) => {
+            const target = e.target.closest("[data-action]");
+            if (!target) return;
+            const action = target.dataset.action;
+            const id = target.dataset.id;
+            if (action === "read-task") {
+              closePackCheckModal();
+              openReadModal(id);
+            }
+          });
+        }
 
         // Kompakter Klausur-Balken im Ampel-Plan: Nur die kleine Schaltfläche rechts öffnet das Klausur-Radar
         const examPlanBannerEl = document.getElementById("examPlanBanner");
@@ -3803,9 +4025,22 @@
           });
         }
 
-        // Akkordeon-Steuerung in den Einstellungen ("Jalousie"-Prinzip)
-        document.getElementById("expandAllAccordionsBtn").addEventListener("click", () => setAllAccordions(true));
-        document.getElementById("collapseAllAccordionsBtn").addEventListener("click", () => setAllAccordions(false));
+        // Jalousie-Steuerung im Stundenplan-Tab
+        const expandSchedBtn = document.getElementById("expandAllScheduleAccBtn");
+        const collapseSchedBtn = document.getElementById("collapseAllScheduleAccBtn");
+        if (expandSchedBtn) expandSchedBtn.addEventListener("click", () => setAllAccordions(true, "#tab-schedule"));
+        if (collapseSchedBtn) collapseSchedBtn.addEventListener("click", () => setAllAccordions(false, "#tab-schedule"));
+
+        document.getElementById("tab-schedule").addEventListener("click", (e) => {
+          const headerBtn = e.target.closest(".accordion-header[data-acc]");
+          if (headerBtn) {
+            toggleAccordion(headerBtn.getAttribute("data-acc"));
+          }
+        });
+
+        // Jalousie-Steuerung in den Einstellungen
+        document.getElementById("expandAllAccordionsBtn").addEventListener("click", () => setAllAccordions(true, "#tab-legal"));
+        document.getElementById("collapseAllAccordionsBtn").addEventListener("click", () => setAllAccordions(false, "#tab-legal"));
 
         document.getElementById("tab-legal").addEventListener("click", (e) => {
           const headerBtn = e.target.closest(".accordion-header[data-acc]");
@@ -3902,8 +4137,14 @@
           );
         });
 
-        // Event Delegation für den gesamten Ampel-Plan-Tab (inkl. Freistunden-Schieber & vollflächig antippbare erledigte Karten)
+        // Event Delegation für den gesamten Ampel-Plan-Tab (inkl. Archiv-Jalousie, Freistunden-Schieber & erledigte Karten)
         document.getElementById("tab-plan").addEventListener("click", (e) => {
+          const accHeader = e.target.closest(".accordion-header[data-acc]");
+          if (accHeader) {
+            toggleAccordion(accHeader.getAttribute("data-acc"));
+            return;
+          }
+
           const btn = e.target.closest("[data-action]");
           if (!btn) return;
 
@@ -4295,21 +4536,26 @@
           renderVocabList();
         });
 
+        // Geschütztes Archiv-Aufräumen: Löscht NUR abgelaufene Aufgaben aus der Archiv-Jalousie (Rot/Gelb/Grün bleiben erhalten)
         document.getElementById("clearDoneBtn").addEventListener("click", () => {
-          const doneCount = state.tasks.filter(t => t.done).length;
-          if (doneCount === 0) {
-            alert("Es sind keine erledigten Aufgaben zum Aufräumen vorhanden.");
+          const archivedTasks = state.tasks.filter(t => t.done && classifyDoneTask(t).tier === "past");
+          if (archivedTasks.length === 0) {
+            showNoticeModal(
+              "Archiv aufräumen",
+              "Es sind aktuell keine abgelaufenen Aufgaben im Archiv vorhanden.\n\nErledigte Aufgaben, die noch in der sichtbaren Abgabe-Ampel (Rot, Gelb, Grün) stehen, bleiben beim Sammel-Aufräumen geschützt."
+            );
             return;
           }
+          const archiveIds = new Set(archivedTasks.map(t => t.id));
           promptDoubleConfirmation(
-            `Möchtest du wirklich alle ${doneCount} erledigten Aufgaben aufräumen?`,
-            `Sicherheitsstufe 2: Alle ${doneCount} erledigten Aufgaben werden endgültig gelöscht. Fortfahren?`,
+            `Möchtest du alle ${archivedTasks.length} abgelaufenen Aufgaben aus dem Archiv aufräumen? (Aktuelle Aufgaben in Rot, Gelb & Grün bleiben erhalten.)`,
+            `Sicherheitsstufe 2: Die ${archivedTasks.length} abgelaufenen Archiv-Aufgaben werden endgültig gelöscht. Fortfahren?`,
             () => {
-              state.tasks = state.tasks.filter(t => !t.done);
+              state.tasks = state.tasks.filter(t => !archiveIds.has(t.id));
               saveState();
               renderPlanTab();
             },
-            "Aufräumen"
+            "Archiv leeren"
           );
         });
 
@@ -4369,7 +4615,7 @@
           inp.value = "";
         });
 
-        // JSON Export & Import
+        // JSON Export & Import (inkl. Fehlerabfang)
         document.getElementById("exportDataBtn").addEventListener("click", () => {
           const blob = new Blob([JSON.stringify(state, null, 2)], { type: "application/json" });
           triggerFileDownload(blob, `hausaufgaben-backup-${toISODate(new Date())}.json`);
@@ -4406,7 +4652,11 @@
             }
             e.target.value = "";
           };
-          reader.readAsText(file);
+          reader.onerror = function() {
+            showNoticeModal("Backup-Fehler", "Die Backup-Datei konnte auf diesem Gerät nicht gelesen werden. Versuche ggf. einen kürzeren Dateinamen.");
+            e.target.value = "";
+          };
+          reader.readAsText(file, "UTF-8");
         });
 
         // CSV Export & Import (Einstellungen + Schnellzugriff in "+ Aufgabe")
@@ -4532,103 +4782,11 @@
           document.getElementById("datenschutz-bereich").scrollIntoView({ behavior: "smooth" });
         });
       }
-     
-     /* ==========================================================================
-         TEIL 4: RENDERING-ROUTINEN, ZEITGESPERRTER AUSFALL-EDITOR, MODALS & RECHT
+      /* ==========================================================================
+         TEIL 4: RENDERING-ROUTINEN, PACK-CHECK, RECHT/MIT-LIZENZ & MODALS
          ========================================================================== */
 
-      // Zentrale Einstellungen: Hier bei Bedarf Version & Links an einer einzigen Stelle pflegen
-      const APP_VERSION = "v1.5.0";
-      const KOFI_URL = "https://ko-fi.com/DEIN_KOFI_NAME";
-      const GITHUB_URL = "https://github.com/DEIN_GITHUB_NAME/Hausaufgaben-Puffer-Planer";
-
-      /* Ergänzt die Stil-Klassen für die Impressum-, Lizenz- & Datenschutz-Boxen (Light- & Dark-Mode) */
-      function injectLegalStyles() {
-        if (document.getElementById("legalEnhancementStyles")) return;
-        const styleEl = document.createElement("style");
-        styleEl.id = "legalEnhancementStyles";
-        styleEl.textContent = `
-          .legal-section-box {
-            background: var(--day-row-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 12px 14px;
-            margin-bottom: 12px;
-            font-size: 0.9rem;
-            line-height: 1.55;
-            color: var(--text-main);
-          }
-          .legal-section-box h4 {
-            margin-bottom: 6px;
-            font-size: 0.96rem;
-            color: var(--primary);
-          }
-          .legal-section-box p {
-            margin-bottom: 8px;
-          }
-          .legal-section-box p:last-child {
-            margin-bottom: 0;
-          }
-          .legal-section-box a {
-            color: var(--primary);
-            font-weight: 700;
-          }
-          .legal-box-primary {
-            border-left: 4px solid var(--primary);
-          }
-          .legal-box-support {
-            background: var(--yellow-bg);
-            border-color: var(--yellow-border);
-            border-left: 4px solid var(--yellow-border);
-          }
-          .legal-box-support h4 {
-            color: var(--yellow-text);
-          }
-          .legal-kofi-btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-            width: 100%;
-            padding: 10px 12px;
-            border-radius: 8px;
-            background: var(--yellow-border);
-            color: #1e293b !important;
-            font-weight: 800;
-            font-size: 0.9rem;
-            text-decoration: none;
-            margin-top: 4px;
-          }
-          .legal-box-license {
-            background: var(--green-bg);
-            border-color: var(--green-border);
-            border-left: 4px solid var(--green-border);
-          }
-          .legal-box-license h4 {
-            color: var(--green-text);
-          }
-          .legal-license-pre {
-            margin-top: 8px;
-            padding: 10px;
-            background: var(--bg-main);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            font-family: monospace;
-            font-size: 0.74rem;
-            white-space: pre-wrap;
-            line-height: 1.45;
-            color: var(--text-main);
-            user-select: text;
-          }
-          .footer-version-pill {
-            color: var(--primary);
-            font-weight: 700;
-          }
-        `;
-        document.head.appendChild(styleEl);
-      }
-
-      /* Befüllt Impressum (Akkordeon 5), Datenschutz (Akkordeon 6) & Versionsanzeige im Footer zentral */
+      /* Befüllt Impressum + MIT-Lizenz (Akkordeon 5), DSGVO (Akkordeon 6) & Footer-Version zentral */
       function renderLegalContent() {
         // 1. Impressum, MIT-Lizenz & freiwillige Unterstützung (Akkordeon 5)
         const impressumCard = document.getElementById("impressum-bereich");
@@ -4867,6 +5025,32 @@ SOFTWARE.</pre>
         statusText.textContent = `${used} / ${total} Min. genutzt (${avail} Min. frei)`;
       }
 
+      /* Aktualisiert Farbe & Zähler des 6. Navigations-Buttons ("Pack-Check") für Heute & Morgen */
+      function updatePackCheckNavBadge(doneActive) {
+        const navBtn = document.getElementById("packCheckNavBtn");
+        const badgeEl = document.getElementById("packCheckNavBadge");
+        if (!navBtn || !badgeEl) return;
+
+        const list = Array.isArray(doneActive) ? doneActive : [];
+        const todayCount = list.filter(t => t.tier === "today").length;
+        const tomorrowCount = list.filter(t => t.tier === "tomorrow").length;
+        const relevantCount = todayCount + tomorrowCount;
+
+        navBtn.classList.remove("has-urgent", "has-soon");
+        if (todayCount > 0) {
+          navBtn.classList.add("has-urgent");
+          badgeEl.textContent = String(relevantCount);
+          badgeEl.style.display = "inline-flex";
+        } else if (tomorrowCount > 0) {
+          navBtn.classList.add("has-soon");
+          badgeEl.textContent = String(relevantCount);
+          badgeEl.style.display = "inline-flex";
+        } else {
+          badgeEl.textContent = "0";
+          badgeEl.style.display = "none";
+        }
+      }
+
       function updateAdviceBanner(result, budgetLimit) {
         const banner = document.getElementById("smartAdviceBanner");
         const freeBanner = document.getElementById("smartFreeAdviceBanner");
@@ -4949,6 +5133,7 @@ SOFTWARE.</pre>
         updateBudgetBar(result, limit);
         updateFreePeriodBar(result.freeInfo);
         updateAdviceBanner(result, limit);
+        updatePackCheckNavBadge(result.doneActive);
 
         document.getElementById("count-red").textContent = `${result.red.length} (${result.redMinutes} Min.)`;
         const yellowMinutes = result.yellow.reduce((s, t) => s + Number(t.duration), 0);
@@ -4959,7 +5144,7 @@ SOFTWARE.</pre>
         renderTaskList("list-red", result.red, "Keine dringenden Pflichtaufgaben.");
         renderTaskList("list-yellow", result.yellow, "Keine Puffer-Aufgaben.");
         renderTaskList("list-green", result.green, "Keine geschobenen Aufgaben.");
-        renderDoneList("list-done", result.done);
+        renderDoneList(result.doneActive, result.doneArchive);
         renderVocabList();
       }
 
@@ -5030,58 +5215,190 @@ SOFTWARE.</pre>
         container.appendChild(fragment);
       }
 
-      /* Abgabe- & Pack-Check: Automatisch nach Abgabe sortiert (Rot -> Gelb -> Grün -> Vergangen),
-         erst nach Ablauf des Abgabetags durchgestrichen, vollflächig antippbar für das Lese-Pop-up */
-      function renderDoneList(containerId, tasks) {
-        const container = document.getElementById(containerId);
-        container.innerHTML = "";
+      /* Erzeugt eine einzelne Kachel für erledigte Aufgaben (Abgabe-Ampel oder Archiv-Jalousie) */
+      function buildDoneTaskCard(task) {
+        const item = document.createElement("div");
+        item.className = `task-item done-clickable-card ${task.cardClass || "done-item-past"}`;
+        item.setAttribute("data-action", "read-task");
+        item.setAttribute("data-id", task.id);
+        item.setAttribute("title", "Antippen zum Groß lesen & Kopieren");
 
-        if (tasks.length === 0) {
-          const empty = document.createElement("div");
-          empty.className = "empty-hint";
-          empty.textContent = "Noch keine erledigten Aufgaben gespeichert.";
-          container.appendChild(empty);
-          return;
+        const safeId = escapeHTML(task.id);
+        const doneDateStr = task.completedAt ? ` | Erledigt: ${formatGermanDate(task.completedAt)}` : "";
+        const periodInfo = task.duePeriod ? ` (${task.duePeriod}. Std.)` : "";
+        const badgeHtml = task.badgeClass
+          ? `<span class="days-badge ${task.badgeClass}">${escapeHTML(task.badgeText)}</span>`
+          : `<span style="font-size:0.78rem; color:var(--text-muted); font-weight:700;">(${escapeHTML(task.badgeText)})</span>`;
+
+        item.innerHTML = `
+          <div class="task-info">
+            <div class="task-header-row">
+              <span class="task-subject">${escapeHTML(task.subject)}</span>
+              <span class="done-check-pill">✓ Erledigt</span>
+              ${badgeHtml}
+            </div>
+            <div class="task-title done-task-title">${escapeHTML(task.title)}</div>
+            <div class="task-meta">
+              Abgabe: <strong>${formatGermanDate(task.effectiveDueDate)}${periodInfo}</strong> | ca. ${Number(task.duration)} Min.${doneDateStr}
+            </div>
+            <button type="button" class="btn-read-more" data-action="read-task" data-id="${safeId}">📄 Groß lesen &amp; kopieren ↗</button>
+          </div>
+          <div class="task-actions">
+            <button type="button" class="btn-secondary" style="padding:6px 10px; font-size:0.8rem;" data-action="uncheck-task" data-id="${safeId}">Wieder öffnen</button>
+            <button type="button" class="btn-delete" style="padding:6px 10px; font-size:0.85rem;" data-action="delete-task" data-id="${safeId}" title="Aufgabe einzeln löschen">×</button>
+          </div>
+        `;
+        return item;
+      }
+
+      /* Trennung: Oben immer sichtbare Abgabe-Ampel (Rot/Gelb/Grün), unten eingeklappte Archiv-Jalousie (verstrichene Abgaben) */
+      function renderDoneList(activeTasks, archiveTasks) {
+        const activeContainer = document.getElementById("list-done-active");
+        const archiveContainer = document.getElementById("list-done-archive");
+        const archiveHeaderLabel = document.getElementById("doneArchiveHeaderLabel");
+        const clearDoneBtn = document.getElementById("clearDoneBtn");
+
+        const activeList = Array.isArray(activeTasks) ? activeTasks : [];
+        const archiveList = Array.isArray(archiveTasks) ? archiveTasks : [];
+
+        if (activeContainer) {
+          activeContainer.innerHTML = "";
+          if (activeList.length === 0) {
+            const empty = document.createElement("div");
+            empty.className = "empty-hint";
+            empty.textContent = "Aktuell keine erledigten Aufgaben in der Warteschlange für kommende Abgabetage.";
+            activeContainer.appendChild(empty);
+          } else {
+            const fragActive = document.createDocumentFragment();
+            activeList.forEach(task => fragActive.appendChild(buildDoneTaskCard(task)));
+            activeContainer.appendChild(fragActive);
+          }
         }
 
-        const fragment = document.createDocumentFragment();
+        if (archiveHeaderLabel) {
+          archiveHeaderLabel.textContent = `📦 Archiv: Abgabetag vorbei (${archiveList.length})`;
+        }
 
-        tasks.forEach(task => {
-          const item = document.createElement("div");
-          item.className = `task-item done-clickable-card ${task.cardClass || "done-item-past"}`;
-          item.setAttribute("data-action", "read-task");
-          item.setAttribute("data-id", task.id);
-          item.setAttribute("title", "Antippen zum Groß lesen & Kopieren");
+        if (clearDoneBtn) {
+          clearDoneBtn.textContent = archiveList.length > 0
+            ? `Archiv aufräumen (${archiveList.length})`
+            : "Archiv aufräumen";
+        }
 
-          const safeId = escapeHTML(task.id);
-          const doneDateStr = task.completedAt ? ` | Erledigt: ${formatGermanDate(task.completedAt)}` : "";
-          const periodInfo = task.duePeriod ? ` (${task.duePeriod}. Std.)` : "";
-          const badgeHtml = task.badgeClass
-            ? `<span class="days-badge ${task.badgeClass}">${escapeHTML(task.badgeText)}</span>`
-            : `<span style="font-size:0.78rem; color:var(--text-muted); font-weight:700;">(${escapeHTML(task.badgeText)})</span>`;
+        if (archiveContainer) {
+          archiveContainer.innerHTML = "";
+          if (archiveList.length === 0) {
+            const emptyArch = document.createElement("div");
+            emptyArch.className = "empty-hint";
+            emptyArch.textContent = "Noch keine abgelaufenen Aufgaben im Archiv.";
+            archiveContainer.appendChild(emptyArch);
+          } else {
+            const fragArchive = document.createDocumentFragment();
+            archiveList.forEach(task => fragArchive.appendChild(buildDoneTaskCard(task)));
+            archiveContainer.appendChild(fragArchive);
+          }
+        }
+      }
 
-          item.innerHTML = `
-            <div class="task-info">
-              <div class="task-header-row">
-                <span class="task-subject">${escapeHTML(task.subject)}</span>
-                <span class="done-check-pill">✓ Erledigt</span>
-                ${badgeHtml}
-              </div>
-              <div class="task-title done-task-title">${escapeHTML(task.title)}</div>
-              <div class="task-meta">
-                Abgabe: <strong>${formatGermanDate(task.effectiveDueDate)}${periodInfo}</strong> | ca. ${Number(task.duration)} Min.${doneDateStr}
-              </div>
-              <button type="button" class="btn-read-more" data-action="read-task" data-id="${safeId}">📄 Groß lesen &amp; kopieren ↗</button>
-            </div>
-            <div class="task-actions">
-              <button type="button" class="btn-secondary" style="padding:6px 10px; font-size:0.8rem;" data-action="uncheck-task" data-id="${safeId}">Wieder öffnen</button>
-            </div>
-          `;
+      /* Pack-Check Pop-up (Modal 7): Schneller Überblick über erledigte Aufgaben für HEUTE (Rot) & MORGEN (Gelb) */
+      function openPackCheckModal() {
+        const bodyEl = document.getElementById("packCheckModalBody");
+        const backdrop = document.getElementById("packCheckModalBackdrop");
+        if (!bodyEl || !backdrop) return;
 
-          fragment.appendChild(item);
-        });
+        const result = classifyTasks();
+        const todayItems = result.doneActive.filter(t => t.tier === "today");
+        const tomorrowItems = result.doneActive.filter(t => t.tier === "tomorrow");
+        const futureCount = result.doneActive.filter(t => t.tier === "future").length;
 
-        container.appendChild(fragment);
+        bodyEl.innerHTML = "";
+
+        if (todayItems.length === 0 && tomorrowItems.length === 0) {
+          const hint = document.createElement("div");
+          hint.className = "advice-banner";
+          hint.style.marginBottom = "0";
+          hint.innerHTML = futureCount > 0
+            ? `Aktuell stehen für <strong>heute und morgen</strong> keine bereits erledigten Abgaben an. (${futureCount} weitere erledigte Aufgabe(n) sind erst in 2+ Tagen dran – siehe komplette Liste.)`
+            : `Aktuell stehen für <strong>heute und morgen</strong> keine bereits erledigten Abgaben in der Warteschlange.`;
+          bodyEl.appendChild(hint);
+        } else {
+          const frag = document.createDocumentFragment();
+
+          if (todayItems.length > 0) {
+            const hToday = document.createElement("div");
+            hToday.className = "pack-check-group-title";
+            hToday.style.color = "var(--red-text)";
+            hToday.innerHTML = `<span class="dot dot-red"></span> Heute dran (${todayItems.length}) – Mitnehmen &amp; ggf. kurz reinschauen`;
+            frag.appendChild(hToday);
+
+            todayItems.forEach(task => {
+              const card = document.createElement("div");
+              card.className = "task-item done-clickable-card done-item-today";
+              card.setAttribute("data-action", "read-task");
+              card.setAttribute("data-id", task.id);
+              const periodInfo = task.duePeriod ? ` (${task.duePeriod}. Std.)` : "";
+              card.innerHTML = `
+                <div class="task-info">
+                  <div class="task-header-row">
+                    <span class="task-subject">${escapeHTML(task.subject)}</span>
+                    <span class="days-badge days-badge-urgent">${escapeHTML(task.badgeText)}</span>
+                  </div>
+                  <div class="task-title">${escapeHTML(task.title)}</div>
+                  <div class="task-meta">Abgabe: <strong>${formatGermanDate(task.effectiveDueDate)}${periodInfo}</strong> · Tippen zum Nachlesen ↗</div>
+                </div>
+              `;
+              frag.appendChild(card);
+            });
+          }
+
+          if (tomorrowItems.length > 0) {
+            const hTom = document.createElement("div");
+            hTom.className = "pack-check-group-title";
+            hTom.style.color = "var(--yellow-text)";
+            hTom.innerHTML = `<span class="dot dot-yellow"></span> Morgen / Nächster Schultag (${tomorrowItems.length}) – Einpacken`;
+            frag.appendChild(hTom);
+
+            tomorrowItems.forEach(task => {
+              const card = document.createElement("div");
+              card.className = "task-item done-clickable-card done-item-tomorrow";
+              card.setAttribute("data-action", "read-task");
+              card.setAttribute("data-id", task.id);
+              const periodInfo = task.duePeriod ? ` (${task.duePeriod}. Std.)` : "";
+              card.innerHTML = `
+                <div class="task-info">
+                  <div class="task-header-row">
+                    <span class="task-subject">${escapeHTML(task.subject)}</span>
+                    <span class="days-badge days-badge-soon">${escapeHTML(task.badgeText)}</span>
+                  </div>
+                  <div class="task-title">${escapeHTML(task.title)}</div>
+                  <div class="task-meta">Abgabe: <strong>${formatGermanDate(task.effectiveDueDate)}${periodInfo}</strong> · Tippen zum Nachlesen ↗</div>
+                </div>
+              `;
+              frag.appendChild(card);
+            });
+          }
+
+          if (futureCount > 0) {
+            const foot = document.createElement("div");
+            foot.className = "empty-hint";
+            foot.style.marginTop = "8px";
+            foot.textContent = `+ ${futureCount} weitere erledigte Aufgabe(n) in Grün (erst in 2+ Tagen dran).`;
+            frag.appendChild(foot);
+          }
+
+          bodyEl.appendChild(frag);
+        }
+
+        backdrop.classList.add("show");
+        backdrop.setAttribute("aria-hidden", "false");
+      }
+
+      function closePackCheckModal() {
+        const backdrop = document.getElementById("packCheckModalBackdrop");
+        if (backdrop) {
+          backdrop.classList.remove("show");
+          backdrop.setAttribute("aria-hidden", "true");
+        }
       }
 
       function renderVocabList() {
@@ -5998,7 +6315,6 @@ SOFTWARE.</pre>
       /* ==========================================================================
          START DER ANWENDUNG
          ========================================================================== */
-      injectLegalStyles();
       loadState();
       renderLegalContent();
       renderHeader();
@@ -6013,4 +6329,3 @@ SOFTWARE.</pre>
   </script>
 </body>
 </html>
-     
