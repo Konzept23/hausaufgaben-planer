@@ -1,14 +1,16 @@
 <!DOCTYPE html>
+<!-- === START TEIL 1 VON 4 === -->
 <html lang="de">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <meta name="theme-color" content="#2c3e50">
+  <meta name="theme-color" content="#2c4c6b">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <title>Hausaufgaben-Puffer-Planer</title>
-  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
-  <link rel="apple-touch-icon" sizes="192x192" href="icon-192.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=1.7.0">
+  <link rel="apple-touch-icon" sizes="192x192" href="icon-192.png?v=1.7.0">
+  <link rel="manifest" href="manifest.json">
   <style>
     /* ==========================================================================
        REIZARMES DESIGN (Fokus auf Übersicht, klare Kontraste, null Animationen)
@@ -129,15 +131,37 @@
       background-color: var(--bg-main);
       color: var(--text-main);
       line-height: 1.5;
-      padding-bottom: 80px;
+      padding-bottom: calc(92px + env(safe-area-inset-bottom));
       max-width: 780px;
       margin: 0 auto;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    /* Kopierbarkeit gezielt für Eingabefelder, Lesefenster & Rechtstexte aktivieren */
+    input,
+    textarea,
+    select,
+    .reading-content-box,
+    .legal-section-box,
+    .legal-license-pre {
+      user-select: text;
+      -webkit-user-select: text;
+    }
+
+    /* Bei aktivem PIN-Sperrbildschirm bleibt der gesamte App-Inhalt verborgen */
+    body.app-locked header,
+    body.app-locked nav.main-nav,
+    body.app-locked main,
+    body.app-locked footer,
+    body.app-locked .toast-bar {
+      display: none !important;
     }
 
     header {
       background: var(--bg-card);
       border-bottom: 2px solid var(--border-color);
-      padding: 10px 16px;
+      padding: max(10px, env(safe-area-inset-top)) 16px 10px 16px;
       position: sticky;
       top: 0;
       z-index: 20;
@@ -148,6 +172,13 @@
       justify-content: space-between;
       align-items: center;
       gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .header-right-controls {
+      display: flex;
+      align-items: center;
+      gap: 6px;
       flex-wrap: wrap;
     }
 
@@ -166,14 +197,32 @@
     /* Echtzeit-Taktung Statuszeile */
     .live-clock-pill {
       display: inline-block;
-      margin-top: 4px;
+      margin-top: 2px;
       background: var(--primary-light);
       color: var(--primary);
       border: 1px solid var(--primary);
       border-radius: 6px;
-      padding: 2px 8px;
+      padding: 3px 8px;
       font-size: 0.78rem;
       font-weight: 700;
+    }
+
+    .pin-header-btn {
+      background: var(--bg-main);
+      color: var(--text-main);
+      border: 2px solid var(--border-color);
+      border-radius: 8px;
+      padding: 4px 10px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .pin-header-btn.pin-active {
+      background: var(--green-bg);
+      color: var(--green-text);
+      border-color: var(--green-border);
     }
 
     .week-badge-btn, .dark-mode-btn {
@@ -284,7 +333,7 @@
       background: var(--bg-card);
       border: 2px solid var(--border-color);
       border-radius: 8px;
-      padding: 9px 4px;
+      padding: 10px 4px;
       font-size: 0.82rem;
       font-weight: 600;
       color: var(--text-main);
@@ -295,6 +344,7 @@
       justify-content: center;
       gap: 4px;
       white-space: nowrap;
+      min-height: 42px;
     }
 
     .nav-btn.active {
@@ -365,6 +415,57 @@
       border-radius: 10px;
       padding: 16px;
       margin-bottom: 16px;
+    }
+
+    /* Erststart (Empty-State) & Demo-Modus-Banner */
+    .welcome-card {
+      background: var(--bg-card);
+      border: 2px solid var(--primary);
+      border-radius: 10px;
+      padding: 16px;
+      margin-bottom: 16px;
+      display: none;
+    }
+
+    .welcome-card.visible {
+      display: block;
+    }
+
+    .welcome-actions {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(155px, 1fr));
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .demo-banner {
+      background: var(--yellow-bg);
+      border: 2px solid var(--yellow-border);
+      color: var(--yellow-text);
+      border-radius: 10px;
+      padding: 10px 14px;
+      margin-bottom: 12px;
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+      font-size: 0.88rem;
+      font-weight: 600;
+    }
+
+    .demo-banner.visible {
+      display: flex;
+    }
+
+    .demo-pill {
+      display: inline-block;
+      background: var(--yellow-border);
+      color: #1e293b;
+      font-size: 0.72rem;
+      font-weight: 800;
+      padding: 1px 7px;
+      border-radius: 999px;
     }
 
     .advice-banner {
@@ -438,7 +539,7 @@
       color: var(--primary);
       border: 1px solid var(--primary);
       border-radius: 6px;
-      padding: 4px 10px;
+      padding: 5px 10px;
       font-size: 0.8rem;
       font-weight: 700;
       cursor: pointer;
@@ -659,10 +760,11 @@
       color: #fff;
       border: none;
       border-radius: 8px;
-      padding: 8px 12px;
+      padding: 9px 12px;
       font-size: 0.88rem;
       font-weight: 700;
       cursor: pointer;
+      min-height: 38px;
     }
 
     /* "In Freistunde schieben"-Button */
@@ -675,6 +777,7 @@
       font-size: 0.82rem;
       font-weight: 700;
       cursor: pointer;
+      min-height: 38px;
     }
 
     .btn-free-shift.active-free {
@@ -691,6 +794,7 @@
       font-size: 0.88rem;
       font-weight: 600;
       cursor: pointer;
+      min-height: 38px;
     }
 
     .btn-delete {
@@ -701,6 +805,7 @@
       padding: 8px 12px;
       font-size: 0.9rem;
       cursor: pointer;
+      min-height: 38px;
     }
 
     .btn-clipboard {
@@ -714,6 +819,61 @@
       cursor: pointer;
       text-align: center;
       flex: 1;
+    }
+
+    /* Spracheingabe-Button & Statusanzeige */
+    .label-with-speech {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 6px;
+    }
+
+    .label-with-speech .form-label {
+      margin-bottom: 0;
+    }
+
+    .btn-speech {
+      background: var(--primary-light);
+      color: var(--primary);
+      border: 1px solid var(--primary);
+      border-radius: 6px;
+      padding: 5px 10px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .btn-speech.listening {
+      background: var(--red-border);
+      color: #ffffff;
+      border-color: var(--red-border);
+    }
+
+    .speech-status-hint {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      margin-top: 4px;
+      font-weight: 600;
+      min-height: 1.1em;
+    }
+
+    .speech-status-hint.active-rec {
+      color: var(--red-text);
+    }
+
+    .readonly-timestamp-box {
+      background: var(--bg-main);
+      border: 1px dashed var(--border-color);
+      border-radius: 8px;
+      padding: 8px 10px;
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      font-weight: 600;
+      margin-bottom: 14px;
     }
 
     .empty-hint {
@@ -735,6 +895,7 @@
     }
 
     input[type="text"],
+    input[type="password"],
     input[type="date"],
     input[type="time"],
     input[type="number"],
@@ -803,6 +964,7 @@
       font-size: 0.88rem;
       font-weight: 600;
       cursor: pointer;
+      min-height: 38px;
     }
 
     /* Chronologischer Stundenplan & Tagesaktueller Ausfall */
@@ -1027,6 +1189,29 @@
       font-weight: 700;
     }
 
+    /* Sicherheits-Statusbox (PIN / AES-256-GCM) */
+    .security-status-box {
+      background: var(--day-row-bg);
+      border: 1px solid var(--border-color);
+      border-left: 4px solid var(--primary);
+      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 12px;
+      font-size: 0.88rem;
+    }
+
+    .security-status-box.is-encrypted {
+      background: var(--green-bg);
+      border-color: var(--green-border);
+      color: var(--green-text);
+    }
+
+    .security-status-box.is-unavailable {
+      background: var(--yellow-bg);
+      border-color: var(--yellow-border);
+      color: var(--yellow-text);
+    }
+
     /* Einheitliche Impressum-, Lizenz- & Datenschutz-Boxen (Light- & Dark-Mode) */
     .legal-section-box {
       background: var(--day-row-bg);
@@ -1109,12 +1294,22 @@
       white-space: pre-wrap;
       line-height: 1.45;
       color: var(--text-main);
-      user-select: text;
     }
 
     .footer-version-pill {
       color: var(--primary);
       font-weight: 700;
+    }
+
+    .footer-security-pill {
+      margin-top: 6px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--text-muted);
+    }
+
+    .footer-security-pill.encrypted {
+      color: var(--green-text);
     }
 
     footer {
@@ -1137,15 +1332,189 @@
       font-weight: 600;
     }
 
+    /* ==========================================================================
+       TOAST-FEEDBACK MIT SOFORT-UNDO & KORREKTUR (AM UNTEREN BILDSCHIRMRAND)
+       ========================================================================== */
+    .toast-bar {
+      display: none;
+      position: fixed;
+      left: 50%;
+      transform: translateX(-50%);
+      bottom: calc(14px + env(safe-area-inset-bottom));
+      width: calc(100% - 24px);
+      max-width: 748px;
+      background: var(--text-main);
+      color: var(--bg-card);
+      border: 2px solid var(--primary);
+      border-radius: 10px;
+      padding: 10px 12px;
+      z-index: 95;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      flex-wrap: wrap;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.28);
+    }
+
+    .toast-bar.show {
+      display: flex;
+    }
+
+    .toast-text {
+      font-size: 0.88rem;
+      font-weight: 600;
+      flex: 1;
+      min-width: 160px;
+    }
+
+    .toast-actions {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .toast-btn {
+      border: none;
+      border-radius: 6px;
+      padding: 7px 10px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .toast-btn-undo {
+      background: var(--yellow-border);
+      color: #1e293b;
+    }
+
+    .toast-btn-edit {
+      background: var(--primary);
+      color: #ffffff;
+    }
+
+    .toast-btn-close {
+      background: transparent;
+      color: inherit;
+      padding: 4px 8px;
+      font-size: 1rem;
+    }
+
+    /* ==========================================================================
+       SPERRBILDSCHIRM (LOCKSCREEN MIT 3x4 TOUCH-ZIFFERNBLOCK)
+       ========================================================================== */
+    .lockscreen-overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: var(--bg-main);
+      z-index: 200;
+      align-items: center;
+      justify-content: center;
+      padding: max(16px, env(safe-area-inset-top)) 16px max(16px, env(safe-area-inset-bottom)) 16px;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .lockscreen-overlay.show {
+      display: flex;
+    }
+
+    .lockscreen-card {
+      background: var(--bg-card);
+      border: 2px solid var(--border-color);
+      border-radius: 12px;
+      max-width: 380px;
+      width: 100%;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .lockscreen-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 6px;
+    }
+
+    .lockscreen-sub {
+      font-size: 0.86rem;
+      color: var(--text-muted);
+      margin-bottom: 14px;
+    }
+
+    .lockscreen-error {
+      color: var(--red-text);
+      background: var(--red-bg);
+      border: 1px solid var(--red-border);
+      border-radius: 6px;
+      padding: 6px 10px;
+      font-size: 0.84rem;
+      font-weight: 700;
+      margin-top: 8px;
+      display: none;
+    }
+
+    .lockscreen-error.visible {
+      display: block;
+    }
+
+    .pin-keypad {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-top: 14px;
+    }
+
+    .pin-key {
+      background: var(--bg-main);
+      color: var(--text-main);
+      border: 2px solid var(--border-color);
+      border-radius: 10px;
+      padding: 14px 8px;
+      font-size: 1.18rem;
+      font-weight: 700;
+      cursor: pointer;
+      min-height: 54px;
+    }
+
+    .pin-key-action {
+      font-size: 0.92rem;
+      background: var(--day-row-bg);
+    }
+
+    .pin-key-ok {
+      font-size: 0.96rem;
+      background: var(--primary);
+      color: #ffffff;
+      border-color: var(--primary);
+    }
+
+    .lockscreen-reset-btn {
+      margin-top: 16px;
+      background: none;
+      border: none;
+      color: var(--red-text);
+      text-decoration: underline;
+      font-size: 0.84rem;
+      font-weight: 700;
+      cursor: pointer;
+      padding: 6px;
+    }
+
+    /* ==========================================================================
+       MODALS (INKL. MOBILE-TASTATUR- & SAFE-AREA-UX)
+       ========================================================================== */
     .modal-backdrop {
       display: none;
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
       background: rgba(0, 0, 0, 0.55);
-      z-index: 100;
+      z-index: 250;
       align-items: center;
       justify-content: center;
-      padding: 16px;
+      padding: max(16px, env(safe-area-inset-top)) 16px max(16px, env(safe-area-inset-bottom)) 16px;
     }
 
     .modal-backdrop.show {
@@ -1160,8 +1529,15 @@
       width: 100%;
       padding: 20px;
       box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-      max-height: 92vh;
+      max-height: min(85vh, 85dvh);
       overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior: contain;
+      scroll-padding-bottom: 120px;
+    }
+
+    .modal-card.kb-active {
+      padding-bottom: 220px;
     }
 
     .modal-card.modal-wide {
@@ -1193,6 +1569,7 @@
       padding: 14px;
       max-height: 50vh;
       overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
       margin-top: 8px;
     }
 
@@ -1211,6 +1588,7 @@
       cursor: pointer;
       text-align: center;
       border: 2px solid transparent;
+      min-height: 44px;
     }
 
     .modal-btn-cancel {
@@ -1397,7 +1775,7 @@
       background: var(--bg-card);
       border: 1px solid var(--border-color);
       border-radius: 6px;
-      padding: 4px 8px;
+      padding: 5px 8px;
       font-size: 0.8rem;
       font-weight: 700;
       color: var(--text-main);
@@ -1443,14 +1821,46 @@
 </head>
 <body>
 
-  <!-- ================= KOMPAKTER KOPFBEREICH, ECHTZEIT-TAKTUNG & ZWEI PLANUNGSBALKEN ================= -->
+  <!-- ================= SPERRBILDSCHIRM (NUR BEI AKTIVIERTER PIN-VERSCHLÜSSELUNG) ================= -->
+  <div class="lockscreen-overlay" id="lockscreenOverlay" role="dialog" aria-modal="true" aria-hidden="true">
+    <div class="lockscreen-card">
+      <div class="lockscreen-title">🔒 Hausaufgaben-Puffer-Planer</div>
+      <div class="lockscreen-sub" id="lockscreenSubText">
+        Deine lokalen Daten sind mit AES-256-GCM verschlüsselt. Bitte gib deine PIN ein:
+      </div>
+      <input type="password" id="lockPinInput" inputmode="numeric" autocomplete="off" placeholder="PIN eingeben..." style="text-align:center; font-size:1.2rem; letter-spacing:0.2em;">
+      <div class="lockscreen-error" id="lockErrorMsg"></div>
+      <div class="pin-keypad" id="lockKeypad">
+        <button type="button" class="pin-key" data-pin-key="1">1</button>
+        <button type="button" class="pin-key" data-pin-key="2">2</button>
+        <button type="button" class="pin-key" data-pin-key="3">3</button>
+        <button type="button" class="pin-key" data-pin-key="4">4</button>
+        <button type="button" class="pin-key" data-pin-key="5">5</button>
+        <button type="button" class="pin-key" data-pin-key="6">6</button>
+        <button type="button" class="pin-key" data-pin-key="7">7</button>
+        <button type="button" class="pin-key" data-pin-key="8">8</button>
+        <button type="button" class="pin-key" data-pin-key="9">9</button>
+        <button type="button" class="pin-key pin-key-action" data-pin-key="del">⌫ Löschen</button>
+        <button type="button" class="pin-key" data-pin-key="0">0</button>
+        <button type="button" class="pin-key pin-key-ok" data-pin-key="ok">🔓 OK</button>
+      </div>
+      <button type="button" class="lockscreen-reset-btn" id="lockEmergencyResetBtn">
+        PIN vergessen? Lokalen Tresor auf Nullzustand zurücksetzen
+      </button>
+    </div>
+  </div>
+
+  <!-- ================= KOMPAKTER KOPFBEREICH, ECHTZEIT-TAKTUNG, PIN & ZWEI PLANUNGSBALKEN ================= -->
   <header>
     <div class="header-top">
       <div>
         <div class="app-title">Hausaufgaben-Puffer-Planer</div>
         <div class="date-sub" id="currentDateDisplay">Lade Datum...</div>
       </div>
-      <div class="live-clock-pill" id="livePeriodStatus">⏳ Lade Schulstunden-Taktung...</div>
+      <div class="header-right-controls">
+        <div class="live-clock-pill" id="livePeriodStatus">⏳ Lade Schulstunden-Taktung...</div>
+        <button type="button" class="pin-header-btn" id="headerPinBtn" title="Lokale PIN-Verschlüsselung einrichten oder sofort sperren">🔓 PIN</button>
+      </div>
     </div>
 
     <!-- 1. Balken: Reguläres Nachmittags-Zeitbudget (inkl. Klausur-Puffer) -->
@@ -1498,6 +1908,33 @@
          ANSICHT 1: AMPEL-PLANER
          ================================================================== -->
     <section id="tab-plan" class="tab-section active">
+
+      <!-- Sauberer Erststart (Empty-State): nur sichtbar bei komplett leerem Planer -->
+      <div class="welcome-card" id="welcomeSetupCard">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:8px;">
+          <div>
+            <strong style="color:var(--primary); font-size:1.04rem;">👋 Willkommen beim Hausaufgaben-Puffer-Planer!</strong>
+            <p style="font-size:0.86rem; color:var(--text-muted); margin-top:4px;">
+              Die App startet komplett leer und 100 % lokal ohne fremde Daten. Wähle, wie du loslegen möchtest:
+            </p>
+          </div>
+          <button type="button" class="btn-secondary" id="dismissWelcomeBtn" style="padding:4px 9px; font-size:0.8rem; min-height:auto;" title="Hinweis ausblenden">×</button>
+        </div>
+        <div class="welcome-actions">
+          <button type="button" class="btn-secondary" id="welcomeGoScheduleBtn" style="border-color:var(--primary); color:var(--primary); font-weight:700;">📅 Stundenplan anlegen</button>
+          <button type="button" class="btn-secondary" id="welcomeLoadDemoBtn">🧪 Beispiel-Demo testen</button>
+          <button type="button" class="btn-secondary" id="welcomeImportBackupBtn">💾 Backup / Vorlage laden</button>
+          <button type="button" class="btn-secondary" id="welcomeSetupPinBtn">🔒 Optional PIN setzen</button>
+        </div>
+      </div>
+
+      <!-- Hinweis-Leiste solange Demo-Daten aktiv sind -->
+      <div class="demo-banner" id="demoModeBanner">
+        <span>🧪 <strong>Demo-Modus aktiv:</strong> Beispiel-Stundenplan und markierte Demo-Einträge sind geladen.</span>
+        <button type="button" class="btn-secondary" id="removeDemoBannerBtn" style="border-color:var(--red-border); color:var(--red-text); padding:6px 10px; font-size:0.82rem;">
+          🧹 Demo rückstandslos entfernen
+        </button>
+      </div>
 
       <div class="advice-banner" id="smartAdviceBanner">
         Willkommen! Trage deine Hausaufgaben ein – der Planer berechnet automatisch, was heute Pflicht ist und was du schieben kannst.
@@ -1582,7 +2019,7 @@
     </section>
 
     <!-- ==================================================================
-         ANSICHT 2: HAUSAUFGABE EINTRAGEN (+ DIREKTER CSV-SAMMELIMPORT)
+         ANSICHT 2: HAUSAUFGABE EINTRAGEN (+ DIREKTER CSV-SAMMELIMPORT & SPRACHEINGABE)
          ================================================================== -->
     <section id="tab-add" class="tab-section">
       <div class="card">
@@ -1597,7 +2034,7 @@
         <div class="form-group">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; flex-wrap:wrap; gap:4px;">
             <label class="form-label" for="hwSubject" style="margin-bottom:0;">1. Welches Schulfach?</label>
-            <button type="button" id="toggleSubjectFilterBtn" class="btn-secondary" style="padding:4px 8px; font-size:0.8rem; border-radius:6px;">
+            <button type="button" id="toggleSubjectFilterBtn" class="btn-secondary" style="padding:4px 8px; font-size:0.8rem; border-radius:6px; min-height:auto;">
               Alle aktiven Halbjahres-Fächer
             </button>
           </div>
@@ -1606,8 +2043,12 @@
         </div>
 
         <div class="form-group">
-          <label class="form-label" for="hwTitle">2. Was ist zu tun? (Buchseite, Aufgabe oder Notizen reinsprechen)</label>
-          <textarea id="hwTitle" rows="3" placeholder="z. B. Buch S. 42 Nr. 3 und 4 ins rote Heft schreiben. Diktieren oder Notizen werden hier automatisch umgebrochen."></textarea>
+          <div class="label-with-speech">
+            <label class="form-label" for="hwTitle">2. Was ist zu tun? (Buchseite, Aufgabe oder Notizen)</label>
+            <button type="button" class="btn-speech" data-speech-target="hwTitle" data-speech-status="speechHintHw">🎤 Einsprechen</button>
+          </div>
+          <textarea id="hwTitle" rows="3" placeholder="z. B. Buch S. 42 Nr. 3 und 4 ins rote Heft schreiben."></textarea>
+          <div class="speech-status-hint" id="speechHintHw"></div>
         </div>
 
         <div class="form-group">
@@ -1683,8 +2124,12 @@
         <div class="collision-warning-box" id="examCollisionWarning"></div>
 
         <div class="form-group">
-          <label class="form-label" for="examTopic">Was kommt dran? (Thema / Lernstoff / Projektziel):</label>
+          <div class="label-with-speech">
+            <label class="form-label" for="examTopic">Was kommt dran? (Thema / Lernstoff / Projektziel):</label>
+            <button type="button" class="btn-speech" data-speech-target="examTopic" data-speech-status="speechHintExam">🎤 Einsprechen</button>
+          </div>
           <textarea id="examTopic" rows="3" placeholder="z. B. Lineare Funktionen, S. 54–68, Vokabeln Unit 4 (Text kann später im Vollbild gelesen und kopiert werden)"></textarea>
+          <div class="speech-status-hint" id="speechHintExam"></div>
         </div>
 
         <button type="button" class="btn-primary" id="saveExamBtn">In das Klausur-Radar aufnehmen</button>
@@ -1811,7 +2256,7 @@
     </section>
 
     <!-- ==================================================================
-         ANSICHT 5: EINSTELLUNGEN, FÄCHERWAHL, BACKUP & RECHT (AKKORDEON-SYSTEM)
+         ANSICHT 5: EINSTELLUNGEN, PIN-SCHUTZ, VORLAGEN, BACKUP & RECHT
          ================================================================== -->
     <section id="tab-legal" class="tab-section">
 
@@ -1851,19 +2296,19 @@
         </div>
       </div>
 
-      <!-- Akkordeon 2: Darstellung, Wochenend-Logik & A/B-Wochenrhythmus -->
+      <!-- Akkordeon 2: Darstellung, Wochenend-Logik, A/B-Rhythmus & Demo-Modus -->
       <div class="accordion-card" id="acc-appearance">
         <button type="button" class="accordion-header" data-acc="acc-appearance">
-          <span>🌓 2. Darstellung (Dark Mode), Wochenend-Logik &amp; A/B-Wochenrhythmus</span>
+          <span>🌓 2. Darstellung (Dark Mode), Wochenend-Logik, A/B-Woche &amp; Demo</span>
           <span class="accordion-icon">▼</span>
         </button>
         <div class="accordion-body">
           <p style="font-size:0.88rem; color:var(--text-muted); margin-bottom:12px;">
-            Hier kannst du das Farbschema zwischen Tag- und Nachtmodus umschalten, die Wochenend-Anzeige für erledigte Aufgaben steuern sowie bei Bedarf den A/B-Wochenrhythmus korrigieren.
+            Hier kannst du das Farbschema zwischen Tag- und Nachtmodus umschalten, die Wochenend-Anzeige für erledigte Aufgaben steuern, den A/B-Rhythmus anpassen oder bei Bedarf den Beispiel-Demo-Modus testen.
           </p>
-          <div style="display:flex; gap:12px; flex-wrap:wrap; align-items:center;">
+          <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
             <button type="button" class="dark-mode-btn" id="darkModeToggleBtn">
-              🌙 Dark Mode umschalten
+              🌙 Dark Mode aktivieren
             </button>
             <button type="button" class="week-badge-btn" id="weekToggleBtn">
               🔄 Aktuelle Woche (A/B) wechseln
@@ -1877,25 +2322,87 @@
               Wochenend-Brücke im Abgabe- &amp; Pack-Check (erledigte Aufgaben): Montags-Aufgaben schon ab Freitag/Samstag <strong>Gelb</strong> markieren (sonst strenge Kalendertage: erst ab Sonntag Gelb)
             </label>
           </div>
+
+          <div style="margin-top:14px; padding-top:12px; border-top:1px solid var(--border-color); display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+            <button type="button" class="btn-secondary" id="settingsLoadDemoBtn">🧪 Beispiel-Demo laden</button>
+            <button type="button" class="btn-secondary" id="settingsRemoveDemoBtn" style="color:var(--red-text); border-color:var(--red-border);">🧹 Demo-Daten entfernen</button>
+          </div>
         </div>
       </div>
 
-      <!-- Akkordeon 3: Komplettes System-Backup (JSON) -->
-      <div class="accordion-card" id="acc-backup">
-        <button type="button" class="accordion-header" data-acc="acc-backup">
-          <span>💾 3. Komplettsicherung (System, Fächerwahl, Stundenplan &amp; Klausuren)</span>
+      <!-- Akkordeon 3: Optionale Client-seitige PIN-Verschlüsselung (Web Crypto AES-256-GCM) -->
+      <div class="accordion-card" id="acc-security">
+        <button type="button" class="accordion-header" data-acc="acc-security">
+          <span>🔒 3. Lokale PIN-Verschlüsselung (Optional, AES-256-GCM)</span>
           <span class="accordion-icon">▼</span>
         </button>
         <div class="accordion-body">
-          <p style="font-size:0.88rem; color:var(--text-muted); margin-bottom:12px;">
-            Sichert den gesamten Zustand (inklusive deiner eigenen Fächer, der aktiven Halbjahr-Fächerauswahl, Stundenplan A/B, Zeitraster, Klausur-Radar, Vokabeln und Aufgaben) in einer JSON-Datei für den Geräte-Umzug.
+          <div class="security-status-box" id="pinStatusBox">
+            Prüfe Verschlüsselungs-Status...
+          </div>
+          <p style="font-size:0.86rem; color:var(--text-muted); margin-bottom:12px;">
+            Optional kannst du deinen gesamten lokalen Planer-Speicher direkt im Browser mit <strong>PBKDF2 (SHA-256, 150.000 Iterationen)</strong> und <strong>AES-256-GCM</strong> verschlüsseln. PIN und Schlüssel liegen niemals im Speicher, sondern nur flüchtig im Arbeitsspeicher (RAM).
           </p>
-          <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:14px;">
+            <button type="button" class="btn-secondary" id="btnSetupPin" style="border-color:var(--primary); color:var(--primary); font-weight:700;">🔒 PIN-Schutz einrichten</button>
+            <button type="button" class="btn-secondary" id="btnChangePin" style="display:none;">🔑 PIN ändern</button>
+            <button type="button" class="btn-secondary" id="btnLockNow" style="display:none; border-color:var(--green-border); color:var(--green-text); font-weight:700;">🔒 Jetzt sperren</button>
+            <button type="button" class="btn-secondary" id="btnDisablePin" style="display:none; border-color:var(--red-border); color:var(--red-text);">🔓 PIN-Schutz deaktivieren</button>
+          </div>
+
+          <div id="autoLockConfigBox" style="display:none; padding:10px; background:var(--day-row-bg); border:1px solid var(--border-color); border-radius:8px;">
+            <div style="margin-bottom:10px;">
+              <label class="form-label" for="autoLockMinutesSelect" style="font-size:0.86rem;">Automatisches Sperren bei Inaktivität (Auto-Lock):</label>
+              <select id="autoLockMinutesSelect" style="max-width:240px;">
+                <option value="0">Aus (nur manuell sperren)</option>
+                <option value="5">Nach 5 Minuten</option>
+                <option value="15">Nach 15 Minuten</option>
+                <option value="30">Nach 30 Minuten</option>
+              </select>
+            </div>
+            <div style="display:flex; align-items:flex-start; gap:10px;">
+              <input type="checkbox" id="autoLockOnHideCheckbox" style="width:20px; height:20px; margin-top:2px; cursor:pointer; flex-shrink:0;">
+              <label for="autoLockOnHideCheckbox" style="font-size:0.86rem; font-weight:600; cursor:pointer;">
+                Auch nach längerem App-/Tab-Wechsel (&gt; 2 Min. im Hintergrund) automatisch sperren
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Akkordeon 4: Komplettsicherung (.json) & Anonyme Stundenplan-Vorlage (Safe-Join) -->
+      <div class="accordion-card" id="acc-backup">
+        <button type="button" class="accordion-header" data-acc="acc-backup">
+          <span>💾 4. Komplettsicherung (.json) &amp; Anonyme Vorlagen (Safe-Join)</span>
+          <span class="accordion-icon">▼</span>
+        </button>
+        <div class="accordion-body">
+          <div id="backupStatusHint" style="font-size:0.84rem; color:var(--text-muted); font-weight:600; margin-bottom:10px;"></div>
+          <p style="font-size:0.88rem; color:var(--text-muted); margin-bottom:10px;">
+            <strong>Voll-Backup:</strong> Sichert den gesamten Zustand (Stundenplan A/B, Zeitraster, Fächerwahl, Klausuren, Vokabeln und Aufgaben) – bei aktiver PIN automatisch als verschlüsseltes Tresor-Backup.
+          </p>
+          <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:14px;">
             <button type="button" class="btn-secondary" id="exportDataBtn">Gesamt-Backup sichern (.json)</button>
             <label class="btn-secondary" style="cursor:pointer; display:inline-block;">
               Gesamt-Backup wiederherstellen
               <input type="file" id="importDataInput" accept=".json,application/json" style="display:none;">
             </label>
+          </div>
+
+          <div style="padding:10px 12px; background:var(--day-row-bg); border:1px solid var(--border-color); border-radius:8px; margin-bottom:14px;">
+            <p style="font-size:0.86rem; color:var(--text-main); margin-bottom:8px;">
+              <strong>Anonyme Klassen-Vorlage (0 % Aufgaben-/Klausurdaten):</strong> Exportiert ausschließlich Fächerliste, Zeitraster und A/B-Stundenplan zum Teilen mit Mitschülern. Beim <strong>Safe-Join-Import</strong> werden fehlende Fächer/Slots ergänzt, ohne deine bestehenden Aufgaben, Klausuren oder Vokabeln zu überschreiben.
+            </p>
+            <div style="display:flex; gap:8px; flex-wrap:wrap;">
+              <button type="button" class="btn-secondary" id="exportTemplateBtn" style="border-color:var(--primary); color:var(--primary); font-weight:700;">📤 Anonyme Vorlage exportieren (.json)</button>
+              <label class="btn-secondary" style="cursor:pointer; display:inline-block; border-color:var(--primary); color:var(--primary); font-weight:700;">
+                🧩 Vorlage per Safe-Join ergänzen
+                <input type="file" id="importTemplateInput" accept=".json,application/json" style="display:none;">
+              </label>
+            </div>
+          </div>
+
+          <div style="padding-top:10px; border-top:1px solid var(--border-color);">
             <button type="button" class="btn-secondary" id="resetAllDataBtn" style="color:var(--red-text); border-color:var(--red-border);">
               Alle lokalen Daten löschen
             </button>
@@ -1903,10 +2410,10 @@
         </div>
       </div>
 
-      <!-- Akkordeon 4: Hausaufgaben & Klausuren CSV-Export & Import -->
+      <!-- Akkordeon 5: Hausaufgaben & Klausuren CSV-Export & Import -->
       <div class="accordion-card" id="acc-csv">
         <button type="button" class="accordion-header" data-acc="acc-csv">
-          <span>📊 4. Hausaufgaben &amp; Klausuren CSV-Export &amp; Import (Tracker / Excel)</span>
+          <span>📊 5. Hausaufgaben &amp; Klausuren CSV-Export &amp; Import (Tracker / Excel)</span>
           <span class="accordion-icon">▼</span>
         </button>
         <div class="accordion-body">
@@ -1926,19 +2433,19 @@
         </div>
       </div>
 
-      <!-- Akkordeon 5: Impressum, MIT-Lizenz & Unterstützung (wird zentral in Teil 4 befüllt) -->
+      <!-- Akkordeon 6: Impressum, MIT-Lizenz & Unterstützung (wird zentral in Teil 4 befüllt) -->
       <div class="accordion-card legal-box" id="impressum-bereich">
         <button type="button" class="accordion-header" data-acc="impressum-bereich">
-          <span>⚖️ 5. Impressum, MIT-Lizenz &amp; Unterstützung</span>
+          <span>⚖️ 6. Impressum, MIT-Lizenz &amp; Unterstützung</span>
           <span class="accordion-icon">▼</span>
         </button>
         <div class="accordion-body"></div>
       </div>
 
-      <!-- Akkordeon 6: Datenschutzerklärung (DSGVO, wird zentral in Teil 4 befüllt) -->
+      <!-- Akkordeon 7: Datenschutzerklärung (DSGVO, wird zentral in Teil 4 befüllt) -->
       <div class="accordion-card legal-box" id="datenschutz-bereich">
         <button type="button" class="accordion-header" data-acc="datenschutz-bereich">
-          <span>🛡️ 6. Datenschutzerklärung (DSGVO – 100 % Lokal)</span>
+          <span>🛡️ 7. Datenschutzerklärung (DSGVO – 100 % Lokal)</span>
           <span class="accordion-icon">▼</span>
         </button>
         <div class="accordion-body"></div>
@@ -1951,10 +2458,21 @@
     <span>100 % Lokal &amp; Werbefrei</span> |
     <button type="button" class="footer-link" id="jumpImpressumBtn">Impressum</button> |
     <button type="button" class="footer-link" id="jumpDatenschutzBtn">Datenschutz</button>
+    <div id="footerSecurityStatus" class="footer-security-pill">🛡️ 100 % Lokal &amp; Offline (PIN optional)</div>
   </footer>
 
+  <!-- ================= TOAST-FEEDBACK (CA. 5 SEK. MIT UNDO & KORREKTUR) ================= -->
+  <div class="toast-bar" id="toastBar" role="status" aria-live="polite">
+    <div class="toast-text" id="toastMessage">Gespeichert.</div>
+    <div class="toast-actions">
+      <button type="button" class="toast-btn toast-btn-undo" id="toastUndoBtn" style="display:none;">↩️ Rückgängig</button>
+      <button type="button" class="toast-btn toast-btn-edit" id="toastEditBtn" style="display:none;">✏️ Korrigieren</button>
+      <button type="button" class="toast-btn toast-btn-close" id="toastCloseBtn" title="Schließen">×</button>
+    </div>
+  </div>
+
   <!-- ==================================================================
-       MODAL 1: DOPPELTE SICHERHEITSABFRAGE (MIT BUTTON-SWAP)
+       MODAL 1: DOPPELTE SICHERHEITSABFRAGE (MIT BUTTON-SWAP) & HINWEIS-MODAL
        ================================================================== -->
   <div class="modal-backdrop" id="confirmModalBackdrop" role="dialog" aria-modal="true" aria-hidden="true">
     <div class="modal-card">
@@ -1965,7 +2483,7 @@
   </div>
 
   <!-- ==================================================================
-       MODAL 2: AUFGABE BEARBEITEN (MEHRZEILIG)
+       MODAL 2: AUFGABE BEARBEITEN (MEHRZEILIG, MIT ORIGINAL-ZEITSTEMPEL)
        ================================================================== -->
   <div class="modal-backdrop" id="editModalBackdrop" role="dialog" aria-modal="true" aria-hidden="true">
     <div class="modal-card">
@@ -1973,18 +2491,24 @@
       <div class="modal-body">
         <input type="hidden" id="editTaskId">
 
+        <div class="readonly-timestamp-box" id="editHwCreatedAtDisplay">Erstellt am: – (Original-Zeitstempel gesperrt)</div>
+
         <div class="form-group">
           <label class="form-label" for="editHwSubject">Fach:</label>
           <select id="editHwSubject"></select>
         </div>
 
         <div class="form-group">
-          <label class="form-label" for="editHwTitle">Aufgabe / Notizen:</label>
+          <div class="label-with-speech">
+            <label class="form-label" for="editHwTitle">Aufgabe / Notizen:</label>
+            <button type="button" class="btn-speech" data-speech-target="editHwTitle" data-speech-status="speechHintEditHw">🎤 Einsprechen</button>
+          </div>
           <textarea id="editHwTitle" rows="3"></textarea>
+          <div class="speech-status-hint" id="speechHintEditHw"></div>
         </div>
 
         <div class="form-group">
-          <label class="form-label">Dauer in Minuten:</label>
+          <label class="form-label" for="editHwDuration">Dauer in Minuten:</label>
           <input type="number" id="editHwDuration" min="1" max="300" step="5">
         </div>
 
@@ -2075,8 +2599,12 @@
         </div>
 
         <div class="form-group">
-          <label class="form-label" for="editExamTopic">Was kommt dran? (Thema / Lernstoff):</label>
+          <div class="label-with-speech">
+            <label class="form-label" for="editExamTopic">Was kommt dran? (Thema / Lernstoff):</label>
+            <button type="button" class="btn-speech" data-speech-target="editExamTopic" data-speech-status="speechHintEditExam">🎤 Einsprechen</button>
+          </div>
           <textarea id="editExamTopic" rows="4"></textarea>
+          <div class="speech-status-hint" id="speechHintEditExam"></div>
         </div>
       </div>
       <div class="modal-actions">
@@ -2123,20 +2651,57 @@
       </div>
     </div>
   </div>
+
   <!-- ==================================================================
-       TEIL 2: JS INITIALISIERUNG, STATE-MANAGEMENT & SPEICHERSCHNITTSTELLE
+       MODAL 8: PIN EINRICHTEN / ÄNDERN / DEAKTIVIEREN / BACKUP ENTSPERREN
+       ================================================================== -->
+  <div class="modal-backdrop" id="pinModalBackdrop" role="dialog" aria-modal="true" aria-hidden="true">
+    <div class="modal-card">
+      <div class="modal-title" id="pinModalTitle">🔒 PIN-Verschlüsselung verwalten</div>
+      <div class="modal-body">
+        <div id="pinModalIntro" style="font-size:0.88rem; color:var(--text-muted); margin-bottom:12px;"></div>
+
+        <div class="form-group" id="pinCurrentGroup" style="display:none;">
+          <label class="form-label" for="pinCurrentInput" id="pinCurrentLabel">Aktuelle PIN:</label>
+          <input type="password" id="pinCurrentInput" inputmode="numeric" autocomplete="off" placeholder="Aktuelle PIN eingeben">
+        </div>
+
+        <div class="form-group" id="pinNewGroup">
+          <label class="form-label" for="pinNewInput">Neue PIN (mind. 4 Zeichen):</label>
+          <input type="password" id="pinNewInput" inputmode="numeric" autocomplete="off" placeholder="z. B. 4–8 Ziffern">
+        </div>
+
+        <div class="form-group" id="pinConfirmGroup">
+          <label class="form-label" for="pinConfirmInput">Neue PIN bestätigen:</label>
+          <input type="password" id="pinConfirmInput" inputmode="numeric" autocomplete="off" placeholder="PIN wiederholen">
+        </div>
+
+        <div class="lockscreen-error" id="pinModalError"></div>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="modal-btn modal-btn-cancel" id="cancelPinModalBtn">Abbrechen</button>
+        <button type="button" class="modal-btn modal-btn-primary" id="confirmPinModalBtn">Speichern</button>
+      </div>
+    </div>
+  </div>
+<!-- === ENDE TEIL 1 VON 4 === -->
+
+<!-- === START TEIL 2 VON 4 === -->
+  <!-- ==================================================================
+       TEIL 2: KONSTANTEN, WEB-CRYPTO (AES-256-GCM), STATE, BACKUP & CSV
        ================================================================== -->
   <script>
     (function() {
       "use strict";
 
       // Zentrale Einstellungen: Hier bei Bedarf Version & Links an einer einzigen Stelle pflegen
-      const APP_VERSION = "v1.6.0";
+      const APP_VERSION = "v1.7.0";
       const KOFI_URL = "https://ko-fi.com/DEIN_KOFI_NAME";
       const GITHUB_URL = "https://github.com/Konzept23/hausaufgaben-planer";
 
       const STORAGE_KEY = "schulbegleitung_hw_puffer_planer_v1";
       const MAX_PERIODS = 8; // 1. bis 8. Schulstunde im Raster
+      const PBKDF2_ITERATIONS = 150000;
 
       const DEFAULT_SUBJECTS = [
         "Mathe", "Deutsch", "Englisch", "Französisch", "Latein", "Spanisch",
@@ -2145,7 +2710,6 @@
         "Religion", "Ethik", "Sport"
       ];
 
-      /* Standardmäßig aktive Fächer (aus dem Standard-Stundenplan), beliebig erweiterbar */
       const DEFAULT_ACTIVE_SUBJECTS = [
         "Mathe", "Deutsch", "Englisch", "Biologie", "Chemie", "Physik",
         "Geschichte", "Erdkunde", "Politik", "Kunst", "Musik", "Sport"
@@ -2159,8 +2723,28 @@
         { idx: 5, name: "Freitag" }
       ];
 
-      /* Standard-Stundenplan im 8-Stunden-Raster (Index 0 = 1. Stunde ... Index 7 = 8. Stunde) */
-      const DEFAULT_SCHEDULE = {
+      /* Leerer Basis-Stundenplan für sauberen Erststart (Empty-State) */
+      function createEmptySchedule() {
+        return {
+          A: {
+            1: new Array(MAX_PERIODS).fill(""),
+            2: new Array(MAX_PERIODS).fill(""),
+            3: new Array(MAX_PERIODS).fill(""),
+            4: new Array(MAX_PERIODS).fill(""),
+            5: new Array(MAX_PERIODS).fill("")
+          },
+          B: {
+            1: new Array(MAX_PERIODS).fill(""),
+            2: new Array(MAX_PERIODS).fill(""),
+            3: new Array(MAX_PERIODS).fill(""),
+            4: new Array(MAX_PERIODS).fill(""),
+            5: new Array(MAX_PERIODS).fill("")
+          }
+        };
+      }
+
+      /* Beispiel-Stundenplan (wird ausschließlich im optionalen Demo-Modus geladen) */
+      const DEMO_SCHEDULE = {
         A: {
           1: ["Mathe", "Deutsch", "Englisch", "Geschichte", "Biologie", "", "", ""],
           2: ["Deutsch", "Mathe", "Englisch", "Sport", "Sport", "", "", ""],
@@ -2185,44 +2769,233 @@
         useLunchAsBuffer: true
       };
 
-      let state = {
-        dailyBudgetMinutes: 45,
-        weekOffset: 0,
-        editingWeek: "A",
-        darkMode: false,
-        doneWeekendBridge: false, // false = strenge Kalendertage, true = Wochenend-Brücke (Fr/Sa -> Gelb für Montag)
-        subjects: [...DEFAULT_SUBJECTS],
-        activeSubjects: [...DEFAULT_ACTIVE_SUBJECTS],
-        schedule: JSON.parse(JSON.stringify(DEFAULT_SCHEDULE)),
-        timeConfig: { ...DEFAULT_TIME_CONFIG },
-        dailyOverrides: {}, // Format: { "YYYY-MM-DD": { "0": { status: "cancelled"|"swapped", subject: "" } } }
-        exams: [],          // Format: [{ id, subject, date, topic, bufferMinutes, needsReview }]
-        tasks: [],
-        vocab: []
-      };
+      function createFreshState() {
+        return {
+          dailyBudgetMinutes: 45,
+          weekOffset: 0,
+          editingWeek: "A",
+          darkMode: false,
+          doneWeekendBridge: false,
+          welcomeDismissed: false,
+          hasDemoSchedule: false,
+          migratedV170: true,
+          autoLockMinutes: 15,
+          autoLockOnHide: false,
+          lastBackupAt: "",
+          exportedDays: [],
+          subjects: [...DEFAULT_SUBJECTS],
+          activeSubjects: [...DEFAULT_ACTIVE_SUBJECTS],
+          schedule: createEmptySchedule(),
+          timeConfig: { ...DEFAULT_TIME_CONFIG },
+          dailyOverrides: {},
+          exams: [],
+          tasks: [],
+          vocab: []
+        };
+      }
 
+      let state = createFreshState();
+
+      // UI- & Laufzeit-Status (ausschließlich flüchtig im RAM)
       let selectedDuration = 15;
       let selectedDueMode = "next";
       let editSelectedDueMode = "next";
       let showAllSubjectsInAdd = false;
-      let overrideTargetMode = "today"; // Steuert den Editor ("today" oder "tomorrow"), wird zeitabhängig synchronisiert
+      let overrideTargetMode = "today";
       let userManuallySwitchedOverrideTab = false;
       let currentReadExamId = null;
       let currentReadTaskId = null;
       let liveClockTimer = null;
+      let lastObservedDateIso = "";
+      let toastTimer = null;
+      let activeToastUndoFn = null;
+      let activeToastEditId = null;
 
-      /* Zwischenspeicher für die CSV Schnell-Prüfliste (Modal 6) */
+      // Zwischenspeicher für die CSV Schnell-Prüfliste (Modal 6)
       let pendingCsvReviewItems = [];
       let pendingCsvSkippedCount = 0;
 
-      /* Liefert die aktuell für das Halbjahr aktivierten Fächer (Fallback: alle Fächer) */
+      // Flüchtiger RAM-Status für optionale PIN-Verschlüsselung (niemals im Storage!)
+      let vaultSessionKey = null;
+      let vaultSaltB64 = null;
+      let isVaultEncrypted = false;
+      let isAppLocked = false;
+      let savePromiseChain = Promise.resolve();
+      let inactivityLockTimer = null;
+      let hiddenSinceTimestamp = 0;
+
+      // Aktiver Modus für Modal 8 (PIN verwalten / verschlüsseltes Backup entsperren)
+      let currentPinModalMode = null; // "setup" | "change" | "disable" | "unlock_backup"
+      let pendingEncryptedBackupContainer = null;
+
+      /* ==========================================================================
+         WEB CRYPTO API HELFER (PBKDF2-SHA256 150.000 + AES-256-GCM)
+         ========================================================================== */
+      function isWebCryptoAvailable() {
+        return Boolean(window.crypto && window.crypto.subtle && typeof window.crypto.getRandomValues === "function");
+      }
+
+      function bytesToBase64(uint8Arr) {
+        let binary = "";
+        const chunkSize = 0x8000;
+        for (let i = 0; i < uint8Arr.length; i += chunkSize) {
+          const chunk = uint8Arr.subarray(i, i + chunkSize);
+          binary += String.fromCharCode.apply(null, chunk);
+        }
+        return btoa(binary);
+      }
+
+      function base64ToBytes(b64) {
+        const binary = atob(b64);
+        const bytes = new Uint8Array(binary.length);
+        for (let i = 0; i < binary.length; i++) {
+          bytes[i] = binary.charCodeAt(i);
+        }
+        return bytes;
+      }
+
+      function isEncryptedContainer(obj) {
+        return Boolean(
+          obj &&
+          typeof obj === "object" &&
+          obj.encrypted === true &&
+          typeof obj.salt === "string" &&
+          typeof obj.iv === "string" &&
+          typeof obj.ciphertext === "string"
+        );
+      }
+
+      async function deriveAesKeyFromPin(pin, saltBytes, iterations = PBKDF2_ITERATIONS) {
+        const enc = new TextEncoder();
+        const keyMaterial = await window.crypto.subtle.importKey(
+          "raw",
+          enc.encode(String(pin)),
+          { name: "PBKDF2" },
+          false,
+          ["deriveKey"]
+        );
+        return window.crypto.subtle.deriveKey(
+          {
+            name: "PBKDF2",
+            salt: saltBytes,
+            iterations: Number(iterations) || PBKDF2_ITERATIONS,
+            hash: "SHA-256"
+          },
+          keyMaterial,
+          { name: "AES-GCM", length: 256 },
+          false,
+          ["encrypt", "decrypt"]
+        );
+      }
+
+      async function encryptStateToContainer(plainStateObj, cryptoKey, saltB64) {
+        const enc = new TextEncoder();
+        const iv = window.crypto.getRandomValues(new Uint8Array(12));
+        const plaintextBytes = enc.encode(JSON.stringify(plainStateObj));
+        const cipherBuf = await window.crypto.subtle.encrypt(
+          { name: "AES-GCM", iv: iv },
+          cryptoKey,
+          plaintextBytes
+        );
+        return {
+          encrypted: true,
+          version: 1,
+          appVersion: APP_VERSION,
+          alg: "AES-GCM",
+          kdf: "PBKDF2",
+          hash: "SHA-256",
+          iterations: PBKDF2_ITERATIONS,
+          salt: saltB64,
+          iv: bytesToBase64(iv),
+          ciphertext: bytesToBase64(new Uint8Array(cipherBuf))
+        };
+      }
+
+      async function decryptContainerWithPin(container, pin) {
+        const saltBytes = base64ToBytes(container.salt);
+        const ivBytes = base64ToBytes(container.iv);
+        const cipherBytes = base64ToBytes(container.ciphertext);
+        const iterations = Number(container.iterations) >= 100000 ? Number(container.iterations) : PBKDF2_ITERATIONS;
+        const key = await deriveAesKeyFromPin(pin, saltBytes, iterations);
+        const plainBuf = await window.crypto.subtle.decrypt(
+          { name: "AES-GCM", iv: ivBytes },
+          key,
+          cipherBytes
+        );
+        const dec = new TextDecoder();
+        const parsed = JSON.parse(dec.decode(plainBuf));
+        return { parsed, key, saltB64: container.salt };
+      }
+
+      /* Sequenzielle Speicher-Warteschlange (verhindert Race Conditions bei asynchronem AES-GCM) */
+      function saveState() {
+        if (isAppLocked) return savePromiseChain;
+        const snapshot = JSON.parse(JSON.stringify(state));
+
+        savePromiseChain = savePromiseChain
+          .then(async () => {
+            if (isVaultEncrypted && vaultSessionKey && vaultSaltB64) {
+              if (!isWebCryptoAvailable()) {
+                throw new Error("Web Crypto API im aktuellen Kontext nicht verfügbar.");
+              }
+              const container = await encryptStateToContainer(snapshot, vaultSessionKey, vaultSaltB64);
+              localStorage.setItem(STORAGE_KEY, JSON.stringify(container));
+            } else {
+              localStorage.setItem(STORAGE_KEY, JSON.stringify(snapshot));
+            }
+          })
+          .catch((err) => {
+            console.error("Speicherfehler:", err);
+            showNoticeModal(
+              "Speicherfehler",
+              "Die Daten konnten nicht lokal gespeichert werden. Bitte prüfe, ob der lokale Browser-Speicher (localStorage) erlaubt und noch ausreichend Platz frei ist."
+            );
+          });
+
+        return savePromiseChain;
+      }
+
+      /* ==========================================================================
+         STATE-MIGRATION, VALIDIERUNG & HILFSFUNKTIONEN
+         ========================================================================== */
       function getActiveSubjectsList() {
         const activeSet = new Set(Array.isArray(state.activeSubjects) ? state.activeSubjects : []);
         const filtered = state.subjects.filter(s => s !== "Allgemein / Vertretung" && activeSet.has(s));
         return filtered.length > 0 ? filtered : state.subjects.filter(s => s !== "Allgemein / Vertretung");
       }
 
-      /* Wandelt alte Tages-Listen verlustfrei in das neue 8-Stunden-Raster um */
+      function hasAnyScheduledSubject(scheduleObj) {
+        const sched = scheduleObj || state.schedule;
+        if (!sched) return false;
+        for (const w of ["A", "B"]) {
+          for (let d = 1; d <= 5; d++) {
+            const arr = sched[w] && sched[w][d];
+            if (Array.isArray(arr) && arr.some(s => typeof s === "string" && s.trim() !== "")) {
+              return true;
+            }
+          }
+        }
+        return false;
+      }
+
+      function hasAnyDemoEntries() {
+        return Boolean(
+          state.hasDemoSchedule ||
+          (state.tasks || []).some(t => t.isDemo) ||
+          (state.exams || []).some(ex => ex.isDemo) ||
+          (state.vocab || []).some(v => v.isDemo)
+        );
+      }
+
+      function isPlannerCompletelyEmpty() {
+        return (
+          !hasAnyScheduledSubject(state.schedule) &&
+          (state.tasks || []).length === 0 &&
+          (state.exams || []).length === 0 &&
+          (state.vocab || []).length === 0
+        );
+      }
+
       function normalizeDayPeriods(rawDayArray, fallbackArray) {
         const result = new Array(MAX_PERIODS).fill("");
         const source = Array.isArray(rawDayArray) ? rawDayArray : (Array.isArray(fallbackArray) ? fallbackArray : []);
@@ -2235,19 +3008,16 @@
         return result;
       }
 
-      /* Tiefe Validierung & Migration für localStorage und JSON-Backups */
       function sanitizeAndMergeState(parsed) {
         if (!parsed || typeof parsed !== "object") return;
 
-        const safeSchedule = {
-          A: { 1: [], 2: [], 3: [], 4: [], 5: [] },
-          B: { 1: [], 2: [], 3: [], 4: [], 5: [] }
-        };
+        const emptySched = createEmptySchedule();
+        const safeSchedule = createEmptySchedule();
 
         ["A", "B"].forEach(weekKey => {
-          const srcWeek = (parsed.schedule && parsed.schedule[weekKey]) || state.schedule[weekKey] || {};
+          const srcWeek = (parsed.schedule && parsed.schedule[weekKey]) || {};
           for (let d = 1; d <= 5; d++) {
-            safeSchedule[weekKey][d] = normalizeDayPeriods(srcWeek[d], DEFAULT_SCHEDULE[weekKey][d]);
+            safeSchedule[weekKey][d] = normalizeDayPeriods(srcWeek[d], emptySched[weekKey][d]);
           }
         });
 
@@ -2286,15 +3056,34 @@
               date: String(ex.date),
               topic: String(ex.topic || ""),
               bufferMinutes: Number(ex.bufferMinutes) > 0 ? Number(ex.bufferMinutes) : 15,
-              needsReview: Boolean(ex.needsReview)
+              needsReview: Boolean(ex.needsReview),
+              isDemo: Boolean(ex.isDemo)
             }))
           : [];
 
         const safeTasks = Array.isArray(parsed.tasks)
           ? parsed.tasks.map(t => ({
               ...t,
+              id: String(t.id || "hw_" + Date.now() + "_" + Math.floor(Math.random() * 1000)),
+              subject: String(t.subject || "Allgemein / Vertretung"),
+              title: String(t.title || "Hausaufgabe"),
+              duration: Number(t.duration) > 0 ? Number(t.duration) : 15,
               plannedInFreePeriod: Boolean(t.plannedInFreePeriod),
-              freePeriodDate: typeof t.freePeriodDate === "string" ? t.freePeriodDate : ""
+              freePeriodDate: typeof t.freePeriodDate === "string" ? t.freePeriodDate : "",
+              createdAt: typeof t.createdAt === "string" ? t.createdAt : "",
+              createdTimestamp: typeof t.createdTimestamp === "string" ? t.createdTimestamp : "",
+              done: Boolean(t.done),
+              completedAt: typeof t.completedAt === "string" ? t.completedAt : "",
+              isDemo: Boolean(t.isDemo)
+            }))
+          : [];
+
+        const safeVocab = Array.isArray(parsed.vocab)
+          ? parsed.vocab.filter(v => v && v.text).map(v => ({
+              id: String(v.id || "voc_" + Date.now() + "_" + Math.floor(Math.random() * 1000)),
+              text: String(v.text),
+              lastPracticed: typeof v.lastPracticed === "string" ? v.lastPracticed : "",
+              isDemo: Boolean(v.isDemo)
             }))
           : [];
 
@@ -2302,7 +3091,16 @@
           ? [...new Set(parsed.subjects.filter(s => typeof s === "string" && s.trim() !== ""))]
           : [...DEFAULT_SUBJECTS];
 
-        // Automatische Übernahme aktiver Fächer (oder Ableitung aus bestehendem Stundenplan/Aufgaben/Klausuren)
+        // Einmalige Migration für v1.7.0 (fügt neue Standard-Optionen nur 1x hinzu, ohne spätere Nutzer-Abwahlen zu überschreiben)
+        const alreadyMigratedV170 = Boolean(parsed.migratedV170);
+        if (!alreadyMigratedV170) {
+          DEFAULT_SUBJECTS.forEach(s => {
+            if (!mergedSubjects.includes(s)) {
+              mergedSubjects.push(s);
+            }
+          });
+        }
+
         let safeActiveSubjects = [];
         if (Array.isArray(parsed.activeSubjects) && parsed.activeSubjects.length > 0) {
           safeActiveSubjects = [...new Set(parsed.activeSubjects.filter(s => typeof s === "string" && s.trim() !== ""))];
@@ -2320,16 +3118,29 @@
           });
           safeTasks.forEach(t => { if (t.subject && t.subject !== "Allgemein / Vertretung") usedInApp.add(t.subject); });
           safeExams.forEach(ex => { if (ex.subject && ex.subject !== "Allgemein / Vertretung") usedInApp.add(ex.subject); });
-
           safeActiveSubjects = usedInApp.size > 0 ? [...usedInApp] : [...DEFAULT_ACTIVE_SUBJECTS];
         }
 
-        state = Object.assign({}, state, parsed, {
+        const safeExportedDays = Array.isArray(parsed.exportedDays)
+          ? [...new Set(parsed.exportedDays.filter(d => typeof d === "string" && /^\d{4}-\d{2}-\d{2}$/.test(d)))]
+          : [];
+
+        const rawAutoLock = Number(parsed.autoLockMinutes);
+        const safeAutoLockMinutes = [0, 5, 15, 30].includes(rawAutoLock) ? rawAutoLock : 15;
+
+        state = Object.assign(createFreshState(), parsed, {
           dailyBudgetMinutes: Number(parsed.dailyBudgetMinutes) > 0 ? Number(parsed.dailyBudgetMinutes) : 45,
           weekOffset: Number.isInteger(parsed.weekOffset) ? ((parsed.weekOffset % 2) + 2) % 2 : 0,
           editingWeek: parsed.editingWeek === "B" ? "B" : "A",
           darkMode: Boolean(parsed.darkMode),
           doneWeekendBridge: Boolean(parsed.doneWeekendBridge),
+          welcomeDismissed: parsed.welcomeDismissed !== undefined ? Boolean(parsed.welcomeDismissed) : hasAnyScheduledSubject(safeSchedule),
+          hasDemoSchedule: Boolean(parsed.hasDemoSchedule),
+          migratedV170: true,
+          autoLockMinutes: safeAutoLockMinutes,
+          autoLockOnHide: Boolean(parsed.autoLockOnHide),
+          lastBackupAt: typeof parsed.lastBackupAt === "string" ? parsed.lastBackupAt : "",
+          exportedDays: safeExportedDays,
           subjects: mergedSubjects,
           activeSubjects: safeActiveSubjects,
           schedule: safeSchedule,
@@ -2337,59 +3148,211 @@
           dailyOverrides: safeOverrides,
           exams: safeExams,
           tasks: safeTasks,
-          vocab: Array.isArray(parsed.vocab) ? parsed.vocab : []
+          vocab: safeVocab
         });
       }
 
-      function loadState() {
-        try {
-          const raw = localStorage.getItem(STORAGE_KEY);
-          if (raw) {
-            const parsed = JSON.parse(raw);
-            sanitizeAndMergeState(parsed);
+      /* Bereinigt Duplikate & ergänzt fehlende Fälligkeitsdaten nach dem Laden */
+      function postLoadNormalizeAndClean() {
+        let needsSave = false;
 
-            let needsSave = false;
-
-            // Abgelaufene Freistunden/Overrides (vergangene Tage & bereits beendete Stunden von heute) sofort bereinigen
-            if (cleanupExpiredOverridesAndFreeShifts()) {
-              needsSave = true;
-            }
-
-            // Fehlende Fälligkeitsdaten vor der Duplikatsprüfung ergänzen
-            state.tasks.forEach(t => {
-              if (!t.dueDate) {
-                const count = t.dueMode === "overnext" ? 2 : 1;
-                t.dueDate = findSubjectOccurrenceDate(t.subject, count, t.createdAt);
-                needsSave = true;
-              }
-            });
-
-            // Automatische Bereinigung etwaiger Duplikate
-            const originalLen = state.tasks.length;
-            const seen = new Set();
-            state.tasks = state.tasks.filter(t => {
-              const key = `${(t.subject || "").toLowerCase()}|${(t.title || "").toLowerCase().trim()}|${t.dueDate || ""}|${t.done ? "1" : "0"}`;
-              if (seen.has(key)) return false;
-              seen.add(key);
-              return true;
-            });
-
-            if (state.tasks.length !== originalLen || needsSave) {
-              saveState();
-            }
-          }
-        } catch (e) {
-          console.error("Fehler beim Laden:", e);
+        if (cleanupExpiredOverridesAndFreeShifts(new Date())) {
+          needsSave = true;
         }
-        applyDarkMode();
+
+        state.tasks.forEach(t => {
+          if (!t.dueDate) {
+            const count = t.dueMode === "overnext" ? 2 : 1;
+            t.dueDate = findSubjectOccurrenceDate(t.subject, count, t.createdAt);
+            needsSave = true;
+          }
+          if (!t.createdAt) {
+            t.createdAt = toISODate(new Date());
+            needsSave = true;
+          }
+        });
+
+        const originalLen = state.tasks.length;
+        const seen = new Set();
+        state.tasks = state.tasks.filter(t => {
+          const key = `${(t.subject || "").toLowerCase()}|${(t.title || "").toLowerCase().trim()}|${t.dueDate || ""}|${t.done ? "1" : "0"}`;
+          if (seen.has(key)) return false;
+          seen.add(key);
+          return true;
+        });
+
+        if (state.tasks.length !== originalLen || needsSave) {
+          saveState();
+        }
       }
 
-      function saveState() {
+      /* Prüft beim Start, ob der lokale Speicher verschlüsselt ist (Lockscreen) oder Klartext enthält */
+      function loadInitialStorage() {
         try {
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+          const raw = localStorage.getItem(STORAGE_KEY);
+          if (!raw) {
+            state = createFreshState();
+            isVaultEncrypted = false;
+            isAppLocked = false;
+            applyDarkMode();
+            return { locked: false };
+          }
+
+          const parsed = JSON.parse(raw);
+          if (isEncryptedContainer(parsed)) {
+            isVaultEncrypted = true;
+            isAppLocked = true;
+            vaultSessionKey = null;
+            vaultSaltB64 = null;
+            state = createFreshState();
+            document.body.classList.add("app-locked");
+            showLockscreen();
+            return { locked: true };
+          }
+
+          isVaultEncrypted = false;
+          isAppLocked = false;
+          document.body.classList.remove("app-locked");
+          sanitizeAndMergeState(parsed);
+          postLoadNormalizeAndClean();
+          applyDarkMode();
+          return { locked: false };
         } catch (e) {
-          alert("Speicherfehler: Bitte prüfe, ob lokaler Speicher erlaubt ist.");
+          console.error("Fehler beim Laden:", e);
+          state = createFreshState();
+          applyDarkMode();
+          return { locked: false };
         }
+      }
+
+      function showLockscreen(customMessage = "") {
+        const overlay = document.getElementById("lockscreenOverlay");
+        const subEl = document.getElementById("lockscreenSubText");
+        const errEl = document.getElementById("lockErrorMsg");
+        const pinInput = document.getElementById("lockPinInput");
+        const keypad = document.getElementById("lockKeypad");
+        if (!overlay) return;
+
+        if (pinInput) pinInput.value = "";
+        if (errEl) {
+          errEl.textContent = "";
+          errEl.classList.remove("visible");
+        }
+
+        if (!isWebCryptoAvailable()) {
+          if (subEl) {
+            subEl.textContent = "Dein Tresor ist mit AES-256-GCM verschlüsselt, aber die Web Crypto API (crypto.subtle) ist in diesem Kontext blockiert. Bitte öffne die App über HTTPS (z. B. GitHub Pages), Localhost oder eine APK-WebView.";
+          }
+          if (pinInput) pinInput.disabled = true;
+          if (keypad) keypad.style.display = "none";
+        } else {
+          if (subEl) {
+            subEl.textContent = customMessage || "Deine lokalen Daten sind mit AES-256-GCM verschlüsselt. Bitte gib deine PIN ein:";
+          }
+          if (pinInput) pinInput.disabled = false;
+          if (keypad) keypad.style.display = "grid";
+        }
+
+        overlay.classList.add("show");
+        overlay.setAttribute("aria-hidden", "false");
+        if (pinInput && !pinInput.disabled) {
+          setTimeout(() => pinInput.focus(), 80);
+        }
+      }
+
+      function hideLockscreen() {
+        const overlay = document.getElementById("lockscreenOverlay");
+        if (overlay) {
+          overlay.classList.remove("show");
+          overlay.setAttribute("aria-hidden", "true");
+        }
+        document.body.classList.remove("app-locked");
+      }
+
+      /* Sperrt die App sofort und entfernt State + CryptoKey vollständig aus dem RAM */
+      function lockAppNow(reasonText = "") {
+        if (!isVaultEncrypted) return;
+        if (inactivityLockTimer) {
+          clearTimeout(inactivityLockTimer);
+          inactivityLockTimer = null;
+        }
+        vaultSessionKey = null;
+        vaultSaltB64 = null;
+        isAppLocked = true;
+        state = createFreshState();
+        hideToast();
+
+        // Alle offenen Modals schließen
+        document.querySelectorAll(".modal-backdrop.show").forEach(m => {
+          m.classList.remove("show");
+          m.setAttribute("aria-hidden", "true");
+        });
+
+        document.body.classList.add("app-locked");
+        showLockscreen(reasonText || "Die App wurde gesperrt. Bitte gib deine PIN ein:");
+      }
+
+      async function unlockAppWithPin(pin) {
+        const errEl = document.getElementById("lockErrorMsg");
+        const pinInput = document.getElementById("lockPinInput");
+        if (!pin || pin.length < 4) {
+          if (errEl) {
+            errEl.textContent = "Bitte gib mindestens 4 Zeichen ein.";
+            errEl.classList.add("visible");
+          }
+          return;
+        }
+        if (!isWebCryptoAvailable()) {
+          showLockscreen();
+          return;
+        }
+
+        try {
+          const raw = localStorage.getItem(STORAGE_KEY);
+          if (!raw) {
+            isVaultEncrypted = false;
+            isAppLocked = false;
+            hideLockscreen();
+            renderAllAppViews();
+            return;
+          }
+          const container = JSON.parse(raw);
+          const { parsed, key, saltB64 } = await decryptContainerWithPin(container, pin);
+          vaultSessionKey = key;
+          vaultSaltB64 = saltB64;
+          isVaultEncrypted = true;
+          isAppLocked = false;
+
+          sanitizeAndMergeState(parsed);
+          postLoadNormalizeAndClean();
+          applyDarkMode();
+          hideLockscreen();
+          renderAllAppViews();
+          resetInactivityLockTimer();
+        } catch (err) {
+          if (errEl) {
+            errEl.textContent = "PIN ist nicht korrekt. Bitte erneut versuchen.";
+            errEl.classList.add("visible");
+          }
+          if (pinInput) {
+            pinInput.value = "";
+            pinInput.focus();
+          }
+        }
+      }
+
+      function resetInactivityLockTimer() {
+        if (inactivityLockTimer) {
+          clearTimeout(inactivityLockTimer);
+          inactivityLockTimer = null;
+        }
+        if (!isVaultEncrypted || isAppLocked) return;
+        const mins = Number(state.autoLockMinutes) || 0;
+        if (mins <= 0) return;
+
+        inactivityLockTimer = setTimeout(() => {
+          lockAppNow(`Automatisch gesperrt nach ${mins} Min. Inaktivität.`);
+        }, mins * 60 * 1000);
       }
 
       function applyDarkMode() {
@@ -2407,7 +3370,135 @@
         }
       }
 
-      /* WebView- & Mobile-sicherer Datei-Download (verhindert Abbruch durch zu frühes revokeObjectURL) */
+      /* ==========================================================================
+         DEMO-MODUS (EXPLIZIT MARKIERT MIT isDemo: true, RÜCKSTANDSLOS ENTFERNBAR)
+         ========================================================================== */
+      function loadDemoData() {
+        const today = getStartOfDay(new Date());
+        const todayIso = toISODate(today);
+
+        // Beispiel-Stundenplan nur laden, wenn der Nutzer noch keinen eigenen angelegt hat
+        if (!hasAnyScheduledSubject(state.schedule)) {
+          state.schedule = JSON.parse(JSON.stringify(DEMO_SCHEDULE));
+          state.hasDemoSchedule = true;
+        }
+        state.welcomeDismissed = true;
+
+        const nextDay1 = toISODate(getNextSchoolDayDate(today));
+        const in3DaysDate = new Date(today);
+        in3DaysDate.setDate(in3DaysDate.getDate() + 3);
+        const in3DaysIso = toISODate(in3DaysDate);
+
+        const in5DaysDate = new Date(today);
+        in5DaysDate.setDate(in5DaysDate.getDate() + 5);
+        const in5DaysIso = toISODate(in5DaysDate);
+
+        const nowTimeStr = new Date().toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" });
+
+        const demoTasks = [
+          {
+            id: "demo_hw_1",
+            subject: "Mathe",
+            title: "[Demo] Buch S. 42 Nr. 3 und 4 (Bruchrechnung wiederholen)",
+            duration: 15,
+            dueDate: nextDay1,
+            dueMode: "custom",
+            plannedInFreePeriod: false,
+            freePeriodDate: "",
+            done: false,
+            createdAt: todayIso,
+            createdTimestamp: `${todayIso} ${nowTimeStr}`,
+            completedAt: "",
+            isDemo: true
+          },
+          {
+            id: "demo_hw_2",
+            subject: "Deutsch",
+            title: "[Demo] Gedicht-Strophe 1–2 abschreiben und Reimschema markieren",
+            duration: 15,
+            dueDate: in3DaysIso,
+            dueMode: "custom",
+            plannedInFreePeriod: false,
+            freePeriodDate: "",
+            done: false,
+            createdAt: todayIso,
+            createdTimestamp: `${todayIso} ${nowTimeStr}`,
+            completedAt: "",
+            isDemo: true
+          },
+          {
+            id: "demo_hw_3",
+            subject: "Englisch",
+            title: "[Demo] Workbook p. 18 ex. 2 fertiggestellt (für morgen einpacken)",
+            duration: 10,
+            dueDate: nextDay1,
+            dueMode: "custom",
+            plannedInFreePeriod: false,
+            freePeriodDate: "",
+            done: true,
+            createdAt: todayIso,
+            createdTimestamp: `${todayIso} ${nowTimeStr}`,
+            completedAt: todayIso,
+            isDemo: true
+          }
+        ];
+
+        demoTasks.forEach(dt => {
+          if (!state.tasks.some(t => t.id === dt.id)) {
+            state.tasks.push(dt);
+          }
+        });
+
+        if (!state.exams.some(ex => ex.id === "demo_ex_1")) {
+          state.exams.push({
+            id: "demo_ex_1",
+            subject: "Biologie",
+            date: in5DaysIso,
+            topic: "[Demo] Aufbau der Zelle, Fotosynthese (Buch S. 20–31)",
+            bufferMinutes: 15,
+            needsReview: false,
+            isDemo: true
+          });
+        }
+
+        if (!state.vocab.some(v => v.id === "demo_voc_1")) {
+          state.vocab.push({
+            id: "demo_voc_1",
+            text: "[Demo] Englisch Unit 3 Vokabeln (10 Wörter)",
+            lastPracticed: "",
+            isDemo: true
+          });
+        }
+
+        saveState();
+        renderAllAppViews();
+        showToast("Demo-Daten wurden geladen (jederzeit rückstandslos entfernbar).");
+      }
+
+      function removeDemoData() {
+        state.tasks = state.tasks.filter(t => !t.isDemo);
+        state.exams = state.exams.filter(ex => !ex.isDemo);
+        state.vocab = state.vocab.filter(v => !v.isDemo);
+
+        if (state.hasDemoSchedule) {
+          state.schedule = createEmptySchedule();
+          state.hasDemoSchedule = false;
+        }
+        if (isPlannerCompletelyEmpty()) {
+          state.welcomeDismissed = false;
+        }
+
+        saveState();
+        renderAllAppViews();
+        showNoticeModal(
+          "Demo-Daten entfernt",
+          "Alle markierten Demo-Einträge wurden rückstandslos gelöscht. Eventuelle eigene Daten blieben vollständig erhalten."
+        );
+      }
+
+      /* ==========================================================================
+         DATEI-DOWNLOAD, HINWEIS-MODAL & TOAST-FEEDBACK (5 SEK. MIT UNDO/KORREKTUR)
+         ========================================================================== */
       function triggerFileDownload(blob, filename) {
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
@@ -2424,9 +3515,6 @@
         }, 1000);
       }
 
-      /* ==========================================================================
-         CSV-EXPORT & CSV-IMPORT (BACKUP-CSV + SB-TALKER / TRACKER SCHNELL-PRÜFLISTE)
-         ========================================================================== */
       function showNoticeModal(title, message) {
         const backdrop = document.getElementById("confirmModalBackdrop");
         const titleEl = document.getElementById("confirmModalTitle");
@@ -2453,6 +3541,247 @@
         backdrop.setAttribute("aria-hidden", "false");
       }
 
+      function hideToast() {
+        const bar = document.getElementById("toastBar");
+        if (toastTimer) {
+          clearTimeout(toastTimer);
+          toastTimer = null;
+        }
+        activeToastUndoFn = null;
+        activeToastEditId = null;
+        if (bar) bar.classList.remove("show");
+      }
+
+      function showToast(message, options = {}) {
+        const bar = document.getElementById("toastBar");
+        const msgEl = document.getElementById("toastMessage");
+        const undoBtn = document.getElementById("toastUndoBtn");
+        const editBtn = document.getElementById("toastEditBtn");
+        if (!bar || !msgEl) return;
+
+        if (toastTimer) clearTimeout(toastTimer);
+        msgEl.textContent = message;
+
+        activeToastUndoFn = typeof options.onUndo === "function" ? options.onUndo : null;
+        activeToastEditId = options.editTaskId || null;
+
+        if (undoBtn) {
+          undoBtn.style.display = activeToastUndoFn ? "inline-block" : "none";
+        }
+        if (editBtn) {
+          editBtn.style.display = activeToastEditId ? "inline-block" : "none";
+        }
+
+        bar.classList.add("show");
+        toastTimer = setTimeout(() => {
+          hideToast();
+        }, 5500);
+      }
+
+      /* Merkt exportierte Tage für die Lösch-Warnung */
+      function markTodayAsExported() {
+        const todayIso = toISODate(new Date());
+        if (!Array.isArray(state.exportedDays)) state.exportedDays = [];
+        if (!state.exportedDays.includes(todayIso)) {
+          state.exportedDays.push(todayIso);
+        }
+        state.lastBackupAt = `${todayIso} ${new Date().toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })}`;
+        saveState();
+        renderBackupStatusHint();
+      }
+
+      function getExportWarningSummary() {
+        const todayIso = toISODate(new Date());
+        const exportedSet = new Set(Array.isArray(state.exportedDays) ? state.exportedDays : []);
+        const isExportedToday = exportedSet.has(todayIso);
+        if (isExportedToday) {
+          return `✅ Backup-Status: Heute (${formatGermanDate(todayIso)}) wurde bereits eine Sicherung exportiert.`;
+        }
+        if (state.lastBackupAt) {
+          return `⚠️ Backup-Hinweis: Letzte Sicherung war am ${state.lastBackupAt}. Neuere Änderungen von heute sind noch ungesichert!`;
+        }
+        return "⚠️ Backup-Hinweis: Es wurde bisher noch keine Sicherung exportiert – diese Daten würden ungesichert gelöscht!";
+      }
+
+      /* ==========================================================================
+         VOLL-BACKUP (.JSON), ANONYME VORLAGE (template_only) & SAFE-JOIN
+         ========================================================================== */
+      async function exportFullBackupJson() {
+        try {
+          const todayIso = toISODate(new Date());
+          if (isVaultEncrypted && vaultSessionKey && vaultSaltB64) {
+            if (!isWebCryptoAvailable()) {
+              showNoticeModal("Backup nicht möglich", "Web Crypto API ist in diesem Kontext nicht verfügbar.");
+              return;
+            }
+            const container = await encryptStateToContainer(state, vaultSessionKey, vaultSaltB64);
+            const blob = new Blob([JSON.stringify(container, null, 2)], { type: "application/json" });
+            triggerFileDownload(blob, `hausaufgaben-tresor-backup-${todayIso}.json`);
+            markTodayAsExported();
+            showNoticeModal(
+              "Verschlüsseltes Tresor-Backup erstellt",
+              "Dein Backup wurde mit deiner aktuellen PIN (AES-256-GCM) verschlüsselt gespeichert. Zum Wiederherstellen wird diese PIN benötigt."
+            );
+          } else {
+            const blob = new Blob([JSON.stringify(state, null, 2)], { type: "application/json" });
+            triggerFileDownload(blob, `hausaufgaben-backup-${todayIso}.json`);
+            markTodayAsExported();
+            showToast("Gesamt-Backup (.json) wurde heruntergeladen.");
+          }
+        } catch (err) {
+          showNoticeModal("Backup-Fehler", "Das Backup konnte nicht erstellt werden.");
+        }
+      }
+
+      function applyImportedFullState(importedObj) {
+        sanitizeAndMergeState(importedObj);
+        cleanupExpiredOverridesAndFreeShifts(new Date());
+        recalculateAutoTaskDates();
+        saveState();
+        applyDarkMode();
+        renderAllAppViews();
+        showNoticeModal(
+          "Gesamt-Backup wiederhergestellt",
+          `Backup erfolgreich geladen!\n• Hausaufgaben: ${state.tasks.length}\n• Klausuren/Termine: ${state.exams.length}\n• Vokabeln/Lernziele: ${state.vocab.length}`
+        );
+      }
+
+      function handleFullBackupJsonContent(rawText) {
+        try {
+          const imported = JSON.parse(rawText);
+
+          // Falls versehentlich eine anonyme Vorlage gewählt wurde -> automatisch an Safe-Join weiterleiten
+          if (imported && imported.exportType === "template_only") {
+            applyAnonymousTemplateSafeJoin(imported);
+            return;
+          }
+
+          // Verschlüsseltes Tresor-Backup erkannt -> PIN abfragen
+          if (isEncryptedContainer(imported)) {
+            if (!isWebCryptoAvailable()) {
+              showNoticeModal(
+                "Entschlüsselung nicht möglich",
+                "Dieses Backup ist mit AES-256-GCM verschlüsselt, aber Web Crypto (crypto.subtle) ist in diesem Browser-Kontext nicht verfügbar. Bitte öffne die App über HTTPS oder Localhost."
+              );
+              return;
+            }
+            pendingEncryptedBackupContainer = imported;
+            openPinModal("unlock_backup");
+            return;
+          }
+
+          if (!imported || (!Array.isArray(imported.tasks) && !Array.isArray(imported.exams) && !imported.schedule)) {
+            showNoticeModal("Backup-Fehler", "Die ausgewählte JSON-Datei ist kein gültiges Planer-Backup.");
+            return;
+          }
+
+          const backupWarn = getExportWarningSummary();
+          promptDoubleConfirmation(
+            `Möchtest du das Gesamt-Backup einspielen? Alle aktuellen lokalen Aufgaben, Klausuren und Stundenplan-Daten werden dabei überschrieben.\n\n${backupWarn}`,
+            "Sicherheitsstufe 2: Aktuelle Daten wirklich vollständig durch das Backup ersetzen?",
+            () => applyImportedFullState(imported),
+            "Überschreiben"
+          );
+        } catch (err) {
+          showNoticeModal("Backup-Fehler", "Fehler beim Lesen der JSON-Datei. Bitte prüfe das Dateiformat.");
+        }
+      }
+
+      /* Anonymer Vorlagen-Export (0 % Aufgaben, Klausuren, Vokabeln oder Ausfälle) */
+      function exportAnonymousTemplate() {
+        const templatePayload = {
+          exportType: "template_only",
+          appVersion: APP_VERSION,
+          exportedAt: toISODate(new Date()),
+          dailyBudgetMinutes: state.dailyBudgetMinutes,
+          subjects: [...state.subjects],
+          activeSubjects: [...state.activeSubjects],
+          timeConfig: { ...state.timeConfig },
+          schedule: JSON.parse(JSON.stringify(state.schedule))
+        };
+        const blob = new Blob([JSON.stringify(templatePayload, null, 2)], { type: "application/json" });
+        triggerFileDownload(blob, `hausaufgaben-vorlage-anonym-${toISODate(new Date())}.json`);
+        showNoticeModal(
+          "Anonyme Vorlage exportiert",
+          "Es wurden ausschließlich Fächerliste, aktive Fächer, Zeitraster und A/B-Stundenplan exportiert – garantiert ohne Hausaufgaben, Klausuren, Notizen oder personenbezogene Daten."
+        );
+      }
+
+      /* Safe-Join (Merge-Import): Ergänzt fehlende Fächer & leere Stundenplan-Slots ohne Überschreiben */
+      function applyAnonymousTemplateSafeJoin(tpl) {
+        if (!tpl || typeof tpl !== "object" || tpl.exportType !== "template_only") {
+          showNoticeModal("Vorlagen-Import", "Die Datei ist keine gültige anonyme Vorlage (exportType: template_only).");
+          return;
+        }
+
+        let addedSubjects = 0;
+        let addedActive = 0;
+        let filledSlots = 0;
+
+        if (Array.isArray(tpl.subjects)) {
+          tpl.subjects.forEach(s => {
+            if (typeof s === "string" && s.trim() && s !== "Allgemein / Vertretung" && !state.subjects.includes(s.trim())) {
+              state.subjects.push(s.trim());
+              addedSubjects++;
+            }
+          });
+        }
+
+        if (Array.isArray(tpl.activeSubjects)) {
+          tpl.activeSubjects.forEach(s => {
+            const clean = typeof s === "string" ? s.trim() : "";
+            if (clean && clean !== "Allgemein / Vertretung") {
+              if (!state.subjects.includes(clean)) {
+                state.subjects.push(clean);
+                addedSubjects++;
+              }
+              if (!state.activeSubjects.includes(clean)) {
+                state.activeSubjects.push(clean);
+                addedActive++;
+              }
+            }
+          });
+        }
+
+        if (tpl.schedule && typeof tpl.schedule === "object") {
+          const hadNoScheduleBefore = !hasAnyScheduledSubject(state.schedule);
+          ["A", "B"].forEach(w => {
+            if (!tpl.schedule[w]) return;
+            for (let d = 1; d <= 5; d++) {
+              const incomingDay = normalizeDayPeriods(tpl.schedule[w][d], []);
+              const currentDay = normalizeDayPeriods(state.schedule[w][d], []);
+              for (let p = 0; p < MAX_PERIODS; p++) {
+                if (!currentDay[p] && incomingDay[p]) {
+                  currentDay[p] = incomingDay[p];
+                  filledSlots++;
+                }
+              }
+              state.schedule[w][d] = currentDay;
+            }
+          });
+          if (hadNoScheduleBefore && filledSlots > 0) {
+            state.hasDemoSchedule = false;
+            state.welcomeDismissed = true;
+          }
+        }
+
+        if (!hasAnyScheduledSubject(state.schedule) && tpl.timeConfig) {
+          state.timeConfig = Object.assign({}, state.timeConfig, tpl.timeConfig);
+        }
+
+        recalculateAutoTaskDates();
+        saveState();
+        renderAllAppViews();
+
+        showNoticeModal(
+          "Safe-Join erfolgreich abgeschlossen",
+          `Die anonyme Vorlage wurde sicher ergänzt, ohne bestehende Daten zu überschreiben:\n• Neue Fächer ergänzt: ${addedSubjects}\n• Aktivierte Halbjahres-Fächer ergänzt: ${addedActive}\n• Leere Stundenplan-Felder aufgefüllt: ${filledSlots}\n\nDeine vorhandenen Hausaufgaben, Klausuren und belegten Stunden blieben unverändert.`
+        );
+      }
+
+      /* ==========================================================================
+         CSV-EXPORT & CSV-IMPORT (BACKUP-CSV + SB-TALKER / TRACKER SCHNELL-PRÜFLISTE)
+         ========================================================================== */
       function exportTasksToCSV() {
         const hasTasks = Array.isArray(state.tasks) && state.tasks.length > 0;
         const hasExams = Array.isArray(state.exams) && state.exams.length > 0;
@@ -2462,66 +3791,81 @@
           return;
         }
 
-        const headers = [
-          "Typ",
-          "ID",
-          "Fach",
-          "Aufgabe",
-          "Geplante_Dauer_Minuten",
-          "Erstellt_Am",
-          "Faellig_Am",
-          "Frist_Modus",
-          "In_Freistunde_Geplant",
-          "Freistunde_Datum",
-          "Status",
-          "Erledigt_Am",
-          "Pruefen"
-        ];
+        const runCsvDownload = () => {
+          const headers = [
+            "Typ",
+            "ID",
+            "Fach",
+            "Aufgabe",
+            "Geplante_Dauer_Minuten",
+            "Erstellt_Am",
+            "Faellig_Am",
+            "Frist_Modus",
+            "In_Freistunde_Geplant",
+            "Freistunde_Datum",
+            "Status",
+            "Erledigt_Am",
+            "Pruefen"
+          ];
 
-        function escapeCsvCell(val) {
-          if (val === null || val === undefined) return "";
-          const str = String(val).replace(/"/g, '""');
-          if (str.includes(";") || str.includes('"') || str.includes("\n") || str.includes("\r")) {
-            return `"${str}"`;
+          function escapeCsvCell(val) {
+            if (val === null || val === undefined) return "";
+            const str = String(val).replace(/"/g, '""');
+            if (str.includes(";") || str.includes('"') || str.includes("\n") || str.includes("\r")) {
+              return `"${str}"`;
+            }
+            return str;
           }
-          return str;
+
+          const taskRows = (state.tasks || []).map(t => [
+            escapeCsvCell("Hausaufgabe"),
+            escapeCsvCell(t.id),
+            escapeCsvCell(t.subject),
+            escapeCsvCell(t.title),
+            escapeCsvCell(t.duration),
+            escapeCsvCell(t.createdAt || ""),
+            escapeCsvCell(t.dueDate || ""),
+            escapeCsvCell(t.dueMode || "next"),
+            escapeCsvCell(t.plannedInFreePeriod ? "Ja" : "Nein"),
+            escapeCsvCell(t.freePeriodDate || ""),
+            escapeCsvCell(t.done ? "Erledigt" : "Offen"),
+            escapeCsvCell(t.completedAt || ""),
+            escapeCsvCell("Nein")
+          ].join(";"));
+
+          const examRows = (state.exams || []).map(ex => [
+            escapeCsvCell("Klausur"),
+            escapeCsvCell(ex.id),
+            escapeCsvCell(ex.subject),
+            escapeCsvCell(ex.topic || ""),
+            escapeCsvCell(ex.bufferMinutes || 15),
+            escapeCsvCell(""),
+            escapeCsvCell(ex.date || ""),
+            escapeCsvCell("Klausur"),
+            escapeCsvCell("Nein"),
+            escapeCsvCell(""),
+            escapeCsvCell(getDaysUntilDue(ex.date) < 0 ? "Vergangen" : "Anstehend"),
+            escapeCsvCell(""),
+            escapeCsvCell(ex.needsReview ? "Ja" : "Nein")
+          ].join(";"));
+
+          const csvContent = "\uFEFF" + [headers.join(";"), ...taskRows, ...examRows].join("\r\n");
+          const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+          triggerFileDownload(blob, `hausaufgaben-klausuren-${toISODate(new Date())}.csv`);
+          markTodayAsExported();
+          showToast("CSV-Tabelle wurde exportiert.");
+        };
+
+        if (isVaultEncrypted) {
+          promptDoubleConfirmation(
+            "Hinweis bei aktivem PIN-Schutz: Eine CSV-Datei wird unverschlüsselt im Klartext gespeichert (damit Excel sie lesen kann). Möchtest du fortfahren?",
+            "Sicherheitsstufe 2: Unverschlüsselten CSV-Export wirklich herunterladen?",
+            runCsvDownload,
+            "Als CSV exportieren"
+          );
+        } else {
+          runCsvDownload();
         }
-
-        const taskRows = (state.tasks || []).map(t => [
-          escapeCsvCell("Hausaufgabe"),
-          escapeCsvCell(t.id),
-          escapeCsvCell(t.subject),
-          escapeCsvCell(t.title),
-          escapeCsvCell(t.duration),
-          escapeCsvCell(t.createdAt || ""),
-          escapeCsvCell(t.dueDate || ""),
-          escapeCsvCell(t.dueMode || "next"),
-          escapeCsvCell(t.plannedInFreePeriod ? "Ja" : "Nein"),
-          escapeCsvCell(t.freePeriodDate || ""),
-          escapeCsvCell(t.done ? "Erledigt" : "Offen"),
-          escapeCsvCell(t.completedAt || ""),
-          escapeCsvCell("Nein")
-        ].join(";"));
-
-        const examRows = (state.exams || []).map(ex => [
-          escapeCsvCell("Klausur"),
-          escapeCsvCell(ex.id),
-          escapeCsvCell(ex.subject),
-          escapeCsvCell(ex.topic || ""),
-          escapeCsvCell(ex.bufferMinutes || 15),
-          escapeCsvCell(""),
-          escapeCsvCell(ex.date || ""),
-          escapeCsvCell("Klausur"),
-          escapeCsvCell("Nein"),
-          escapeCsvCell(""),
-          escapeCsvCell(getDaysUntilDue(ex.date) < 0 ? "Vergangen" : "Anstehend"),
-          escapeCsvCell(""),
-          escapeCsvCell(ex.needsReview ? "Ja" : "Nein")
-        ].join(";"));
-
-        const csvContent = "\uFEFF" + [headers.join(";"), ...taskRows, ...examRows].join("\r\n");
-        const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-        triggerFileDownload(blob, `hausaufgaben-klausuren-${toISODate(new Date())}.csv`);
       }
 
       function parseCSV(text) {
@@ -2581,7 +3925,6 @@
         return lines;
       }
 
-      /* Normalisiert ISO-Daten (YYYY-MM-DD) und deutsche Daten (DD.MM.YYYY / DD.MM.YY) */
       function normalizeIncomingDateToISO(rawStr) {
         if (!rawStr) return "";
         const s = String(rawStr).trim();
@@ -2599,7 +3942,6 @@
         return "";
       }
 
-      /* Extrahiert ein Datum aus Freitext (z. B. "Kausur am 15.12.26" -> "2026-12-15") */
       function extractDateFromText(text, refDateIso = "") {
         if (!text) return "";
         const str = String(text);
@@ -2638,14 +3980,12 @@
         return "";
       }
 
-      /* Erkennt Signalwörter für Klassenarbeiten / Klausuren / Tests (inkl. häufiger Tippfehler) */
       function detectExamKeyword(text) {
         if (!text) return false;
         const lower = String(text).toLowerCase();
         return /\b(klausur|kausur|kluasur|klassenarbeit|kursarbeit|schularbeit|lernzielkontrolle|vokabeltest|kurztest|test|prüfung|pruefung|referat|projektarbeit)\b/.test(lower);
       }
 
-      /* Ordnet Kombifächer (z. B. "Religion / Ethik") intelligent den aktiven Halbjahres-Fächern zu */
       function mapIncomingSubject(rawSubject) {
         const cleaned = String(rawSubject || "").trim();
         if (!cleaned) return "Allgemein / Vertretung";
@@ -2657,7 +3997,6 @@
         const exactAll = state.subjects.find(s => s.toLowerCase() === cleaned.toLowerCase());
         if (exactAll) return exactAll;
 
-        // Kombifächer wie "Religion / Ethik" oder "Biologie/Chemie" aufteilen und gegen aktive Fächer prüfen
         const parts = cleaned.split(/[\/&,]+/).map(p => p.trim()).filter(Boolean);
         if (parts.length > 1) {
           for (const part of parts) {
@@ -2670,14 +4009,12 @@
           }
         }
 
-        // Teilwort-Treffer (z. B. "Mathematik" -> "Mathe")
         const partialActive = activeList.find(s => cleaned.toLowerCase().startsWith(s.toLowerCase()) || s.toLowerCase().startsWith(cleaned.toLowerCase()));
         if (partialActive) return partialActive;
 
         return cleaned;
       }
 
-      /* Prüft ob eine CSV eine vollständige Planer-Export-CSV oder eine Tracker/SB-Talker-CSV ist */
       function importTasksFromCSV(csvText) {
         const rows = parseCSV(csvText);
         if (rows.length < 2) {
@@ -2694,7 +4031,6 @@
           return;
         }
 
-        // SB-Talker / Schulbegleitungs-Tracker CSV (z. B. Datum;Fach;Aufgabe;Notiz) -> Schnell-Prüfliste öffnen
         const dateIdx = header.findIndex(h => h.includes("datum") || h.includes("erstellt"));
         const subjIdx = header.findIndex(h => h.includes("fach"));
         const taskIdx = header.findIndex(h => h.includes("aufgabe") || h.includes("titel") || h.includes("text") || h.includes("thema"));
@@ -2732,7 +4068,6 @@
           const extractedExamDate = extractDateFromText(combinedTitle, createdAt);
           const autoDueDate = findSubjectOccurrenceDate(mappedSubject, 1, createdAt);
 
-          // Duplikatsprüfung gegen bereits gespeicherte Hausaufgaben und Klausuren
           const normalizedTitleLower = (combinedTitle || "Hausaufgabe").toLowerCase().trim();
           const alreadyExistsAsTask = state.tasks.some(t =>
             t.subject.toLowerCase() === mappedSubject.toLowerCase() &&
@@ -2780,7 +4115,6 @@
         openCsvReviewModal(reviewItems, skippedDuplicates);
       }
 
-      /* Direkter Anhänge-Import für vollständige Planer-Export-CSVs (inkl. erledigter Aufgaben & Klausuren) */
       function importBackupCSVDirect(rows, header) {
         const typeIdx = header.findIndex(h => h.includes("typ") || h.includes("art"));
         const idIdx = header.findIndex(h => h.includes("id"));
@@ -2855,7 +4189,8 @@
               date: examDate,
               topic: examTopic,
               bufferMinutes: duration,
-              needsReview
+              needsReview,
+              isDemo: false
             });
 
             existingExamIds.add(id);
@@ -2863,7 +4198,6 @@
             continue;
           }
 
-          // Reguläre Hausaufgabe importieren
           const hwTitle = title || "Hausaufgabe";
           const createdAt = (createdIdx !== -1 && row[createdIdx]) ? (normalizeIncomingDateToISO(row[createdIdx].trim()) || toISODate(new Date())) : toISODate(new Date());
           const dueMode = rawDueDate ? "custom" : (rawMode || "next");
@@ -2921,28 +4255,30 @@
             freePeriodDate,
             done: isDone,
             createdAt,
-            completedAt
+            createdTimestamp: createdAt,
+            completedAt,
+            isDemo: false
           });
 
           existingTaskIds.add(id);
           addedTasksCount++;
         }
 
-        cleanupExpiredOverridesAndFreeShifts();
+        state.welcomeDismissed = true;
+        cleanupExpiredOverridesAndFreeShifts(new Date());
         saveState();
-        renderActiveSubjectsManager();
-        renderSubjectDropdowns();
-        renderScheduleTab();
-        renderExamsTab();
-        renderPlanTab();
+        renderAllAppViews();
 
         showNoticeModal(
           "CSV-Import erfolgreich abgeschlossen",
           `• Hinzugefügte neue Hausaufgaben: ${addedTasksCount}\n• Hinzugefügte neue Klausuren: ${addedExamsCount}\n• Übersprungene (bereits vorhandene) Einträge: ${skippedCount}\n\nDeine bestehenden Daten wurden nicht überschrieben.`
         );
       }
+/* === ENDE TEIL 2 VON 4 === */
+
+/* === START TEIL 3 VON 4 === */
       /* ==========================================================================
-         TEIL 3: ECHTZEIT-TAKTUNG, FREISTUNDEN-ENGINE, KLAUSUR-RADAR & EVENTS
+         TEIL 3: ECHTZEIT-TAKTUNG, FREISTUNDEN-ENGINE, SPRACHEINGABE & EVENTS
          ========================================================================== */
       function getStartOfDay(dateObj) {
         const d = new Date(dateObj);
@@ -3058,13 +4394,11 @@
         }
 
         if (lastIdx === -1) {
-          // Fallback: Ende der 6. Stunde, falls an einem Werktag noch keine Fächer eingetragen sind
           return timings[5] ? timings[5].endMin : 800;
         }
         return timings[lastIdx].endMin;
       }
 
-      /* Prüft, ob der heutige Schultag bereits vorbei ist (Nachmittags-Modus oder Wochenende) */
       function isSchoolDayOverToday(now = new Date()) {
         const day = now.getDay();
         if (day === 0 || day === 6) return true;
@@ -3073,7 +4407,6 @@
         return nowMin >= lastEndMin;
       }
 
-      /* Prüft stundengenau, ob eine bestimmte Schulstunde (Index 0–7) am heutigen Tag bereits abgelaufen ist */
       function isPeriodExpiredToday(periodIdx, now = new Date()) {
         if (isSchoolDayOverToday(now)) return true;
         const timings = getPeriodTimings();
@@ -3083,9 +4416,6 @@
         return nowMin >= slot.endMin;
       }
 
-      /* Liefert das aktive Planungs-Datum für Freistunden:
-         - Vor/während des heutigen Unterrichts: HEUTE
-         - Sobald der heutige Unterricht vorbei ist (Nachmittag/Wochenende): NÄCHSTER SCHULTAG */
       function getActivePlanningSchoolDate(now = new Date()) {
         if (!isSchoolDayOverToday(now)) {
           return getStartOfDay(now);
@@ -3093,10 +4423,6 @@
         return getNextSchoolDayDate(now);
       }
 
-      /* Automatischer Reset (Auto-Cleanup):
-         1. Löscht alle Einträge vergangener Tage.
-         2. Löscht am heutigen Tag jede Freistunde/Vertretung sofort, sobald die jeweilige Schulstunde (bzw. der Schultag) vorbei ist.
-         3. Setzt in Freistunden geschobene Aufgaben zurück, sobald der betreffende Freistunden-Tag abgelaufen ist. */
       function cleanupExpiredOverridesAndFreeShifts(now = new Date()) {
         const todayIso = toISODate(now);
         const schoolOverToday = isSchoolDayOverToday(now);
@@ -3152,7 +4478,6 @@
           });
         }
 
-        // Standard-Auswahl im Editor automatisch dem Tagesstatus anpassen, sofern nicht manuell umgeschaltet
         if (!userManuallySwitchedOverrideTab) {
           overrideTargetMode = schoolOverToday ? "tomorrow" : "today";
         }
@@ -3163,7 +4488,6 @@
         return changed;
       }
 
-      /* Kombiniert den A/B-Basisplan eines Datums mit tagesaktuellen Ausfällen/Tauschen */
       function getEffectiveDaySchedule(dateObj) {
         const d = getStartOfDay(dateObj);
         const dayOfWeek = d.getDay();
@@ -3218,7 +4542,6 @@
         });
       }
 
-      /* Echtzeit-Status für die Kopfzeile */
       function getCurrentLivePeriodStatus() {
         const now = new Date();
         const day = now.getDay();
@@ -3271,8 +4594,6 @@
         return "🏡 Nachmittags-Modus aktiv";
       }
 
-      /* Findet das nächste/übernächste Datum, an dem das Fach tatsächlich unterrichtet wird.
-         Sucht ab dem Referenztag (standardmäßig heute -> nächster Schultag ist Offset 1) */
       function findSubjectOccurrenceDate(subject, occurrenceCount, baseDateIso = null) {
         const today = getStartOfDay(new Date());
         const startDay = (baseDateIso && /^\d{4}-\d{2}-\d{2}$/.test(baseDateIso))
@@ -3320,7 +4641,6 @@
         return toISODate(fallbackDate);
       }
 
-      /* Ermittelt, in welcher Schulstunde (1–8) ein Fach an einem bestimmten Datum zuerst stattfindet */
       function getFirstSubjectPeriodOnDate(subject, dateIso) {
         if (!subject || !dateIso) return null;
         const slots = getEffectiveDaySchedule(parseISODate(dateIso));
@@ -3328,7 +4648,6 @@
         return match ? match.period : null;
       }
 
-      /* Analysiert alle Freistunden, Ausfälle und Mittagspausen für den aktuell gültigen Planungstag */
       function analyzeNextSchoolDayFreePeriods() {
         const now = new Date();
         cleanupExpiredOverridesAndFreeShifts(now);
@@ -3357,7 +4676,6 @@
         const freeSlots = [];
 
         slots.forEach(s => {
-          // Am heutigen Tag zählen nur Freistunden, deren Zeitfenster noch nicht abgelaufen ist
           if (isTargetToday && nowMin >= s.endMin) {
             return;
           }
@@ -3397,7 +4715,7 @@
           freeSlots.push({
             period: 6.5,
             minutes: lunchBreakMin,
-            label: `Mittagspause (zw. 6. & 7. Std.)`,
+            label: "Mittagspause (zw. 6. & 7. Std.)",
             type: "lunch-break"
           });
         }
@@ -3428,7 +4746,6 @@
         };
       }
 
-      /* Prüft stundengenau, ob eine Aufgabe in eine Freistunde VOR der Abgabestunde passt */
       function evaluateTaskFreePeriodFit(task, freeInfo) {
         if (!freeInfo || freeInfo.totalFreeMinutes === 0) {
           return {
@@ -3482,7 +4799,6 @@
         };
       }
 
-      /* Synchronisiert automatisch berechnete Fälligkeitsdaten bei A/B-Wechsel oder Stundenplan-Änderung */
       function recalculateAutoTaskDates() {
         state.tasks.forEach(task => {
           if (!task.done && task.dueMode && task.dueMode !== "custom") {
@@ -3499,10 +4815,9 @@
         return Math.round(diffMs / 86400000);
       }
 
-      /* Klassifiziert & sortiert erledigte Aufgaben für die Abgabe-Ampel (Rot/Gelb/Grün) vs. Archiv (Vergangen) */
       function classifyDoneTask(task) {
         const today = getStartOfDay(new Date());
-        const todayDow = today.getDay(); // 0=So, 5=Fr, 6=Sa
+        const todayDow = today.getDay();
         const dueIso = task.dueDate || task.completedAt || toISODate(today);
         const daysLeft = getDaysUntilDue(dueIso);
         const duePeriod = getFirstSubjectPeriodOnDate(task.subject, dueIso);
@@ -3562,7 +4877,6 @@
         };
       }
 
-      /* Prüft, ob an einem Kalendertag bereits eine andere Klausur eingetragen ist (Kollisions-Schutz) */
       function getExamsOnDate(dateIso, excludeExamId = null) {
         if (!dateIso || !Array.isArray(state.exams)) return [];
         return state.exams.filter(ex => ex.date === dateIso && ex.id !== excludeExamId);
@@ -3582,7 +4896,6 @@
         }
       }
 
-      /* Klausur- & Test-Radar Auswertung + automatische Puffer-Reservierung */
       function classifyExams() {
         const sorted = [...(state.exams || [])].sort((a, b) => (a.date || "").localeCompare(b.date || ""));
         const upcoming = [];
@@ -3637,7 +4950,6 @@
         };
       }
 
-      /* Klassifiziert alle Hausaufgaben in Rot, Gelb, Grün + getrennte Erledigt-Listen (Abgabe-Ampel & Archiv) */
       function classifyTasks() {
         const today = getStartOfDay(new Date());
         const todayDayOfWeek = today.getDay();
@@ -3798,16 +5110,40 @@
 
       function toggleTaskDone(id, doneStatus) {
         const task = state.tasks.find(t => t.id === id);
-        if (task) {
-          task.done = doneStatus;
-          if (doneStatus) {
-            task.plannedInFreePeriod = false;
-            task.freePeriodDate = "";
-          }
-          task.completedAt = doneStatus ? toISODate(new Date()) : "";
-          saveState();
-          renderPlanTab();
+        if (!task) return;
+
+        const prevDone = Boolean(task.done);
+        const prevCompletedAt = task.completedAt || "";
+        const prevPlannedFree = Boolean(task.plannedInFreePeriod);
+        const prevFreeDate = task.freePeriodDate || "";
+
+        task.done = doneStatus;
+        if (doneStatus) {
+          task.plannedInFreePeriod = false;
+          task.freePeriodDate = "";
         }
+        task.completedAt = doneStatus ? toISODate(new Date()) : "";
+        saveState();
+        renderPlanTab();
+
+        showToast(
+          doneStatus
+            ? `✓ ${task.subject} als erledigt markiert (Abgabe-Check aktiv).`
+            : `↩️ ${task.subject} wieder geöffnet.`,
+          {
+            editTaskId: task.id,
+            onUndo: () => {
+              const t = state.tasks.find(x => x.id === id);
+              if (!t) return;
+              t.done = prevDone;
+              t.completedAt = prevCompletedAt;
+              t.plannedInFreePeriod = prevPlannedFree;
+              t.freePeriodDate = prevFreeDate;
+              saveState();
+              renderPlanTab();
+            }
+          }
+        );
       }
 
       function toggleTaskFreeShift(id) {
@@ -3818,7 +5154,10 @@
           const freeInfo = analyzeNextSchoolDayFreePeriods();
           const fit = evaluateTaskFreePeriodFit(task, freeInfo);
           if (!fit.fitsCapacity) {
-            alert(`Diese Aufgabe (${task.duration} Min.) überschreitet die freie Kapazität vor der Abgabestunde (${freeInfo.remainingFreeMinutes} Min. frei).`);
+            showNoticeModal(
+              "Freistunden-Kapazität reicht nicht aus",
+              `Diese Aufgabe (${task.duration} Min.) überschreitet die freie Kapazität vor der Abgabestunde (noch ${freeInfo.remainingFreeMinutes} Min. frei).`
+            );
             return;
           }
           task.plannedInFreePeriod = true;
@@ -3838,6 +5177,7 @@
       }
 
       function switchTab(targetTabId) {
+        if (isAppLocked) return;
         if (cleanupExpiredOverridesAndFreeShifts(new Date())) {
           saveState();
         }
@@ -3852,6 +5192,8 @@
           renderScheduleTab();
         } else if (targetTabId === "tab-legal") {
           renderActiveSubjectsManager();
+          renderSecuritySettingsUI();
+          renderBackupStatusHint();
           renderHeader();
         } else if (targetTabId === "tab-plan") {
           renderPlanTab();
@@ -3867,7 +5209,6 @@
           .replace(/"/g, "&quot;");
       }
 
-      /* Steuert alle Jalousie-/Akkordeon-Kacheln (Stundenplan, Einstellungen & Erledigt-Archiv) */
       function toggleAccordion(accId, forceOpen = null) {
         const card = document.getElementById(accId);
         if (!card) return;
@@ -3887,7 +5228,7 @@
         });
       }
 
-      /* Zuverlässige Zwischenablage-Funktion (inkl. Fallback für lokale Dateien / Android WebView) */
+      /* Zuverlässige Zwischenablage-Funktion (inkl. Fallback für file:// & Android WebView) */
       function copyTextToClipboard(text, onSuccess) {
         if (navigator.clipboard && navigator.clipboard.writeText) {
           navigator.clipboard.writeText(text).then(onSuccess).catch(() => {
@@ -3911,11 +5252,124 @@
           document.body.removeChild(ta);
           if (onSuccess) onSuccess();
         } catch (err) {
-          alert("Kopieren nicht möglich. Bitte markiere den Text manuell.");
+          showNoticeModal("Kopieren nicht möglich", "Automatischer Zugriff auf die Zwischenablage wurde blockiert. Bitte markiere den Text im Feld manuell und kopiere ihn.");
         }
       }
 
-      /* Gemeinsamer Handler für CSV-Dateiauswahl (inkl. Android-Fehlerabfang bei überlangen Dateinamen) */
+      /* ==========================================================================
+         OPTIONALE SPRACHEINGABE (WEB SPEECH API MIT KLAREM FALLBACK-HINWEIS)
+         ========================================================================== */
+      let activeSpeechRecognition = null;
+      let activeSpeechButton = null;
+
+      function stopActiveSpeechRecognition() {
+        if (activeSpeechRecognition) {
+          try {
+            activeSpeechRecognition.stop();
+          } catch (e) {
+            // ignorieren
+          }
+          activeSpeechRecognition = null;
+        }
+        if (activeSpeechButton) {
+          activeSpeechButton.classList.remove("listening");
+          activeSpeechButton.textContent = "🎤 Einsprechen";
+          const statusId = activeSpeechButton.getAttribute("data-speech-status");
+          const statusEl = statusId ? document.getElementById(statusId) : null;
+          if (statusEl) {
+            statusEl.textContent = "";
+            statusEl.classList.remove("active-rec");
+          }
+          activeSpeechButton = null;
+        }
+      }
+
+      function showSpeechFallbackNotice(reasonDetail = "") {
+        const extra = reasonDetail ? `\n\nTechnischer Hinweis: ${reasonDetail}` : "";
+        showNoticeModal(
+          "🎤 Hinweis zur Spracheingabe",
+          `Die direkte Browser-Spracheingabe (Web Speech API) steht in diesem Browser, lokal per file:// oder offline leider nicht zur Verfügung.\n\nTipp für Smartphone & Tablet: Tippe einfach direkt in das Textfeld und nutze das Mikrofon-Symbol (🎤) auf deiner normalen Handy-Tastatur – das funktioniert auch offline zuverlässig!${extra}`
+        );
+      }
+
+      function handleSpeechButtonClick(btn) {
+        const targetId = btn.getAttribute("data-speech-target");
+        const statusId = btn.getAttribute("data-speech-status");
+        const targetEl = targetId ? document.getElementById(targetId) : null;
+        const statusEl = statusId ? document.getElementById(statusId) : null;
+        if (!targetEl) return;
+
+        // Bereits laufende Aufnahme für diesen Button beenden
+        if (activeSpeechButton === btn && activeSpeechRecognition) {
+          stopActiveSpeechRecognition();
+          return;
+        }
+
+        // Ggf. laufende Aufnahme an einem anderen Feld sauber beenden
+        stopActiveSpeechRecognition();
+
+        const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!SpeechRec) {
+          showSpeechFallbackNotice("Dieser Browser unterstützt keine integrierte Web Speech API.");
+          targetEl.focus();
+          return;
+        }
+
+        try {
+          const recognition = new SpeechRec();
+          recognition.lang = "de-DE";
+          recognition.interimResults = false;
+          recognition.continuous = false;
+          recognition.maxAlternatives = 1;
+
+          activeSpeechRecognition = recognition;
+          activeSpeechButton = btn;
+          btn.classList.add("listening");
+          btn.textContent = "⏹️ Stopp (Hört zu...)";
+          if (statusEl) {
+            statusEl.textContent = "🔴 Mikrofon aktiv – bitte jetzt deutlich auf Deutsch sprechen...";
+            statusEl.classList.add("active-rec");
+          }
+
+          recognition.onresult = (event) => {
+            const transcript = event.results && event.results[0] && event.results[0][0]
+              ? String(event.results[0][0].transcript || "").trim()
+              : "";
+            if (transcript) {
+              const existing = targetEl.value.trim();
+              targetEl.value = existing ? `${existing} ${transcript}` : transcript;
+              targetEl.dispatchEvent(new Event("input", { bubbles: true }));
+            }
+          };
+
+          recognition.onerror = (event) => {
+            const errCode = event && event.error ? event.error : "";
+            stopActiveSpeechRecognition();
+            if (errCode === "no-speech") {
+              if (statusEl) statusEl.textContent = "Keine Sprache erkannt – bitte erneut tippen.";
+            } else if (errCode === "not-allowed" || errCode === "service-not-allowed") {
+              showSpeechFallbackNotice("Mikrofon-Berechtigung wurde im Browser verweigert oder blockiert.");
+            } else if (errCode === "network") {
+              showSpeechFallbackNotice("Keine Internetverbindung für den Browser-Sprachdienst.");
+            } else {
+              showSpeechFallbackNotice(`Fehlercode: ${errCode || "unbekannt"}`);
+            }
+          };
+
+          recognition.onend = () => {
+            if (activeSpeechRecognition === recognition) {
+              stopActiveSpeechRecognition();
+            }
+          };
+
+          recognition.start();
+        } catch (err) {
+          stopActiveSpeechRecognition();
+          showSpeechFallbackNotice("Die Sprachaufnahme konnte nicht gestartet werden.");
+        }
+      }
+
+      /* Gemeinsamer Handler für CSV-Dateiauswahl (inkl. Android-Fehlerabfang) */
       function handleCsvFileSelection(e) {
         const file = e.target.files && e.target.files[0];
         if (!file) return;
@@ -3941,30 +5395,320 @@
         reader.readAsText(file, "UTF-8");
       }
 
+      /* Cross-Tab-Synchronisation (sowohl Klartext als auch verschlüsselter Tresor) */
+      async function handleCrossTabStorageSync(newValue) {
+        if (!newValue || isAppLocked) return;
+        try {
+          const parsed = JSON.parse(newValue);
+          if (isEncryptedContainer(parsed)) {
+            if (isVaultEncrypted && vaultSessionKey && vaultSaltB64 && parsed.salt === vaultSaltB64) {
+              const ivBytes = base64ToBytes(parsed.iv);
+              const cipherBytes = base64ToBytes(parsed.ciphertext);
+              const plainBuf = await window.crypto.subtle.decrypt(
+                { name: "AES-GCM", iv: ivBytes },
+                vaultSessionKey,
+                cipherBytes
+              );
+              const dec = new TextDecoder();
+              sanitizeAndMergeState(JSON.parse(dec.decode(plainBuf)));
+              postLoadNormalizeAndClean();
+              applyDarkMode();
+              renderAllAppViews();
+            } else {
+              isVaultEncrypted = true;
+              lockAppNow("In einem anderen Tab wurde der PIN-Tresor geändert. Bitte entsperre erneut.");
+            }
+          } else {
+            isVaultEncrypted = false;
+            vaultSessionKey = null;
+            vaultSaltB64 = null;
+            sanitizeAndMergeState(parsed);
+            postLoadNormalizeAndClean();
+            applyDarkMode();
+            renderAllAppViews();
+          }
+        } catch (err) {
+          console.error("Cross-Tab Sync Hinweis:", err);
+        }
+      }
+
       /* ==========================================================================
          ZENTRALE EVENT INITIALISIERUNG
          ========================================================================== */
       function initEvents() {
+        lastObservedDateIso = toISODate(new Date());
+
         // Cross-Tab Synchronisation
         window.addEventListener("storage", (e) => {
           if (e.key === STORAGE_KEY && e.newValue) {
-            loadState();
-            renderHeader();
-            renderActiveSubjectsManager();
-            renderSubjectDropdowns();
-            renderScheduleTab();
-            renderExamsTab();
-            renderPlanTab();
+            handleCrossTabStorageSync(e.newValue);
           }
         });
 
-        // Echtzeit-Uhr-Intervall (alle 30 Sekunden prüfen, abgelaufene Freistunden sofort aufräumen & UI aktualisieren)
+        // Tageswechsel-Refresh & optionaler Auto-Lock beim Tab-/App-Wechsel (visibilitychange)
+        document.addEventListener("visibilitychange", () => {
+          if (document.hidden) {
+            hiddenSinceTimestamp = Date.now();
+            return;
+          }
+
+          if (isVaultEncrypted && !isAppLocked && state.autoLockOnHide && hiddenSinceTimestamp > 0) {
+            const awayMs = Date.now() - hiddenSinceTimestamp;
+            if (awayMs > 120000) {
+              hiddenSinceTimestamp = 0;
+              lockAppNow("Automatisch gesperrt nach längerem App-/Tab-Wechsel.");
+              return;
+            }
+          }
+          hiddenSinceTimestamp = 0;
+
+          if (isAppLocked) return;
+
+          const now = new Date();
+          const currentIso = toISODate(now);
+          const dateChanged = currentIso !== lastObservedDateIso;
+          lastObservedDateIso = currentIso;
+
+          const hadExpired = cleanupExpiredOverridesAndFreeShifts(now);
+          if (dateChanged || hadExpired) {
+            if (hadExpired) saveState();
+            renderAllAppViews();
+          } else {
+            renderHeader();
+          }
+          resetInactivityLockTimer();
+        });
+
+        // Inaktivitäts-Timer bei Benutzeraktion zurücksetzen (für optionalen Auto-Lock)
+        ["pointerdown", "keydown", "touchstart"].forEach(evtName => {
+          document.addEventListener(evtName, () => {
+            if (isVaultEncrypted && !isAppLocked) {
+              resetInactivityLockTimer();
+            }
+          }, { passive: true });
+        });
+
+        // Globaler Smartphone-Tastatur- & Modal-UX Helfer (focusin / focusout)
+        document.addEventListener("focusin", (e) => {
+          const field = e.target;
+          if (!field || !field.matches("input, textarea, select")) return;
+          const modalCard = field.closest(".modal-card");
+          if (!modalCard) return;
+          modalCard.classList.add("kb-active");
+          setTimeout(() => {
+            try {
+              field.scrollIntoView({ behavior: "smooth", block: "center" });
+            } catch (err) {
+              // ignorieren
+            }
+          }, 220);
+        });
+
+        document.addEventListener("focusout", (e) => {
+          const modalCard = e.target && e.target.closest ? e.target.closest(".modal-card") : null;
+          if (!modalCard) return;
+          setTimeout(() => {
+            const activeEl = document.activeElement;
+            if (!activeEl || !modalCard.contains(activeEl) || !activeEl.matches("input, textarea, select")) {
+              modalCard.classList.remove("kb-active");
+            }
+          }, 180);
+        });
+
+        // Globale Event-Delegation für alle "🎤 Einsprechen"-Buttons
+        document.addEventListener("click", (e) => {
+          const speechBtn = e.target.closest(".btn-speech[data-speech-target]");
+          if (speechBtn) {
+            handleSpeechButtonClick(speechBtn);
+          }
+        });
+
+        // Toast-Leiste Events (Undo, Korrigieren, Schließen)
+        const toastUndoBtn = document.getElementById("toastUndoBtn");
+        if (toastUndoBtn) {
+          toastUndoBtn.addEventListener("click", () => {
+            const fn = activeToastUndoFn;
+            hideToast();
+            if (typeof fn === "function") fn();
+          });
+        }
+
+        const toastEditBtn = document.getElementById("toastEditBtn");
+        if (toastEditBtn) {
+          toastEditBtn.addEventListener("click", () => {
+            const editId = activeToastEditId;
+            hideToast();
+            if (editId) openEditModal(editId);
+          });
+        }
+
+        const toastCloseBtn = document.getElementById("toastCloseBtn");
+        if (toastCloseBtn) {
+          toastCloseBtn.addEventListener("click", hideToast);
+        }
+
+        // Lockscreen-Steuerung (3x4 Touch-Ziffernblock + Enter + Notfall-Reset)
+        const lockKeypad = document.getElementById("lockKeypad");
+        const lockPinInput = document.getElementById("lockPinInput");
+        if (lockKeypad && lockPinInput) {
+          lockKeypad.addEventListener("click", (e) => {
+            const keyBtn = e.target.closest("[data-pin-key]");
+            if (!keyBtn) return;
+            const k = keyBtn.getAttribute("data-pin-key");
+            if (k === "del") {
+              lockPinInput.value = lockPinInput.value.slice(0, -1);
+            } else if (k === "ok") {
+              unlockAppWithPin(lockPinInput.value);
+            } else {
+              lockPinInput.value += k;
+            }
+          });
+
+          lockPinInput.addEventListener("keydown", (e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              unlockAppWithPin(lockPinInput.value);
+            }
+          });
+        }
+
+        const lockEmergencyResetBtn = document.getElementById("lockEmergencyResetBtn");
+        if (lockEmergencyResetBtn) {
+          lockEmergencyResetBtn.addEventListener("click", () => {
+            promptDoubleConfirmation(
+              "PIN vergessen? Da es keinen Server und keine Hintertür gibt, kann der verschlüsselte Tresor nur durch vollständiges Löschen auf den Nullzustand zurückgesetzt werden.",
+              "Sicherheitsstufe 2: Wirklich ALLE verschlüsselten lokalen Daten unwiderruflich löschen und neu starten?",
+              () => {
+                localStorage.removeItem(STORAGE_KEY);
+                location.reload();
+              },
+              "Tresor zurücksetzen"
+            );
+          });
+        }
+
+        // Header-PIN-Button & Einstellungs-Buttons für PIN-Verschlüsselung
+        const headerPinBtn = document.getElementById("headerPinBtn");
+        if (headerPinBtn) {
+          headerPinBtn.addEventListener("click", () => {
+            if (isVaultEncrypted) {
+              lockAppNow("Manuell gesperrt.");
+            } else {
+              switchTab("tab-legal");
+              toggleAccordion("acc-security", true);
+              openPinModal("setup");
+            }
+          });
+        }
+
+        const btnSetupPin = document.getElementById("btnSetupPin");
+        if (btnSetupPin) btnSetupPin.addEventListener("click", () => openPinModal("setup"));
+
+        const btnChangePin = document.getElementById("btnChangePin");
+        if (btnChangePin) btnChangePin.addEventListener("click", () => openPinModal("change"));
+
+        const btnLockNow = document.getElementById("btnLockNow");
+        if (btnLockNow) btnLockNow.addEventListener("click", () => lockAppNow("Manuell gesperrt."));
+
+        const btnDisablePin = document.getElementById("btnDisablePin");
+        if (btnDisablePin) btnDisablePin.addEventListener("click", () => openPinModal("disable"));
+
+        const autoLockSel = document.getElementById("autoLockMinutesSelect");
+        if (autoLockSel) {
+          autoLockSel.addEventListener("change", () => {
+            state.autoLockMinutes = Number(autoLockSel.value) || 0;
+            saveState();
+            resetInactivityLockTimer();
+          });
+        }
+
+        const autoLockHideCheck = document.getElementById("autoLockOnHideCheckbox");
+        if (autoLockHideCheck) {
+          autoLockHideCheck.addEventListener("change", () => {
+            state.autoLockOnHide = Boolean(autoLockHideCheck.checked);
+            saveState();
+          });
+        }
+
+        const cancelPinModalBtn = document.getElementById("cancelPinModalBtn");
+        if (cancelPinModalBtn) cancelPinModalBtn.addEventListener("click", closePinModal);
+
+        const confirmPinModalBtn = document.getElementById("confirmPinModalBtn");
+        if (confirmPinModalBtn) confirmPinModalBtn.addEventListener("click", handlePinModalSubmit);
+
+        // Erststart-Willkommenskarte & Demo-Modus-Buttons
+        const dismissWelcomeBtn = document.getElementById("dismissWelcomeBtn");
+        if (dismissWelcomeBtn) {
+          dismissWelcomeBtn.addEventListener("click", () => {
+            state.welcomeDismissed = true;
+            saveState();
+            renderWelcomeAndDemoBanners();
+          });
+        }
+
+        const welcomeGoScheduleBtn = document.getElementById("welcomeGoScheduleBtn");
+        if (welcomeGoScheduleBtn) {
+          welcomeGoScheduleBtn.addEventListener("click", () => {
+            state.welcomeDismissed = true;
+            saveState();
+            switchTab("tab-schedule");
+            toggleAccordion("acc-sched-base", true);
+          });
+        }
+
+        const welcomeLoadDemoBtn = document.getElementById("welcomeLoadDemoBtn");
+        if (welcomeLoadDemoBtn) welcomeLoadDemoBtn.addEventListener("click", loadDemoData);
+
+        const welcomeImportBackupBtn = document.getElementById("welcomeImportBackupBtn");
+        if (welcomeImportBackupBtn) {
+          welcomeImportBackupBtn.addEventListener("click", () => {
+            switchTab("tab-legal");
+            toggleAccordion("acc-backup", true);
+          });
+        }
+
+        const welcomeSetupPinBtn = document.getElementById("welcomeSetupPinBtn");
+        if (welcomeSetupPinBtn) {
+          welcomeSetupPinBtn.addEventListener("click", () => {
+            openPinModal("setup");
+          });
+        }
+
+        const triggerDemoRemoval = () => {
+          if (!hasAnyDemoEntries()) {
+            showNoticeModal("Demo-Daten", "Aktuell sind keine Demo-Daten vorhanden.");
+            return;
+          }
+          promptDoubleConfirmation(
+            "Möchtest du alle markierten Demo-Daten (Beispiel-Aufgaben, Beispiel-Klausur, Beispiel-Vokabeln und ggf. Demo-Stundenplan) rückstandslos entfernen? Eigene Einträge bleiben unberührt.",
+            "Sicherheitsstufe 2: Alle Demo-Einträge jetzt endgültig entfernen?",
+            removeDemoData,
+            "Demo entfernen"
+          );
+        };
+
+        const removeDemoBannerBtn = document.getElementById("removeDemoBannerBtn");
+        if (removeDemoBannerBtn) removeDemoBannerBtn.addEventListener("click", triggerDemoRemoval);
+
+        const settingsLoadDemoBtn = document.getElementById("settingsLoadDemoBtn");
+        if (settingsLoadDemoBtn) settingsLoadDemoBtn.addEventListener("click", loadDemoData);
+
+        const settingsRemoveDemoBtn = document.getElementById("settingsRemoveDemoBtn");
+        if (settingsRemoveDemoBtn) settingsRemoveDemoBtn.addEventListener("click", triggerDemoRemoval);
+
+        // Echtzeit-Uhr-Intervall (alle 30 Sekunden prüfen, Datumswechsel & abgelaufene Freistunden aufräumen)
         if (liveClockTimer) clearInterval(liveClockTimer);
         liveClockTimer = setInterval(() => {
-          const hadExpired = cleanupExpiredOverridesAndFreeShifts(new Date());
+          if (isAppLocked) return;
+          const now = new Date();
+          const currentIso = toISODate(now);
+          const dateChanged = currentIso !== lastObservedDateIso;
+          lastObservedDateIso = currentIso;
+
+          const hadExpired = cleanupExpiredOverridesAndFreeShifts(now);
           renderHeader();
-          if (hadExpired) {
-            saveState();
+          if (hadExpired || dateChanged) {
+            if (hadExpired) saveState();
             renderDailyOverridesEditor();
             renderSubjectDropdowns();
             updateDuePreview();
@@ -4014,7 +5758,7 @@
           });
         }
 
-        // Kompakter Klausur-Balken im Ampel-Plan: Nur die kleine Schaltfläche rechts öffnet das Klausur-Radar
+        // Kompakter Klausur-Balken im Ampel-Plan
         const examPlanBannerEl = document.getElementById("examPlanBanner");
         if (examPlanBannerEl) {
           examPlanBannerEl.addEventListener("click", (e) => {
@@ -4049,14 +5793,13 @@
             return;
           }
 
-          // Fächer für das Halbjahr an-/abwählen
           const subjToggle = e.target.closest(".subject-toggle-btn[data-subject]");
           if (subjToggle) {
             const subj = subjToggle.getAttribute("data-subject");
             const idx = state.activeSubjects.indexOf(subj);
             if (idx > -1) {
               if (state.activeSubjects.length <= 1) {
-                alert("Mindestens ein Schulfach muss für das Halbjahr aktiviert bleiben.");
+                showNoticeModal("Fächer-Auswahl", "Mindestens ein Schulfach muss für das Halbjahr aktiviert bleiben.");
                 return;
               }
               state.activeSubjects.splice(idx, 1);
@@ -4090,7 +5833,7 @@
             }
           });
           if (inSchedule.size === 0) {
-            alert("Im Stundenplan sind aktuell noch keine Fächer hinterlegt.");
+            showNoticeModal("Stundenplan leer", "Im Stundenplan sind aktuell noch keine Fächer hinterlegt.");
             return;
           }
           state.activeSubjects = [...inSchedule];
@@ -4101,14 +5844,14 @@
           renderExamsTab();
         });
 
-        // Dark Mode (in Einstellungen)
+        // Dark Mode
         document.getElementById("darkModeToggleBtn").addEventListener("click", () => {
           state.darkMode = !state.darkMode;
           saveState();
           applyDarkMode();
         });
 
-        // Wochenend-Brücke im Abgabe- & Pack-Check (in Einstellungen)
+        // Wochenend-Brücke im Abgabe- & Pack-Check
         const bridgeCheck = document.getElementById("doneWeekendBridgeCheckbox");
         if (bridgeCheck) {
           bridgeCheck.addEventListener("change", () => {
@@ -4118,7 +5861,7 @@
           });
         }
 
-        // A/B-Woche umschalten (in Einstellungen)
+        // A/B-Woche umschalten
         document.getElementById("weekToggleBtn").addEventListener("click", () => {
           promptDoubleConfirmation(
             "Möchtest du den A/B-Wochenrhythmus manuell umschalten?",
@@ -4127,17 +5870,13 @@
               state.weekOffset = ((state.weekOffset || 0) + 1) % 2;
               recalculateAutoTaskDates();
               saveState();
-              renderHeader();
-              renderSubjectDropdowns();
-              renderScheduleTab();
-              updateDuePreview();
-              renderPlanTab();
+              renderAllAppViews();
             },
             "Umschalten"
           );
         });
 
-        // Event Delegation für den gesamten Ampel-Plan-Tab (inkl. Archiv-Jalousie, Freistunden-Schieber & erledigte Karten)
+        // Event Delegation für den gesamten Ampel-Plan-Tab
         document.getElementById("tab-plan").addEventListener("click", (e) => {
           const accHeader = e.target.closest(".accordion-header[data-acc]");
           if (accHeader) {
@@ -4165,8 +5904,8 @@
             const task = state.tasks.find(t => t.id === id);
             if (!task) return;
             promptDoubleConfirmation(
-              `Aufgabe (${task.subject}) wirklich löschen?`,
-              `Sicherheitsstufe 2: Bist du absolut sicher? Die Aufgabe wird unwiderruflich entfernt!`,
+              `Aufgabe (${task.subject}) wirklich löschen?\n\n${getExportWarningSummary()}`,
+              "Sicherheitsstufe 2: Bist du absolut sicher? Die Aufgabe wird unwiderruflich entfernt!",
               () => deleteTask(task.id),
               "Löschen"
             );
@@ -4193,7 +5932,7 @@
           }
         });
 
-        // Klausur-Radar: Live-Kollisionsprüfung bei Datumsauswahl
+        // Klausur-Radar: Live-Kollisionsprüfung
         document.getElementById("examDate").addEventListener("change", (e) => {
           updateExamCollisionWarning(e.target.value, "examCollisionWarning", null);
         });
@@ -4203,7 +5942,7 @@
           updateExamCollisionWarning(e.target.value, "editExamCollisionWarning", currentEditId);
         });
 
-        // Klausur speichern (mit Doppelbelegungs-Warnung falls am selben Tag schon eine Klausur liegt)
+        // Klausur speichern (inkl. Doppeltag-Schutz & Toast-Undo)
         document.getElementById("saveExamBtn").addEventListener("click", () => {
           const subject = document.getElementById("examSubject").value || "Allgemein";
           const dateVal = document.getElementById("examDate").value;
@@ -4212,24 +5951,35 @@
           const topic = topicInput.value.trim() || "Klassenarbeit / Test";
 
           if (!dateVal) {
-            alert("Bitte wähle ein Datum für die Klausur oder das Projekt.");
+            showNoticeModal("Datum fehlt", "Bitte wähle ein Datum für die Klausur, Arbeit oder das Projekt.");
             return;
           }
 
           const executeSaveExam = () => {
+            const newExamId = "ex_" + Date.now() + "_" + Math.floor(Math.random() * 1000);
             state.exams.push({
-              id: "ex_" + Date.now() + "_" + Math.floor(Math.random() * 1000),
+              id: newExamId,
               subject,
               date: dateVal,
               topic,
               bufferMinutes,
-              needsReview: false
+              needsReview: false,
+              isDemo: false
             });
+            state.welcomeDismissed = true;
             topicInput.value = "";
             updateExamCollisionWarning("", "examCollisionWarning", null);
             saveState();
             renderExamsTab();
             renderPlanTab();
+            showToast(`🎯 Klausur (${subject}) ins Radar aufgenommen.`, {
+              onUndo: () => {
+                state.exams = state.exams.filter(ex => ex.id !== newExamId);
+                saveState();
+                renderExamsTab();
+                renderPlanTab();
+              }
+            });
           };
 
           const existingSameDay = getExamsOnDate(dateVal, null);
@@ -4262,8 +6012,8 @@
             if (!exam) return;
 
             promptDoubleConfirmation(
-              `Klausur/Termin (${exam.subject} am ${formatGermanDate(exam.date)}) wirklich löschen?`,
-              `Sicherheitsstufe 2: Der Termin und sein Lernpuffer werden endgültig aus dem Radar entfernt.`,
+              `Klausur/Termin (${exam.subject} am ${formatGermanDate(exam.date)}) wirklich löschen?\n\n${getExportWarningSummary()}`,
+              "Sicherheitsstufe 2: Der Termin und sein Lernpuffer werden endgültig aus dem Radar entfernt.",
               () => {
                 state.exams = state.exams.filter(x => x.id !== examId);
                 saveState();
@@ -4279,7 +6029,6 @@
         document.getElementById("cancelExamEditBtn").addEventListener("click", closeExamEditModal);
         document.getElementById("saveExamEditBtn").addEventListener("click", saveEditedExam);
 
-        // Klausur-Details mit einem Klick in den Zwischenspeicher kopieren
         document.getElementById("copyExamTextBtn").addEventListener("click", () => {
           const exam = (state.exams || []).find(x => x.id === currentReadExamId);
           const copyText = exam
@@ -4296,7 +6045,7 @@
           });
         });
 
-        // Tagesaktuelle Ausfälle & Fächertausch (Heute vs. Nächster Schultag)
+        // Tagesaktuelle Ausfälle & Fächertausch
         document.getElementById("overrideTodayBtn").addEventListener("click", () => {
           cleanupExpiredOverridesAndFreeShifts(new Date());
           userManuallySwitchedOverrideTab = true;
@@ -4323,13 +6072,15 @@
           const val = sel.value;
           const todayIso = toISODate(now);
 
-          // Schutzlogik: Falls die Stunde heute inzwischen vorbei ist, gilt die Auswahl automatisch für den nächsten Schultag
           if (dateIso === todayIso && isPeriodExpiredToday(pIdx, now)) {
             const nextSchoolIso = toISODate(getNextSchoolDayDate(now));
             dateIso = nextSchoolIso;
             overrideTargetMode = "tomorrow";
             userManuallySwitchedOverrideTab = true;
-            alert(`Die ${pIdx + 1}. Stunde ist heute bereits vorbei. Deine Auswahl wurde deshalb automatisch für den nächsten Schultag (${formatGermanDate(nextSchoolIso)}) übernommen.`);
+            showNoticeModal(
+              "Stunde heute bereits beendet",
+              `Die ${pIdx + 1}. Stunde ist heute bereits vorbei. Deine Auswahl wurde deshalb automatisch für den nächsten Schultag (${formatGermanDate(nextSchoolIso)}) übernommen.`
+            );
           }
 
           if (!state.dailyOverrides[dateIso]) {
@@ -4356,19 +6107,29 @@
           renderPlanTab();
         });
 
+        // Tagesaktuelle Änderungen zurücksetzen (abgesichert über 2-Stufen-Abfrage)
         document.getElementById("resetDayOverridesBtn").addEventListener("click", () => {
           const targetDate = overrideTargetMode === "today" ? getStartOfDay(new Date()) : getNextSchoolDayDate(new Date());
           const dateIso = toISODate(targetDate);
-          if (state.dailyOverrides && state.dailyOverrides[dateIso]) {
-            delete state.dailyOverrides[dateIso];
-            recalculateAutoTaskDates();
-            saveState();
-            renderHeader();
-            renderDailyOverridesEditor();
-            renderSubjectDropdowns();
-            updateDuePreview();
-            renderPlanTab();
+          if (!state.dailyOverrides || !state.dailyOverrides[dateIso]) {
+            showNoticeModal("Keine Änderungen aktiv", `Für ${formatGermanDate(dateIso)} sind aktuell keine Ausfälle oder Fächertausche hinterlegt.`);
+            return;
           }
+          promptDoubleConfirmation(
+            `Möchtest du alle tagesaktuellen Ausfälle und Fächertausche für ${formatGermanDate(dateIso)} zurücksetzen?`,
+            `Sicherheitsstufe 2: Die Abweichungen für ${formatGermanDate(dateIso)} werden endgültig entfernt und der Basis-Stundenplan gilt wieder.`,
+            () => {
+              delete state.dailyOverrides[dateIso];
+              recalculateAutoTaskDates();
+              saveState();
+              renderHeader();
+              renderDailyOverridesEditor();
+              renderSubjectDropdowns();
+              updateDuePreview();
+              renderPlanTab();
+            },
+            "Zurücksetzen"
+          );
         });
 
         // Zeitraster & Mittagspausen-Einstellungen
@@ -4392,7 +6153,7 @@
           });
         });
 
-        // Event Delegation für das 8-Stunden-Raster im Basis-Stundenplan
+        // Basis-Stundenplan im 8-Stunden-Raster
         document.getElementById("scheduleDaysContainer").addEventListener("change", (e) => {
           const select = e.target.closest(".period-select[data-day-idx][data-period-idx]");
           if (!select) return;
@@ -4406,6 +6167,8 @@
             activeWeekData[dayIdx] = new Array(MAX_PERIODS).fill("");
           }
           activeWeekData[dayIdx][periodIdx] = subj;
+          state.hasDemoSchedule = false;
+          state.welcomeDismissed = true;
 
           cleanupExpiredOverridesAndFreeShifts(new Date());
           recalculateAutoTaskDates();
@@ -4471,13 +6234,18 @@
 
         document.getElementById("hwCustomDate").addEventListener("change", updateDuePreview);
 
+        // Neue Hausaufgabe speichern (mit Original-Zeitstempel & Toast mit Undo + Korrigieren)
         document.getElementById("saveHwBtn").addEventListener("click", () => {
+          stopActiveSpeechRecognition();
           const subject = document.getElementById("hwSubject").value;
           const titleInput = document.getElementById("hwTitle");
           const title = titleInput.value.trim() || "Hausaufgabe";
           const dueDate = getCalculatedDueDate();
+          const nowObj = new Date();
+          const todayIso = toISODate(nowObj);
+          const nowTime = nowObj.toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" });
 
-          state.tasks.push({
+          const newTask = {
             id: "hw_" + Date.now() + "_" + Math.floor(Math.random() * 1000),
             subject,
             title,
@@ -4487,20 +6255,33 @@
             plannedInFreePeriod: false,
             freePeriodDate: "",
             done: false,
-            createdAt: toISODate(new Date()),
-            completedAt: ""
-          });
+            createdAt: todayIso,
+            createdTimestamp: `${todayIso} ${nowTime}`,
+            completedAt: "",
+            isDemo: false
+          };
+
+          state.tasks.push(newTask);
+          state.welcomeDismissed = true;
           saveState();
           titleInput.value = "";
           renderPlanTab();
           switchTab("tab-plan");
+
+          showToast(`✓ ${subject} gespeichert (${selectedDuration} Min.).`, {
+            editTaskId: newTask.id,
+            onUndo: () => {
+              state.tasks = state.tasks.filter(t => t.id !== newTask.id);
+              saveState();
+              renderPlanTab();
+            }
+          });
         });
 
         document.getElementById("cancelEditBtn").addEventListener("click", closeEditModal);
         document.getElementById("saveEditBtn").addEventListener("click", saveEditedTask);
         document.getElementById("closeReadModalBtn").addEventListener("click", closeReadModal);
 
-        // Hausaufgaben-Details mit einem Klick in die Zwischenablage kopieren (z. B. für SMS / WhatsApp / Teams)
         document.getElementById("copyTaskTextBtn").addEventListener("click", () => {
           const task = (state.tasks || []).find(t => t.id === currentReadTaskId);
           const copyText = task
@@ -4530,13 +6311,23 @@
           const inp = document.getElementById("vocabInput");
           const text = inp.value.trim();
           if (!text) return;
-          state.vocab.push({ id: "voc_" + Date.now(), text, lastPracticed: "" });
+          const newVocabId = "voc_" + Date.now();
+          state.vocab.push({ id: newVocabId, text, lastPracticed: "", isDemo: false });
+          state.welcomeDismissed = true;
           inp.value = "";
           saveState();
           renderVocabList();
+          renderWelcomeAndDemoBanners();
+          showToast(`✓ Lernziel gemerkt: ${text}`, {
+            onUndo: () => {
+              state.vocab = state.vocab.filter(v => v.id !== newVocabId);
+              saveState();
+              renderVocabList();
+            }
+          });
         });
 
-        // Geschütztes Archiv-Aufräumen: Löscht NUR abgelaufene Aufgaben aus der Archiv-Jalousie (Rot/Gelb/Grün bleiben erhalten)
+        // Geschütztes Archiv-Aufräumen (mit Export-Hinweis)
         document.getElementById("clearDoneBtn").addEventListener("click", () => {
           const archivedTasks = state.tasks.filter(t => t.done && classifyDoneTask(t).tier === "past");
           if (archivedTasks.length === 0) {
@@ -4548,7 +6339,7 @@
           }
           const archiveIds = new Set(archivedTasks.map(t => t.id));
           promptDoubleConfirmation(
-            `Möchtest du alle ${archivedTasks.length} abgelaufenen Aufgaben aus dem Archiv aufräumen? (Aktuelle Aufgaben in Rot, Gelb & Grün bleiben erhalten.)`,
+            `Möchtest du alle ${archivedTasks.length} abgelaufenen Aufgaben aus dem Archiv aufräumen? (Aktuelle Aufgaben in Rot, Gelb & Grün bleiben erhalten.)\n\n${getExportWarningSummary()}`,
             `Sicherheitsstufe 2: Die ${archivedTasks.length} abgelaufenen Archiv-Aufgaben werden endgültig gelöscht. Fortfahren?`,
             () => {
               state.tasks = state.tasks.filter(t => !archiveIds.has(t.id));
@@ -4583,6 +6374,7 @@
             "Sicherheitsstufe 2: Bestehende Fächer in Woche B werden dabei komplett überschrieben!",
             () => {
               state.schedule.B = JSON.parse(JSON.stringify(state.schedule.A));
+              state.hasDemoSchedule = false;
               recalculateAutoTaskDates();
               saveState();
               renderScheduleTab();
@@ -4594,7 +6386,6 @@
           );
         });
 
-        // Eigenes Schulfach hinzufügen (wird direkt in subjects UND activeSubjects aufgenommen)
         document.getElementById("addNewSubjectBtn").addEventListener("click", () => {
           const inp = document.getElementById("newSubjectInput");
           const val = inp.value.trim();
@@ -4611,55 +6402,62 @@
             renderSubjectDropdowns();
             renderScheduleTab();
             renderExamsTab();
+            showToast(`✓ Fach „${val}“ hinzugefügt und aktiviert.`);
           }
           inp.value = "";
         });
 
-        // JSON Export & Import (inkl. Fehlerabfang)
-        document.getElementById("exportDataBtn").addEventListener("click", () => {
-          const blob = new Blob([JSON.stringify(state, null, 2)], { type: "application/json" });
-          triggerFileDownload(blob, `hausaufgaben-backup-${toISODate(new Date())}.json`);
-        });
+        // Voll-Backup (.json) Export & Import
+        document.getElementById("exportDataBtn").addEventListener("click", exportFullBackupJson);
 
         document.getElementById("importDataInput").addEventListener("change", (e) => {
           const file = e.target.files && e.target.files[0];
           if (!file) return;
           const reader = new FileReader();
           reader.onload = function(evt) {
-            try {
-              const imported = JSON.parse(evt.target.result);
-              if (imported && (Array.isArray(imported.tasks) || Array.isArray(imported.exams))) {
-                sanitizeAndMergeState(imported);
-                cleanupExpiredOverridesAndFreeShifts(new Date());
-                recalculateAutoTaskDates();
-                saveState();
-                applyDarkMode();
-                renderHeader();
-                renderActiveSubjectsManager();
-                renderSubjectDropdowns();
-                renderScheduleTab();
-                renderExamsTab();
-                renderPlanTab();
-                showNoticeModal(
-                  "Gesamt-Backup wiederhergestellt",
-                  `Backup erfolgreich geladen!\n• Hausaufgaben: ${state.tasks.length}\n• Klausuren/Termine: ${state.exams.length}`
-                );
-              } else {
-                showNoticeModal("Backup-Fehler", "Ungültige Backup-Datei.");
-              }
-            } catch (err) {
-              showNoticeModal("Backup-Fehler", "Fehler beim Lesen der Datei.");
-            }
+            handleFullBackupJsonContent(evt.target.result);
             e.target.value = "";
           };
           reader.onerror = function() {
-            showNoticeModal("Backup-Fehler", "Die Backup-Datei konnte auf diesem Gerät nicht gelesen werden. Versuche ggf. einen kürzeren Dateinamen.");
+            showNoticeModal(
+              "Backup-Fehler",
+              "Die Backup-Datei konnte auf diesem Gerät nicht gelesen werden. Versuche ggf. einen kürzeren Dateinamen ohne Sonderzeichen."
+            );
             e.target.value = "";
           };
           reader.readAsText(file, "UTF-8");
         });
 
-        // CSV Export & Import (Einstellungen + Schnellzugriff in "+ Aufgabe")
+        // Anonymer Vorlagen-Export & Safe-Join-Import
+        const exportTemplateBtn = document.getElementById("exportTemplateBtn");
+        if (exportTemplateBtn) {
+          exportTemplateBtn.addEventListener("click", exportAnonymousTemplate);
+        }
+
+        const importTemplateInput = document.getElementById("importTemplateInput");
+        if (importTemplateInput) {
+          importTemplateInput.addEventListener("change", (e) => {
+            const file = e.target.files && e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+              try {
+                const parsed = JSON.parse(evt.target.result);
+                applyAnonymousTemplateSafeJoin(parsed);
+              } catch (err) {
+                showNoticeModal("Vorlagen-Fehler", "Die Vorlagen-Datei konnte nicht als JSON gelesen werden.");
+              }
+              e.target.value = "";
+            };
+            reader.onerror = function() {
+              showNoticeModal("Vorlagen-Fehler", "Die Vorlagen-Datei konnte auf diesem Gerät nicht gelesen werden. Versuche ggf. einen kürzeren Dateinamen.");
+              e.target.value = "";
+            };
+            reader.readAsText(file, "UTF-8");
+          });
+        }
+
+        // CSV Export & Import
         document.getElementById("exportCsvBtn").addEventListener("click", exportTasksToCSV);
         document.getElementById("importCsvInput").addEventListener("change", handleCsvFileSelection);
         const quickCsvInput = document.getElementById("quickCsvImportInput");
@@ -4757,11 +6555,11 @@
           });
         }
 
-        // Gesamt-Reset
+        // Gesamt-Reset (mit Export-Hinweis & 2-Stufen-Abfrage)
         document.getElementById("resetAllDataBtn").addEventListener("click", () => {
           promptDoubleConfirmation(
-            "ACHTUNG: Möchtest du wirklich ALLE lokalen Daten löschen?",
-            "Sicherheitsstufe 2: Stundenplan, Aufgaben, Klausuren, Fächerwahl und Einstellungen werden unwiderruflich zurückgesetzt!",
+            `ACHTUNG: Möchtest du wirklich ALLE lokalen Daten (inkl. Stundenplan, Aufgaben, Klausuren, Fächerwahl und ggf. PIN-Tresor) löschen?\n\n${getExportWarningSummary()}`,
+            "Sicherheitsstufe 2: Alle Daten werden unwiderruflich auf den leeren Nullzustand zurückgesetzt!",
             () => {
               localStorage.removeItem(STORAGE_KEY);
               location.reload();
@@ -4782,18 +6580,19 @@
           document.getElementById("datenschutz-bereich").scrollIntoView({ behavior: "smooth" });
         });
       }
+/* === ENDE TEIL 3 VON 4 === */
+<!-- === START TEIL 4 VON 4 === -->
       /* ==========================================================================
-         TEIL 4: RENDERING-ROUTINEN, PACK-CHECK, RECHT/MIT-LIZENZ & MODALS
+         TEIL 4: RENDERING-ROUTINEN, PIN-VERWALTUNG, RECHT/MIT/DSGVO & START
          ========================================================================== */
 
-      /* Befüllt Impressum + MIT-Lizenz (Akkordeon 5), DSGVO (Akkordeon 6) & Footer-Version zentral */
+      /* Befüllt Impressum + MIT-Lizenz (Akkordeon 6), DSGVO inkl. PIN-Verschlüsselung (Akkordeon 7) & Footer */
       function renderLegalContent() {
-        // 1. Impressum, MIT-Lizenz & freiwillige Unterstützung (Akkordeon 5)
         const impressumCard = document.getElementById("impressum-bereich");
         if (impressumCard) {
           const headerSpan = impressumCard.querySelector(".accordion-header span");
           if (headerSpan) {
-            headerSpan.textContent = "⚖️ 5. Impressum, MIT-Lizenz & Unterstützung";
+            headerSpan.textContent = "⚖️ 6. Impressum, MIT-Lizenz & Unterstützung";
           }
           const bodyEl = impressumCard.querySelector(".accordion-body");
           if (bodyEl) {
@@ -4868,12 +6667,11 @@ SOFTWARE.</pre>
           }
         }
 
-        // 2. Datenschutzerklärung (DSGVO – passend zum Hausaufgaben-Puffer-Planer, Akkordeon 6)
         const datenschutzCard = document.getElementById("datenschutz-bereich");
         if (datenschutzCard) {
           const headerSpan = datenschutzCard.querySelector(".accordion-header span");
           if (headerSpan) {
-            headerSpan.textContent = "🛡️ 6. Datenschutzerklärung (DSGVO – 100 % Lokal)";
+            headerSpan.textContent = "🛡️ 7. Datenschutzerklärung (DSGVO – 100 % Lokal)";
           }
           const bodyEl = datenschutzCard.querySelector(".accordion-body");
           if (bodyEl) {
@@ -4886,35 +6684,45 @@ SOFTWARE.</pre>
               </div>
 
               <div class="legal-section-box">
-                <h4>2. Grundsatz der Datenminimierung (Art. 5, 25 DSGVO)</h4>
+                <h4>2. Optionale lokale Ende-zu-Ende-Speicherverschlüsselung (PBKDF2 &amp; AES-256-GCM)</h4>
                 <p>
-                  Für die Nutzung des Hausaufgaben-Puffer-Planers ist weder ein Benutzerkonto noch die Eingabe persönlicher Daten erforderlich. Bitte verzichte in Aufgabentexten und Notizen auf unnötige personenbezogene Daten Dritter.
+                  Auf Wunsch kannst du in den Einstellungen eine lokale PIN-Verschlüsselung über die browser-native <strong>Web Crypto API</strong> aktivieren. Der Schlüssel wird lokal per <code>PBKDF2</code> (SHA-256, 150.000 Iterationen, zufälliger 16-Byte-Salt) abgeleitet; jeder Speichervorgang erfolgt verschlüsselt mit <code>AES-256-GCM</code> und frischem 12-Byte-IV. PIN und Schlüssel werden niemals gespeichert, sondern liegen ausschließlich flüchtig im Arbeitsspeicher (RAM).
+                </p>
+                <p style="font-size:0.84rem; color:var(--text-muted);">
+                  <strong>Hinweis zu Pseudonymisierung &amp; Eigenverantwortung:</strong> Nutze nach Möglichkeit Kürzel statt vollständiger Klarnamen Dritter. Da es keinen Server und keine Hintertür gibt, bist du selbst für das Merken deiner PIN sowie regelmäßige Sicherungskopien (Backups) verantwortlich – bei vergessener PIN ist nur ein vollständiger Reset auf den Nullzustand möglich.
                 </p>
               </div>
 
               <div class="legal-section-box">
-                <h4>3. Betroffenenrechte, Export &amp; Löschkonzept (Art. 17 DSGVO)</h4>
+                <h4>3. Grundsatz der Datenminimierung (Art. 5, 25 DSGVO)</h4>
                 <p>
-                  Alle gespeicherten Daten können jederzeit im Bereich <strong>Einstellungen</strong> als Komplettsicherung (<code>.json</code>) oder Tabelle (<code>.csv</code>) exportiert sowie über die zweistufige Sicherheitsabfrage rückstandslos aus dem lokalen Browser-Speicher gelöscht werden.
+                  Für die Nutzung des Hausaufgaben-Puffer-Planers ist weder ein Benutzerkonto noch die Eingabe persönlicher Daten erforderlich. Über den anonymen Vorlagen-Export (<code>template_only</code>) können Stundenpläne zudem garantiert ohne Aufgaben-, Klausur- oder Personendaten geteilt werden.
                 </p>
               </div>
 
               <div class="legal-section-box">
-                <h4>4. Bereitstellung über GitHub Pages (Online-Aufruf)</h4>
+                <h4>4. Betroffenenrechte, Export &amp; zweistufiges Löschkonzept (Art. 17 DSGVO)</h4>
+                <p>
+                  Alle gespeicherten Daten können jederzeit im Bereich <strong>Einstellungen</strong> als Komplettsicherung (<code>.json</code>) oder Tabelle (<code>.csv</code>) exportiert sowie über die zweistufige Sicherheitsabfrage (mit vertauschten Schaltern) rückstandslos aus dem lokalen Browser-Speicher gelöscht werden.
+                </p>
+              </div>
+
+              <div class="legal-section-box">
+                <h4>5. Bereitstellung über GitHub Pages (Online-Aufruf)</h4>
                 <p>
                   Wird diese WebApp über eine Online-Adresse bei <strong>GitHub Pages</strong> (GitHub, Inc.) aufgerufen, übermittelt dein Browser technisch bedingt die IP-Adresse sowie Verbindungs-Metadaten an Server von GitHub, um die HTML-Datei auszuliefern (Server-Logfiles). <strong>Alle danach in der App eingegebenen Hausaufgaben-, Klausur- und Stundenplandaten verbleiben ausschließlich lokal auf deinem Gerät</strong> und werden zu keinem Zeitpunkt an GitHub übertragen. Bei lokaler Nutzung der heruntergeladenen HTML-Datei findet überhaupt kein Serverkontakt statt.
                 </p>
               </div>
 
               <div class="legal-section-box">
-                <h4>5. Externe Links (GitHub, Website &amp; freiwillige Unterstützung)</h4>
+                <h4>6. Externe Links (GitHub, Website &amp; freiwillige Unterstützung)</h4>
                 <p>
                   Diese App enthält freiwillige Links zu externen Seiten (z. B. GitHub-Repository, konzept23.de oder Ko-fi). Erst wenn du einen solchen Link aktiv anklickst, verlässt du die lokale App und es wird eine Verbindung zum jeweiligen Anbieter aufgebaut; es gelten dann dessen Datenschutzbestimmungen.
                 </p>
               </div>
 
               <div class="legal-section-box">
-                <h4>6. Verantwortlicher im Sinne der DSGVO</h4>
+                <h4>7. Verantwortlicher im Sinne der DSGVO</h4>
                 <p>
                   Heiko Limbeck (Konzept23), Lindenstraße 61, 53945 Blankenheim, Deutschland • E-Mail: <strong>info@konzept23.de</strong>
                 </p>
@@ -4923,11 +6731,124 @@ SOFTWARE.</pre>
           }
         }
 
-        // 3. Versionsnummer automatisch in die Fußzeile schreiben (Buttons bleiben unberührt)
-        const footerSpan = document.querySelector("footer span");
+        const footerSpan = document.querySelector("footer > span");
         if (footerSpan) {
           footerSpan.innerHTML = `100 % Lokal &amp; Werbefrei • Entwicklung: Konzept23 • <span class="footer-version-pill">${escapeHTML(APP_VERSION)}</span>`;
         }
+      }
+
+      /* Aktualisiert Header-PIN-Button, Footer-Sicherheitsstatus & Sicherheits-Akkordeon */
+      function updateSecurityStatusIndicators() {
+        const headerPinBtn = document.getElementById("headerPinBtn");
+        const footerSecEl = document.getElementById("footerSecurityStatus");
+
+        if (headerPinBtn) {
+          if (isVaultEncrypted) {
+            headerPinBtn.textContent = "🔒 Sperren";
+            headerPinBtn.classList.add("pin-active");
+            headerPinBtn.title = "Tresor sofort sperren und Schlüssel aus RAM löschen";
+          } else {
+            headerPinBtn.textContent = "🔓 PIN";
+            headerPinBtn.classList.remove("pin-active");
+            headerPinBtn.title = "Optionale lokale PIN-Verschlüsselung (AES-256-GCM) einrichten";
+          }
+        }
+
+        if (footerSecEl) {
+          if (isVaultEncrypted) {
+            footerSecEl.textContent = "🔒 AES-256-GCM verschlüsselt";
+            footerSecEl.classList.add("encrypted");
+          } else {
+            footerSecEl.textContent = "🛡️ 100 % Lokal & Offline (PIN optional)";
+            footerSecEl.classList.remove("encrypted");
+          }
+        }
+      }
+
+      function renderSecuritySettingsUI() {
+        updateSecurityStatusIndicators();
+
+        const statusBox = document.getElementById("pinStatusBox");
+        const btnSetup = document.getElementById("btnSetupPin");
+        const btnChange = document.getElementById("btnChangePin");
+        const btnLock = document.getElementById("btnLockNow");
+        const btnDisable = document.getElementById("btnDisablePin");
+        const autoLockBox = document.getElementById("autoLockConfigBox");
+        const autoLockSel = document.getElementById("autoLockMinutesSelect");
+        const autoLockHide = document.getElementById("autoLockOnHideCheckbox");
+
+        if (!statusBox) return;
+        statusBox.classList.remove("is-encrypted", "is-unavailable");
+
+        if (!isWebCryptoAvailable()) {
+          statusBox.classList.add("is-unavailable");
+          statusBox.innerHTML = `<strong>⚠️ Web Crypto API in diesem Kontext blockiert:</strong> Dein Browser stellt <code>crypto.subtle</code> im aktuellen Kontext (z. B. eingeschränktes <code>file://</code>) nicht bereit. Aus Sicherheitsgründen wird kein unsicherer Fallback verwendet. Öffne die App über <strong>HTTPS (GitHub Pages), Localhost oder eine APK-WebView</strong>, um die AES-256-GCM PIN-Verschlüsselung zu aktivieren.`;
+          if (btnSetup) btnSetup.style.display = "none";
+          if (btnChange) btnChange.style.display = "none";
+          if (btnLock) btnLock.style.display = "none";
+          if (btnDisable) btnDisable.style.display = "none";
+          if (autoLockBox) autoLockBox.style.display = "none";
+          return;
+        }
+
+        if (isVaultEncrypted) {
+          statusBox.classList.add("is-encrypted");
+          statusBox.innerHTML = `<strong>🔒 Tresor aktiv (AES-256-GCM):</strong> Alle lokalen Daten werden bei jedem Speichervorgang mit einem frischen 12-Byte-IV verschlüsselt. JSON-Backups werden ebenfalls verschlüsselt exportiert.`;
+          if (btnSetup) btnSetup.style.display = "none";
+          if (btnChange) btnChange.style.display = "inline-block";
+          if (btnLock) btnLock.style.display = "inline-block";
+          if (btnDisable) btnDisable.style.display = "inline-block";
+          if (autoLockBox) autoLockBox.style.display = "block";
+        } else {
+          statusBox.innerHTML = `<strong>🛡️ Standard-Modus (Ohne PIN):</strong> Deine Daten liegen unverschlüsselt und 100 % lokal im Browser-Speicher. Du kannst jederzeit optional eine PIN einrichten.`;
+          if (btnSetup) btnSetup.style.display = "inline-block";
+          if (btnChange) btnChange.style.display = "none";
+          if (btnLock) btnLock.style.display = "none";
+          if (btnDisable) btnDisable.style.display = "none";
+          if (autoLockBox) autoLockBox.style.display = "none";
+        }
+
+        if (autoLockSel) autoLockSel.value = String(state.autoLockMinutes || 0);
+        if (autoLockHide) autoLockHide.checked = Boolean(state.autoLockOnHide);
+      }
+
+      function renderBackupStatusHint() {
+        const el = document.getElementById("backupStatusHint");
+        if (!el) return;
+        el.textContent = getExportWarningSummary();
+      }
+
+      function renderWelcomeAndDemoBanners() {
+        const welcomeCard = document.getElementById("welcomeSetupCard");
+        const demoBanner = document.getElementById("demoModeBanner");
+        const removeDemoSettingsBtn = document.getElementById("settingsRemoveDemoBtn");
+        const hasDemo = hasAnyDemoEntries();
+
+        if (welcomeCard) {
+          const showWelcome = !state.welcomeDismissed && isPlannerCompletelyEmpty();
+          welcomeCard.classList.toggle("visible", showWelcome);
+        }
+
+        if (demoBanner) {
+          demoBanner.classList.toggle("visible", hasDemo);
+        }
+
+        if (removeDemoSettingsBtn) {
+          removeDemoSettingsBtn.disabled = !hasDemo;
+          removeDemoSettingsBtn.style.opacity = hasDemo ? "1" : "0.55";
+        }
+      }
+
+      function renderAllAppViews() {
+        renderHeader();
+        renderWelcomeAndDemoBanners();
+        renderSecuritySettingsUI();
+        renderBackupStatusHint();
+        renderActiveSubjectsManager();
+        renderSubjectDropdowns();
+        renderScheduleTab();
+        renderExamsTab();
+        renderPlanTab();
       }
 
       function renderHeader() {
@@ -4955,6 +6876,8 @@ SOFTWARE.</pre>
         if (bridgeCheck) {
           bridgeCheck.checked = Boolean(state.doneWeekendBridge);
         }
+
+        updateSecurityStatusIndicators();
       }
 
       function updateBudgetBar(result, budgetLimit) {
@@ -5025,7 +6948,6 @@ SOFTWARE.</pre>
         statusText.textContent = `${used} / ${total} Min. genutzt (${avail} Min. frei)`;
       }
 
-      /* Aktualisiert Farbe & Zähler des 6. Navigations-Buttons ("Pack-Check") für Heute & Morgen */
       function updatePackCheckNavBadge(doneActive) {
         const navBtn = document.getElementById("packCheckNavBtn");
         const badgeEl = document.getElementById("packCheckNavBadge");
@@ -5057,7 +6979,6 @@ SOFTWARE.</pre>
         const examBanner = document.getElementById("examPlanBanner");
         if (!banner) return;
 
-        // Kompakter Klausur-Balken mit nächster Klausur, Ampelfarben, Prüf-Hinweis & kleiner Schaltfläche rechts
         if (examBanner) {
           examBanner.classList.remove("exam-banner-red", "exam-banner-yellow", "exam-banner-green");
           if (result.examInfo && result.examInfo.upcoming.length > 0) {
@@ -5084,9 +7005,9 @@ SOFTWARE.</pre>
             examBanner.innerHTML = `
               <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
                 <span>🎯 <strong>Nächste Klausur:</strong> ${escapeHTML(nextEx.subject)} (${formatGermanDate(nextEx.date)})</span>
-                <span class="days-badge ${badgeClass}">${daysText}</span>
+                <span class="days-badge ${badgeClass}">${escapeHTML(daysText)}</span>
                 ${reviewPill}
-                <span style="font-size:0.8rem; color:var(--text-muted);">${bufferInfo}${moreInfo}</span>
+                <span style="font-size:0.8rem; color:var(--text-muted);">${escapeHTML(bufferInfo)}${escapeHTML(moreInfo)}</span>
               </div>
               <button type="button" class="exam-banner-link">Klausur-Radar ➔</button>
             `;
@@ -5105,7 +7026,7 @@ SOFTWARE.</pre>
 
         if (freeBanner) {
           if (result.smartHints.length > 0) {
-            freeBanner.innerHTML = result.smartHints.join("<br>");
+            freeBanner.innerHTML = result.smartHints.map(hint => escapeHTML(hint)).join("<br>");
             freeBanner.classList.add("visible");
           } else {
             freeBanner.classList.remove("visible");
@@ -5122,11 +7043,13 @@ SOFTWARE.</pre>
         } else if (result.yellow.length > 0) {
           banner.textContent = `Heute ist nichts dringend (ROT ist leer). Nutze deinen freien Puffer für GELB, damit in den nächsten Tagen kein Stau entsteht.`;
         } else {
-          banner.textContent = `Dein heutiges Pensum ist ausgeschöpft oder alle Aufgaben haben noch reichlich Zeit (GRÜN).`;
+          banner.textContent = "Dein heutiges Pensum ist ausgeschöpft oder alle Aufgaben haben noch reichlich Zeit (GRÜN).";
         }
       }
 
       function renderPlanTab() {
+        renderWelcomeAndDemoBanners();
+
         const result = classifyTasks();
         const limit = state.dailyBudgetMinutes;
 
@@ -5194,7 +7117,8 @@ SOFTWARE.</pre>
             <div class="task-info">
               <div class="task-header-row">
                 <span class="task-subject">${escapeHTML(task.subject)}</span>
-                <span class="days-badge ${badgeClass}">${badgeText}</span>
+                <span class="days-badge ${badgeClass}">${escapeHTML(badgeText)}</span>
+                ${task.isDemo ? `<span class="demo-pill">🧪 Demo</span>` : ""}
                 ${isShifted ? `<span class="free-period-pill">⚡ In Freistunde</span>` : ""}
               </div>
               <div class="task-title clickable-title" data-action="read-task" data-id="${safeId}" title="${escapeHTML(task.title)}">${escapeHTML(task.title)}</div>
@@ -5215,7 +7139,6 @@ SOFTWARE.</pre>
         container.appendChild(fragment);
       }
 
-      /* Erzeugt eine einzelne Kachel für erledigte Aufgaben (Abgabe-Ampel oder Archiv-Jalousie) */
       function buildDoneTaskCard(task) {
         const item = document.createElement("div");
         item.className = `task-item done-clickable-card ${task.cardClass || "done-item-past"}`;
@@ -5236,10 +7159,11 @@ SOFTWARE.</pre>
               <span class="task-subject">${escapeHTML(task.subject)}</span>
               <span class="done-check-pill">✓ Erledigt</span>
               ${badgeHtml}
+              ${task.isDemo ? `<span class="demo-pill">🧪 Demo</span>` : ""}
             </div>
             <div class="task-title done-task-title">${escapeHTML(task.title)}</div>
             <div class="task-meta">
-              Abgabe: <strong>${formatGermanDate(task.effectiveDueDate)}${periodInfo}</strong> | ca. ${Number(task.duration)} Min.${doneDateStr}
+              Abgabe: <strong>${formatGermanDate(task.effectiveDueDate)}${escapeHTML(periodInfo)}</strong> | ca. ${Number(task.duration)} Min.${escapeHTML(doneDateStr)}
             </div>
             <button type="button" class="btn-read-more" data-action="read-task" data-id="${safeId}">📄 Groß lesen &amp; kopieren ↗</button>
           </div>
@@ -5251,7 +7175,6 @@ SOFTWARE.</pre>
         return item;
       }
 
-      /* Trennung: Oben immer sichtbare Abgabe-Ampel (Rot/Gelb/Grün), unten eingeklappte Archiv-Jalousie (verstrichene Abgaben) */
       function renderDoneList(activeTasks, archiveTasks) {
         const activeContainer = document.getElementById("list-done-active");
         const archiveContainer = document.getElementById("list-done-archive");
@@ -5300,7 +7223,6 @@ SOFTWARE.</pre>
         }
       }
 
-      /* Pack-Check Pop-up (Modal 7): Schneller Überblick über erledigte Aufgaben für HEUTE (Rot) & MORGEN (Gelb) */
       function openPackCheckModal() {
         const bodyEl = document.getElementById("packCheckModalBody");
         const backdrop = document.getElementById("packCheckModalBackdrop");
@@ -5319,7 +7241,7 @@ SOFTWARE.</pre>
           hint.style.marginBottom = "0";
           hint.innerHTML = futureCount > 0
             ? `Aktuell stehen für <strong>heute und morgen</strong> keine bereits erledigten Abgaben an. (${futureCount} weitere erledigte Aufgabe(n) sind erst in 2+ Tagen dran – siehe komplette Liste.)`
-            : `Aktuell stehen für <strong>heute und morgen</strong> keine bereits erledigten Abgaben in der Warteschlange.`;
+            : "Aktuell stehen für <strong>heute und morgen</strong> keine bereits erledigten Abgaben in der Warteschlange.";
           bodyEl.appendChild(hint);
         } else {
           const frag = document.createDocumentFragment();
@@ -5344,7 +7266,7 @@ SOFTWARE.</pre>
                     <span class="days-badge days-badge-urgent">${escapeHTML(task.badgeText)}</span>
                   </div>
                   <div class="task-title">${escapeHTML(task.title)}</div>
-                  <div class="task-meta">Abgabe: <strong>${formatGermanDate(task.effectiveDueDate)}${periodInfo}</strong> · Tippen zum Nachlesen ↗</div>
+                  <div class="task-meta">Abgabe: <strong>${formatGermanDate(task.effectiveDueDate)}${escapeHTML(periodInfo)}</strong> · Tippen zum Nachlesen ↗</div>
                 </div>
               `;
               frag.appendChild(card);
@@ -5371,7 +7293,7 @@ SOFTWARE.</pre>
                     <span class="days-badge days-badge-soon">${escapeHTML(task.badgeText)}</span>
                   </div>
                   <div class="task-title">${escapeHTML(task.title)}</div>
-                  <div class="task-meta">Abgabe: <strong>${formatGermanDate(task.effectiveDueDate)}${periodInfo}</strong> · Tippen zum Nachlesen ↗</div>
+                  <div class="task-meta">Abgabe: <strong>${formatGermanDate(task.effectiveDueDate)}${escapeHTML(periodInfo)}</strong> · Tippen zum Nachlesen ↗</div>
                 </div>
               `;
               frag.appendChild(card);
@@ -5424,7 +7346,10 @@ SOFTWARE.</pre>
 
           row.innerHTML = `
             <div class="task-info">
-              <strong>${escapeHTML(v.text)}</strong>
+              <div class="task-header-row">
+                <strong>${escapeHTML(v.text)}</strong>
+                ${v.isDemo ? `<span class="demo-pill">🧪 Demo</span>` : ""}
+              </div>
               <div class="task-meta">${practicedToday ? "Heute bereits geübt!" : "Heute noch 5 Min. anschauen"}</div>
             </div>
             <div class="task-actions">
@@ -5441,7 +7366,6 @@ SOFTWARE.</pre>
         container.appendChild(fragment);
       }
 
-      /* Fächer-Manager für das aktuelle Halbjahr (in den Einstellungen) */
       function renderActiveSubjectsManager() {
         const container = document.getElementById("activeSubjectsGrid");
         if (!container) return;
@@ -5468,7 +7392,6 @@ SOFTWARE.</pre>
         container.appendChild(fragment);
       }
 
-      /* Klausur-Radar Tab Renderer (mit Prüf-Markierung ganz oben, Bearbeiten & Vollbild-Lesen) */
       function renderExamsTab() {
         const select = document.getElementById("examSubject");
         const editSelect = document.getElementById("editExamSubject");
@@ -5502,7 +7425,6 @@ SOFTWARE.</pre>
           return;
         }
 
-        // Klausuren mit Prüf-Markierung stehen ganz oben im Blickfeld
         const displayExams = [...examInfo.upcoming].sort((a, b) => {
           const revDiff = (b.needsReview ? 1 : 0) - (a.needsReview ? 1 : 0);
           if (revDiff !== 0) return revDiff;
@@ -5521,12 +7443,13 @@ SOFTWARE.</pre>
               <div class="task-header-row">
                 <span class="task-subject">${escapeHTML(ex.subject)}</span>
                 <span class="days-badge days-badge-${ex.urgency === "red" ? "urgent" : (ex.urgency === "yellow" ? "soon" : "ok")}">${escapeHTML(ex.urgencyLabel)}</span>
+                ${ex.isDemo ? `<span class="demo-pill">🧪 Demo</span>` : ""}
                 ${ex.needsReview ? `<span class="review-badge">⚠️ Datum / Stoff prüfen</span>` : ""}
                 ${ex.hasSameDayCollision ? `<span style="background:var(--yellow-border); color:#fff; font-size:0.72rem; font-weight:700; padding:2px 6px; border-radius:4px;">⚠️ Doppeltag</span>` : ""}
               </div>
               <div class="task-title ${isLongTopic ? "clickable-title" : ""}" data-action="read-exam" data-id="${safeId}" style="margin-top:4px;" title="${escapeHTML(ex.topic)}">${escapeHTML(ex.topic)}</div>
               ${isLongTopic ? `<button type="button" class="btn-read-more" data-action="read-exam" data-id="${safeId}">📄 Vollständigen Stoff lesen &amp; kopieren ↗</button>` : ""}
-              <div class="task-meta">Datum: ${formatGermanDate(ex.date)} | Lernpuffer: ${ex.bufferMinutes} Min./Tag</div>
+              <div class="task-meta">Datum: ${formatGermanDate(ex.date)} | Lernpuffer: ${Number(ex.bufferMinutes)} Min./Tag</div>
             </div>
             <div class="task-actions">
               <button type="button" class="btn-read-more" data-action="read-exam" data-id="${safeId}" style="padding:6px 10px; font-weight:700; background:var(--bg-main); border:1px solid var(--border-color); border-radius:6px; text-decoration:none;">📄 Lesen / Kopieren</button>
@@ -5540,7 +7463,7 @@ SOFTWARE.</pre>
         container.appendChild(fragment);
       }
 
-      /* Tagesaktuelle Ausfälle & Tausch Editor (mit Zeitsperre für abgelaufene Stunden von heute) */
+      /* Tagesaktuelle Ausfälle & Tausch Editor (vollständig XSS-gesichert über escapeHTML) */
       function renderDailyOverridesEditor() {
         const now = new Date();
         cleanupExpiredOverridesAndFreeShifts(now);
@@ -5585,7 +7508,7 @@ SOFTWARE.</pre>
           const infoBox = document.createElement("div");
           infoBox.className = "advice-banner";
           infoBox.style.marginBottom = "10px";
-          infoBox.innerHTML = `<strong>Der heutige Schultag ist bereits vorbei.</strong> Alle heutigen Freistunden-Einträge wurden automatisch zurückgesetzt. Rückwirkende Einträge für heute sind gesperrt – bitte nutze den Button <strong>„Nächster Schultag (${formatGermanDate(toISODate(nextSchoolDate))})“</strong> für morgen!`;
+          infoBox.innerHTML = `<strong>Der heutige Schultag ist bereits vorbei.</strong> Alle heutigen Freistunden-Einträge wurden automatisch zurückgesetzt. Rückwirkende Einträge für heute sind gesperrt – bitte nutze den Button <strong>„Nächster Schultag (${escapeHTML(formatGermanDate(toISODate(nextSchoolDate)))})“</strong> für morgen!`;
           container.appendChild(infoBox);
         }
 
@@ -5607,24 +7530,29 @@ SOFTWARE.</pre>
           else if (eff.status === "swapped") rowClass += " status-swapped";
           row.className = rowClass;
 
-          let statusText = `Regulär: ${eff.baseSubject || "Frei"}`;
+          const safeBaseSubj = escapeHTML(eff.baseSubject || "Frei");
+          let statusText = `Regulär: ${safeBaseSubj}`;
           if (isExpiredSlot) {
-            statusText = `⏱️ Vorbei (${eff.baseSubject || "Frei"}) – zeitlich abgelaufen & zurückgesetzt`;
+            statusText = `⏱️ Vorbei (${safeBaseSubj}) – zeitlich abgelaufen &amp; zurückgesetzt`;
           } else if (ov && ov.status === "cancelled") {
             statusText = "⚡ AUSGEFALLEN (Wird Freistunde)";
           } else if (ov && ov.status === "swapped") {
-            statusText = `🔄 Getauscht zu ${ov.subject}`;
+            statusText = `🔄 Getauscht zu ${escapeHTML(ov.subject)}`;
           }
 
           const selectId = `ov_sel_${dateIso}_${idx}`;
+          const optionsHtml = activeList
+            .map(s => `<option value="${escapeHTML(s)}" ${ov && ov.status === "swapped" && ov.subject === s ? "selected" : ""}>Tausch: ${escapeHTML(s)}</option>`)
+            .join("");
+
           row.innerHTML = `
             <div style="font-weight:700; font-size:0.9rem; min-width:115px;">${t.period}. Std. (${t.startStr}–${t.endStr})</div>
             <div style="font-size:0.85rem; color:var(--text-muted); flex:1; min-width:140px;">${statusText}</div>
             <div style="display:flex; gap:6px; align-items:center;">
-              <select id="${selectId}" data-override-period="${idx}" data-date-iso="${dateIso}" style="padding:4px 8px; font-size:0.85rem; width:175px;" ${isExpiredSlot ? "disabled" : ""}>
+              <select id="${escapeHTML(selectId)}" data-override-period="${idx}" data-date-iso="${escapeHTML(dateIso)}" style="padding:4px 8px; font-size:0.85rem; width:175px;" ${isExpiredSlot ? "disabled" : ""}>
                 <option value="__NORMAL__" ${!ov ? "selected" : ""}>${isExpiredSlot ? "Stunde vorbei (gesperrt)" : "Plan belassen"}</option>
                 <option value="__CANCELLED__" ${ov && ov.status === "cancelled" ? "selected" : ""}>⚡ Ausfall (Freistunde)</option>
-                ${activeList.map(s => `<option value="${s}" ${ov && ov.status === "swapped" && ov.subject === s ? "selected" : ""}>Tausch: ${s}</option>`).join("")}
+                ${optionsHtml}
               </select>
             </div>
           `;
@@ -5634,7 +7562,6 @@ SOFTWARE.</pre>
         container.appendChild(fragment);
       }
 
-      /* Tägliche Fächer-Auswahl (reduziert auf aktive Halbjahres-Fächer) */
       function renderSubjectDropdowns() {
         const selectAdd = document.getElementById("hwSubject");
         const selectEdit = document.getElementById("editHwSubject");
@@ -5725,7 +7652,6 @@ SOFTWARE.</pre>
         }
       }
 
-      /* Basis-Stundenplan-Renderer im 8-Stunden-Raster */
       function renderScheduleTab() {
         document.querySelectorAll("#budgetLimitChoices .choice-btn").forEach(btn => {
           btn.classList.toggle("selected", Number(btn.getAttribute("data-limit")) === state.dailyBudgetMinutes);
@@ -5763,7 +7689,7 @@ SOFTWARE.</pre>
         WEEKDAYS.forEach(day => {
           const row = document.createElement("div");
           row.className = "day-row";
-          row.innerHTML = `<div class="day-title"><span>${day.name} (Woche ${state.editingWeek})</span></div>`;
+          row.innerHTML = `<div class="day-title"><span>${escapeHTML(day.name)} (Woche ${escapeHTML(state.editingWeek)})</span></div>`;
 
           const grid = document.createElement("div");
           grid.className = "period-grid";
@@ -5796,7 +7722,6 @@ SOFTWARE.</pre>
               select.appendChild(opt);
             });
 
-            // Falls ein im Stundenplan eingetragenes Fach aktuell inaktiv ist, trotzdem anzeigen
             const currentSubj = daySubjects[p];
             if (currentSubj && !activeList.includes(currentSubj)) {
               const opt = document.createElement("option");
@@ -5816,6 +7741,233 @@ SOFTWARE.</pre>
         });
 
         container.appendChild(fragment);
+      }
+
+      /* ==========================================================================
+         MODAL 8: PIN EINRICHTEN / ÄNDERN / DEAKTIVIEREN / BACKUP ENTSPERREN
+         ========================================================================== */
+      function openPinModal(mode) {
+        if (!isWebCryptoAvailable()) {
+          showNoticeModal(
+            "Web Crypto nicht verfügbar",
+            "Die browser-native Verschlüsselung (crypto.subtle) ist in diesem Kontext blockiert. Bitte öffne die App über HTTPS (z. B. GitHub Pages), Localhost oder eine APK-WebView."
+          );
+          return;
+        }
+
+        currentPinModalMode = mode;
+        const backdrop = document.getElementById("pinModalBackdrop");
+        const titleEl = document.getElementById("pinModalTitle");
+        const introEl = document.getElementById("pinModalIntro");
+        const curGroup = document.getElementById("pinCurrentGroup");
+        const curLabel = document.getElementById("pinCurrentLabel");
+        const newGroup = document.getElementById("pinNewGroup");
+        const confGroup = document.getElementById("pinConfirmGroup");
+        const curInput = document.getElementById("pinCurrentInput");
+        const newInput = document.getElementById("pinNewInput");
+        const confInput = document.getElementById("pinConfirmInput");
+        const errEl = document.getElementById("pinModalError");
+        const confirmBtn = document.getElementById("confirmPinModalBtn");
+
+        if (!backdrop) return;
+        curInput.value = "";
+        newInput.value = "";
+        confInput.value = "";
+        errEl.textContent = "";
+        errEl.classList.remove("visible");
+
+        if (mode === "setup") {
+          titleEl.textContent = "🔒 Lokalen PIN-Schutz einrichten";
+          introEl.textContent = "Wähle eine PIN (mind. 4 Zeichen). Alle lokalen Daten werden sofort mit AES-256-GCM verschlüsselt. Merke dir deine PIN gut – es gibt keinen Server zur Wiederherstellung.";
+          curGroup.style.display = "none";
+          newGroup.style.display = "block";
+          confGroup.style.display = "block";
+          confirmBtn.textContent = "🔒 Verschlüsseln & Aktivieren";
+        } else if (mode === "change") {
+          titleEl.textContent = "🔑 PIN ändern";
+          introEl.textContent = "Gib zuerst deine aktuelle PIN ein und lege dann eine neue PIN fest. Dein Tresor wird sofort mit neuem Salt neu verschlüsselt.";
+          curGroup.style.display = "block";
+          curLabel.textContent = "Aktuelle PIN:";
+          newGroup.style.display = "block";
+          confGroup.style.display = "block";
+          confirmBtn.textContent = "🔑 Neue PIN speichern";
+        } else if (mode === "disable") {
+          titleEl.textContent = "🔓 PIN-Schutz deaktivieren";
+          introEl.textContent = "Bestätige deine aktuelle PIN. Deine lokalen Daten werden danach wieder im regulären lokalen Speicher (ohne Sperrbildschirm) abgelegt.";
+          curGroup.style.display = "block";
+          curLabel.textContent = "Aktuelle PIN zur Bestätigung:";
+          newGroup.style.display = "none";
+          confGroup.style.display = "none";
+          confirmBtn.textContent = "🔓 PIN-Schutz entfernen";
+        } else if (mode === "unlock_backup") {
+          titleEl.textContent = "🔐 Verschlüsseltes Tresor-Backup entsperren";
+          introEl.textContent = "Diese Backup-Datei ist mit AES-256-GCM verschlüsselt. Gib die PIN ein, mit der dieses Backup erstellt wurde:";
+          curGroup.style.display = "block";
+          curLabel.textContent = "Backup-PIN:";
+          newGroup.style.display = "none";
+          confGroup.style.display = "none";
+          confirmBtn.textContent = "🔓 Backup prüfen";
+        }
+
+        backdrop.classList.add("show");
+        backdrop.setAttribute("aria-hidden", "false");
+        setTimeout(() => {
+          const focusEl = curGroup.style.display === "block" ? curInput : newInput;
+          if (focusEl) focusEl.focus();
+        }, 80);
+      }
+
+      function closePinModal() {
+        currentPinModalMode = null;
+        pendingEncryptedBackupContainer = null;
+        const backdrop = document.getElementById("pinModalBackdrop");
+        if (backdrop) {
+          backdrop.classList.remove("show");
+          backdrop.setAttribute("aria-hidden", "true");
+        }
+      }
+
+      async function handlePinModalSubmit() {
+        const curPin = (document.getElementById("pinCurrentInput").value || "").trim();
+        const newPin = (document.getElementById("pinNewInput").value || "").trim();
+        const confPin = (document.getElementById("pinConfirmInput").value || "").trim();
+        const errEl = document.getElementById("pinModalError");
+
+        const setErr = (msg) => {
+          errEl.textContent = msg;
+          errEl.classList.add("visible");
+        };
+        errEl.textContent = "";
+        errEl.classList.remove("visible");
+
+        try {
+          if (currentPinModalMode === "setup") {
+            if (newPin.length < 4) {
+              setErr("Die PIN muss mindestens 4 Zeichen lang sein.");
+              return;
+            }
+            if (newPin !== confPin) {
+              setErr("Die beiden PIN-Eingaben stimmen nicht überein.");
+              return;
+            }
+            const saltBytes = window.crypto.getRandomValues(new Uint8Array(16));
+            const saltB64 = bytesToBase64(saltBytes);
+            const key = await deriveAesKeyFromPin(newPin, saltBytes, PBKDF2_ITERATIONS);
+
+            vaultSessionKey = key;
+            vaultSaltB64 = saltB64;
+            isVaultEncrypted = true;
+            await saveState();
+            closePinModal();
+            renderSecuritySettingsUI();
+            resetInactivityLockTimer();
+            showNoticeModal(
+              "🔒 PIN-Verschlüsselung aktiviert",
+              "Dein lokaler Speicher ist jetzt mit PBKDF2 (150.000 Iterationen) & AES-256-GCM geschützt. Über den Button „🔒 Sperren“ oben rechts kannst du jederzeit sofort sperren."
+            );
+            return;
+          }
+
+          if (currentPinModalMode === "change") {
+            if (curPin.length < 4) {
+              setErr("Bitte gib zuerst deine aktuelle PIN ein.");
+              return;
+            }
+            if (newPin.length < 4) {
+              setErr("Die neue PIN muss mindestens 4 Zeichen lang sein.");
+              return;
+            }
+            if (newPin !== confPin) {
+              setErr("Die neue PIN und die Bestätigung stimmen nicht überein.");
+              return;
+            }
+            const raw = localStorage.getItem(STORAGE_KEY);
+            const currentContainer = raw ? JSON.parse(raw) : null;
+            if (!isEncryptedContainer(currentContainer)) {
+              setErr("Aktueller Tresor nicht gefunden.");
+              return;
+            }
+            try {
+              await decryptContainerWithPin(currentContainer, curPin);
+            } catch (e) {
+              setErr("Die aktuelle PIN ist nicht korrekt.");
+              return;
+            }
+
+            const newSaltBytes = window.crypto.getRandomValues(new Uint8Array(16));
+            const newSaltB64 = bytesToBase64(newSaltBytes);
+            const newKey = await deriveAesKeyFromPin(newPin, newSaltBytes, PBKDF2_ITERATIONS);
+
+            vaultSessionKey = newKey;
+            vaultSaltB64 = newSaltB64;
+            isVaultEncrypted = true;
+            await saveState();
+            closePinModal();
+            renderSecuritySettingsUI();
+            showNoticeModal("🔑 PIN geändert", "Deine PIN wurde erfolgreich geändert und alle lokalen Daten wurden neu verschlüsselt.");
+            return;
+          }
+
+          if (currentPinModalMode === "disable") {
+            if (curPin.length < 4) {
+              setErr("Bitte gib deine aktuelle PIN ein.");
+              return;
+            }
+            const raw = localStorage.getItem(STORAGE_KEY);
+            const currentContainer = raw ? JSON.parse(raw) : null;
+            if (isEncryptedContainer(currentContainer)) {
+              try {
+                await decryptContainerWithPin(currentContainer, curPin);
+              } catch (e) {
+                setErr("Die eingegebene PIN ist nicht korrekt.");
+                return;
+              }
+            }
+            isVaultEncrypted = false;
+            vaultSessionKey = null;
+            vaultSaltB64 = null;
+            if (inactivityLockTimer) {
+              clearTimeout(inactivityLockTimer);
+              inactivityLockTimer = null;
+            }
+            await saveState();
+            closePinModal();
+            renderSecuritySettingsUI();
+            showNoticeModal("🔓 PIN-Schutz deaktiviert", "Deine Daten werden ab sofort wieder ohne PIN-Sperrbildschirm lokal im Browser gespeichert.");
+            return;
+          }
+
+          if (currentPinModalMode === "unlock_backup") {
+            if (!pendingEncryptedBackupContainer) {
+              closePinModal();
+              return;
+            }
+            if (curPin.length < 4) {
+              setErr("Bitte gib die PIN des Backups ein.");
+              return;
+            }
+            let decryptedPayload = null;
+            try {
+              const res = await decryptContainerWithPin(pendingEncryptedBackupContainer, curPin);
+              decryptedPayload = res.parsed;
+            } catch (e) {
+              setErr("Falsche Backup-PIN oder beschädigte Datei.");
+              return;
+            }
+
+            closePinModal();
+            const backupWarn = getExportWarningSummary();
+            promptDoubleConfirmation(
+              `Das verschlüsselte Tresor-Backup wurde erfolgreich geprüft (${(decryptedPayload.tasks || []).length} Aufgaben, ${(decryptedPayload.exams || []).length} Klausuren). Möchtest du deine aktuellen lokalen Daten damit überschreiben?\n\n${backupWarn}`,
+              "Sicherheitsstufe 2: Aktuelle Daten wirklich vollständig durch das entschlüsselte Backup ersetzen?",
+              () => applyImportedFullState(decryptedPayload),
+              "Wiederherstellen"
+            );
+          }
+        } catch (err) {
+          console.error("PIN-Vorgang fehlgeschlagen:", err);
+          setErr("Vorgang fehlgeschlagen. Bitte erneut versuchen.");
+        }
       }
 
       /* ==========================================================================
@@ -5856,7 +8008,7 @@ SOFTWARE.</pre>
           const dupHint = pendingCsvSkippedCount > 0
             ? ` (${pendingCsvSkippedCount} bereits vorhandene Einträge wurden automatisch übersprungen.)`
             : "";
-          subtitleEl.innerHTML = `<strong>${pendingCsvReviewItems.length} neue Einträge</strong> erkannt: Zeiten per Tipp anpassen, bei Bedarf auf <strong>Klausur</strong> umschalten oder Unwichtiges (z. B. Elterninfo) mit <strong>×</strong> entfernen.${dupHint}`;
+          subtitleEl.innerHTML = `<strong>${pendingCsvReviewItems.length} neue Einträge</strong> erkannt: Zeiten per Tipp anpassen, bei Bedarf auf <strong>Klausur</strong> umschalten oder Unwichtiges (z. B. Elterninfo) mit <strong>×</strong> entfernen.${escapeHTML(dupHint)}`;
         }
 
         if (confirmBtn) {
@@ -5877,7 +8029,6 @@ SOFTWARE.</pre>
           const isExam = item.type === "exam";
           const safeTempId = escapeHTML(item.tempId);
 
-          // Fächer-Optionen inklusive evtl. neuem Fach aus der CSV
           const subjectOptions = ["Allgemein / Vertretung", ...activeList];
           if (item.subject && !subjectOptions.includes(item.subject)) {
             subjectOptions.push(item.subject);
@@ -5911,7 +8062,7 @@ SOFTWARE.</pre>
                 </div>
               </div>
             `;
-            metaHtml = `<div class="csv-review-meta">Abgabe (Auto): ${formatGermanDate(item.dueDate)}${periodText}${rawSubjHint}</div>`;
+            metaHtml = `<div class="csv-review-meta">Abgabe (Auto): ${formatGermanDate(item.dueDate)}${escapeHTML(periodText)}${rawSubjHint}</div>`;
           } else {
             const dateMissingClass = !item.examDate ? "csv-date-missing" : "";
             controlsHtml = `
@@ -5986,6 +8137,7 @@ SOFTWARE.</pre>
         let addedExams = 0;
         let reviewMarkedExams = 0;
         const skippedDuplicates = pendingCsvSkippedCount;
+        const nowTime = new Date().toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" });
 
         pendingCsvReviewItems.forEach((item, idx) => {
           const subject = (item.subject || "").trim() || "Allgemein / Vertretung";
@@ -6007,7 +8159,8 @@ SOFTWARE.</pre>
               date: examDate,
               topic: title,
               bufferMinutes: Number(item.bufferMinutes) || 15,
-              needsReview
+              needsReview,
+              isDemo: false
             });
             addedExams++;
           } else {
@@ -6026,20 +8179,19 @@ SOFTWARE.</pre>
               freePeriodDate: "",
               done: false,
               createdAt,
-              completedAt: ""
+              createdTimestamp: `${createdAt} ${nowTime}`,
+              completedAt: "",
+              isDemo: false
             });
             addedTasks++;
           }
         });
 
+        state.welcomeDismissed = true;
         closeCsvReviewModal();
         cleanupExpiredOverridesAndFreeShifts(new Date());
         saveState();
-        renderActiveSubjectsManager();
-        renderSubjectDropdowns();
-        renderScheduleTab();
-        renderExamsTab();
-        renderPlanTab();
+        renderAllAppViews();
 
         if (addedTasks === 0 && addedExams > 0) {
           switchTab("tab-exams");
@@ -6073,9 +8225,11 @@ SOFTWARE.</pre>
 
         const period = getFirstSubjectPeriodOnDate(task.subject, task.dueDate);
         const periodInfo = period ? ` (${period}. Std.)` : "";
+        const createdInfo = task.createdTimestamp || (task.createdAt ? formatGermanDate(task.createdAt) : "");
+        const createdPart = createdInfo ? ` | Erstellt: ${createdInfo}` : "";
 
         subjectEl.textContent = `Fach: ${task.subject}`;
-        metaEl.textContent = `Dauer: ca. ${task.duration} Min. | Abgabe: ${formatGermanDate(task.dueDate)}${periodInfo} ${task.done ? "✓ (Erledigt)" : ""}`;
+        metaEl.textContent = `Dauer: ca. ${task.duration} Min. | Abgabe: ${formatGermanDate(task.dueDate)}${periodInfo}${createdPart} ${task.done ? "✓ (Erledigt)" : ""}`;
         textEl.textContent = task.title || "(Kein Aufgabentext eingetragen)";
 
         backdrop.classList.add("show");
@@ -6149,6 +8303,7 @@ SOFTWARE.</pre>
       }
 
       function closeExamEditModal() {
+        stopActiveSpeechRecognition();
         const backdrop = document.getElementById("examEditModalBackdrop");
         backdrop.classList.remove("show");
         backdrop.setAttribute("aria-hidden", "true");
@@ -6161,7 +8316,7 @@ SOFTWARE.</pre>
 
         const newDate = document.getElementById("editExamDate").value;
         if (!newDate) {
-          alert("Bitte wähle ein gültiges Datum für die Klausur.");
+          showNoticeModal("Datum fehlt", "Bitte wähle ein gültiges Datum für die Klausur oder den Test.");
           return;
         }
 
@@ -6182,8 +8337,10 @@ SOFTWARE.</pre>
         closeExamEditModal();
         renderExamsTab();
         renderPlanTab();
+        showToast(`✓ Klausur (${exam.subject}) aktualisiert.`);
       }
 
+      /* Doppelte Sicherheitsabfrage mit vertauschten Schaltern in Stufe 2 (Pflichtstandard) */
       function promptDoubleConfirmation(step1Text, step2Text, onConfirmCallback, actionLabel = "Bestätigen") {
         const backdrop = document.getElementById("confirmModalBackdrop");
         const titleEl = document.getElementById("confirmModalTitle");
@@ -6197,6 +8354,7 @@ SOFTWARE.</pre>
 
         function renderStep1() {
           titleEl.textContent = "1. Sicherheitsabfrage: Bitte bestätigen";
+          textEl.style.whiteSpace = "pre-line";
           textEl.textContent = step1Text;
           actionsEl.innerHTML = "";
 
@@ -6220,6 +8378,7 @@ SOFTWARE.</pre>
 
         function renderStep2() {
           titleEl.textContent = "2. Letzte Bestätigung (Schutz vor Fehlklicks)";
+          textEl.style.whiteSpace = "pre-line";
           textEl.textContent = step2Text;
           actionsEl.innerHTML = "";
 
@@ -6259,6 +8418,14 @@ SOFTWARE.</pre>
           editSubjSelect.appendChild(opt);
         }
 
+        const createdEl = document.getElementById("editHwCreatedAtDisplay");
+        if (createdEl) {
+          const tsDisplay = task.createdTimestamp
+            ? task.createdTimestamp
+            : (task.createdAt ? `${formatGermanDate(task.createdAt)} (${task.createdAt})` : "Unbekannt");
+          createdEl.textContent = `🕒 Original-Erstellungszeitpunkt (unveränderlich): ${tsDisplay}`;
+        }
+
         document.getElementById("editTaskId").value = task.id;
         document.getElementById("editHwSubject").value = task.subject;
         document.getElementById("editHwTitle").value = task.title;
@@ -6280,6 +8447,7 @@ SOFTWARE.</pre>
       }
 
       function closeEditModal() {
+        stopActiveSpeechRecognition();
         const backdrop = document.getElementById("editModalBackdrop");
         backdrop.classList.remove("show");
         backdrop.setAttribute("aria-hidden", "true");
@@ -6310,22 +8478,28 @@ SOFTWARE.</pre>
         saveState();
         closeEditModal();
         renderPlanTab();
+        showToast(`✓ Änderungen an ${task.subject} gespeichert.`);
       }
 
       /* ==========================================================================
          START DER ANWENDUNG
          ========================================================================== */
-      loadState();
       renderLegalContent();
-      renderHeader();
-      renderActiveSubjectsManager();
-      renderSubjectDropdowns();
-      renderScheduleTab();
-      renderExamsTab();
-      renderPlanTab();
       initEvents();
-
+      const initResult = loadInitialStorage();
+      if (!initResult.locked) {
+        renderAllAppViews();
+      } else {
+        updateSecurityStatusIndicators();
+      }
+     // Offline-Service-Worker nur über HTTPS oder Localhost anmelden (bei file:// still überspringen)
+      if ("serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost" || location.hostname === "127.0.0.1")) {
+        window.addEventListener("load", () => {
+          navigator.serviceWorker.register("./sw.js").catch(() => {});
+        });
+      }
     })();
   </script>
 </body>
 </html>
+<!-- === ENDE TEIL 4 VON 4 === -->
